@@ -30,6 +30,7 @@ final class RateLimiter
     public static function attempt(string $bucket, int $limit, int $windowSeconds): bool
     {
         $pdo = Database::pdo();
+        $pdo->prepare('DELETE FROM rate_limits WHERE hit_at < ?')->execute([time() - 86400]);   // honours the "up to 24 hours" promise in the privacy policy
         $pdo->exec('BEGIN IMMEDIATE');
         try {
             $stmt = $pdo->prepare('SELECT COUNT(*) FROM rate_limits WHERE bucket = ? AND hit_at > ?');

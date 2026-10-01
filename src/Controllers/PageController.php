@@ -18,6 +18,16 @@ final class PageController extends BaseController
         return $this->page('contact', 'contact');
     }
 
+    public function cookies(): Response
+    {
+        return $this->page('cookies', 'cookies');
+    }
+
+    public function terms(): Response
+    {
+        return $this->page('terms', 'terms');
+    }
+
     public function privacy(): Response
     {
         return $this->page('privacy', 'privacy');

@@ -8,7 +8,7 @@ $nav = [
 ?>
 <header class="header">
   <div class="container header__container">
-    <a class="header__logo" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><img class="header__img" src="<?= e(asset('img/logo.png')) ?>" alt="" width="24" height="28"> <span class="header__title">PIXELITE<span class="header__light">.cz</span></span></a>
+    <a class="header__logo" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><?= logo_mark('header__img') ?> <span class="header__title">PIXELITE<span class="header__light">.cz</span></span></a>
     <button type="button" class="navbar-toggle collapsed" data-nav-toggle aria-expanded="false" aria-controls="navbar">
       <span class="sr-only"><?= e(t('a11y.toggle')) ?></span>
       <span class="icon-bar"></span>
@@ -20,6 +20,7 @@ $nav = [
       <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc)) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
 <?php endforeach ?>
     </div>
+    <div class="header__theme"><?php require __DIR__ . '/theme-cycle.php' ?></div>
     <div class="header__menu">
       <nav id="navbar" class="header__nav collapse" aria-label="<?= e(t('a11y.nav_main')) ?>">
         <ul class="header__elenco">
@@ -27,6 +28,7 @@ $nav = [
           <li class="header__el"><a href="<?= e(str_starts_with($href, '#') ? url('') . $href : url($href)) ?>" class="header__link"><?= e(t($label)) ?></a></li>
 <?php endforeach ?>
           <li class="header__el header__el--blue"><a href="<?= e(url('order')) ?>" class="btn btn--white"><?= e(t('nav.start')) ?></a></li>
+          <li class="header__el header__el--theme"><?php require __DIR__ . '/theme-switch.php' ?></li>
         </ul>
       </nav>
     </div>

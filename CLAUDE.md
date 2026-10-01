@@ -12,7 +12,7 @@ Brand: **blue, black, white**. The original landing page is the visual source of
 
 ## Stack
 - PHP 8.3 (Apache in Docker), SQLite (PDO), hand-written router. No Composer.
-- Frontend: server-rendered PHP templates, Bootstrap 3 **grid/reset only** (vendored: `public/assets/vendor/bootstrap.min.css`) + `style.css`, ~30 lines of vanilla JS. jQuery/Bootstrap JS were removed.
+- Frontend: server-rendered PHP templates, Bootstrap 3 **grid/reset only** (vendored: `public/assets/vendor/bootstrap.min.css`) + `style.css`, a few small vanilla-JS files with no dependencies (`script.js` nav + language cookie + form guard, `theme-init.js`/`theme.js`, `consent.js`). jQuery/Bootstrap JS were removed.
 - Fonts (Lato 300/400/700, includes Czech diacritics), images and CSS are **self-hosted** (no CDN, no hot-linking → no third-party requests, GDPR-friendlier, strict CSP).
 
 ## Layout
@@ -23,12 +23,14 @@ src/               namespace Pixelite\ (autoloaded by src/bootstrap.php)
   bootstrap.php    router table, error handling, security headers
   Controllers/     Page, Order, Admin, Seo (+ BaseController)
   OrderValidator, OrderService, OrderRepository, TelegramNotifier   ← order pipeline
-  Auth, Csrf, Session, RateLimiter, Database, I18n, Env, Logger, View, Router, Request, Response
-templates/         layout.php, partials/ (header, footer, contact-details), pages/, admin/, errors/
+  Company (legal identity from .env), Auth, Csrf, Session, RateLimiter, Database, I18n, Env, Logger, View, Router, Request, Response
+templates/         layout.php, partials/ (header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
 lang/en.php cs.php all copy. Identical key sets (tests enforce it)
 config/portfolio.php  portfolio data (placeholders, clearly marked)
+config/consent.php    cookie/consent registry (storage inventory + optional services: empty)
 storage/           git-ignored runtime data: leads.sqlite, logs/app.log, .salt
-tests/run.php      dependency-free test runner (+ fake_telegram.php)
+tests/run.php      dependency-free PHP test runner (+ fake_telegram.php)
+tests/browser/    real-Chrome CDP suite (run.mjs matrix, cdp.mjs driver, styles-dump/diff for CSS regression checks)
 bin/hash-password.php
 ```
 
@@ -65,13 +67,37 @@ Every public route exists per language: `/en/…` and `/cs/…`. Bare `/` → 30
 | `POST /{lang}/order` | validate → save → Telegram → 303 to sent |
 | `GET /{lang}/order/sent` | one-time success page (flash), noindex |
 | `GET /{lang}/contact` | contact details from env + CTA to order |
-| `GET /{lang}/privacy` | privacy + cookies (legal placeholders in `[brackets]`) |
+| `GET /{lang}/privacy` | privacy policy (controller identity from `.env`; unknown legal facts stay `[placeholders]`) |
+| `GET /{lang}/cookies` | cookie policy: every cookie / storage item + "Cookie settings" (`#settings` opens the dialog) |
+| `GET /{lang}/terms` | non-binding-request terms + consumer info + ADR (Česká obchodní inspekce); owner placeholders |
 | `GET /{lang}/portfolio` | **hidden**: reachable, noindex, not linked, not in sitemap |
 | `GET /robots.txt`, `/sitemap.xml` | sitemap has hreflang alternates; excludes portfolio/admin/sent |
 | `GET /admin/login`, `POST /admin/login` | staff login (English only) |
 | `GET /admin` · `GET /admin/orders/{id}` · `POST /admin/orders/{id}/retry` · `POST /admin/logout` | protected |
-Not built on purpose: separate Services/About/Terms pages (services live on the landing; nothing real to say on About/Terms yet; privacy covers cookies).
+Not built on purpose: separate Services/About pages (services live on the landing). Terms exist but only state facts about how the site works; commercial terms are owner placeholders.
 To publish the portfolio later: add real projects to `config/portfolio.php`, remove `noindex` (`PageController::portfolio`), add it to nav/footer + `SeoController::INDEXABLE`.
+
+## Company identity (legal footer)
+`src/Company.php` reads `COMPANY_NAME`, `COMPANY_ICO`, `COMPANY_ADDRESS` (+ optional `COMPANY_DIC`, `COMPANY_REGISTER`) and reuses the existing `CONTACT_EMAIL` / `CONTACT_PHONE` / `CONTACT_LOCATION`. The footer on **every** public page and the privacy/terms text render these values exactly as configured (IČO untouched, everything escaped). A missing value shows a dashed, italic **"[to be completed]"** placeholder – never an invented value. Nothing is hard-coded and no secret is involved (these are public business facts).
+
+## Cookies and consent
+- Storage that exists: `pixelite` (session cookie, only on the order form / staff login, CSRF), `pixelite_consent` (the choice, 6 months), `pixelite_lang` (cookie, 1 year, only after clicking the language switch), `pixelite_theme` (localStorage, only after choosing a theme). Registry: `config/consent.php`; texts: `lang/*.php` (`consent.*`, `cookies.*`).
+- **No optional cookies/services exist** (no analytics, marketing, third-party content) and none were invented; `optional` is an empty registry. The banner says so honestly.
+- UI: non-modal bottom banner (hidden until `consent.js` sees no valid choice) with **Accept all / Reject non-essential** (identical `.btn` weight) and **Cookie settings** (secondary). Settings = native `<dialog>` (focus trap, Esc, focus returns). Footer "Cookie settings" is a link to `/cookies#settings`: with JS it opens the dialog, without JS it lands on the cookie policy page (which explains the storage and how to delete it in the browser).
+- Gate for future services: list the service under its category in `config/consent.php`, add `<script type="text/plain" data-consent="analytics" data-src="…">` and allow its host in the CSP (`src/bootstrap.php`). `consent.js` runs it only after consent; unknown/new categories default OFF; bump `version` to re-ask everyone. Withdrawn consent needs a reload for already-loaded scripts. **Adding a service means bumping `version`** (otherwise existing visitors are never asked) and only external scripts via `data-src` can be gated (inline code is blocked by the CSP).
+- Language and theme preferences are written **only on an explicit user action** (never on page load). **Whether that persistence needs consent is NOT decided here – flagged for legal review below.** If legal review says it does, gate the two writes in `script.js` / `theme.js` behind `PixeliteConsent`.
+
+## Dark mode
+Light is the default and is unchanged. All components use **semantic tokens** (`--bg --surface --field-bg --text --text-muted --border --link --btn-bg … --lp-*`); a theme is just a set of values. Dark = `:root[data-theme="dark"]` plus `@media (prefers-color-scheme: dark){:root:not([data-theme="light"])}` (**the two blocks must stay identical – `tests/run.php` fails if they diverge**). Palette: near-black navy surfaces (`#0a0f1a / #111a2b`), off-white text `#e3eaf4` (≥14:1), muted `#9bb0c8` (≥7.8:1), brand blue kept as accent, buttons deepened (`#2068c0`) so white text reaches ≥4.9:1.
+Switch: Light / Dark / System. Desktop header = compact cycle button; ≤1024px = 3-way control in the menu; footer = 3-way control. `theme-init.js` (blocking, first in `<head>`) applies an explicit choice before paint (no flash); "System" follows the OS. Choice stored in `localStorage.pixelite_theme` only after a click. `theme-color`/`color-scheme` metas follow the theme.
+
+## Branding assets
+Favicon/logo come from the owner-supplied files: `public/favicon.ico`, `public/assets/icons/favicon.svg`, `public/assets/icons/apple-touch-icon.png` (180px), and `public/assets/img/logo.svg` (byte-identical logo mark, used in header, footer, contact block, admin bar via `logo_mark()`). Not generated or edited. No web manifest (no 192/512 icons supplied). The mark is a square tile; the wordmark "PIXELITE.cz" next to it is live text. The older cube illustrations (service cards, CTA band) are untouched approved artwork.
+Hero visual = pure-CSS 3D laptop (`.hero-laptop`, adapted from the owner's CodePen): em-based, scales by container query, reserves its height via `aspect-ratio` (no layout shift), lid opens once (transform only), skipped under `prefers-reduced-motion`; screen is a branded wireframe (no embed). `hero.png` remains **only** as the Open Graph share image.
+
+## Legal review status (not legal advice)
+Implemented: controller identity, per-activity legal bases (Art. 6(1)(b)/(f); (a) only for future optional services), recipients incl. Telegram, accurate log/IP wording, retention placeholders, rights + ÚOOÚ complaint, cookie policy, non-binding-request terms, ADR pointer to Česká obchodní inspekce (`coi.gov.cz`, verified on the official site; the EU ODR platform is discontinued and deliberately not referenced). The order checkbox is an **acknowledgement that the privacy notice was read**, not a consent (`orders.consent_at` stores that time).
+**Owner/legal must decide or complete:** whether consumers are in scope · retention periods · hosting & email provider names · Telegram operator/location and any transfer safeguards · server-log retention · registered office · complaint (reklamace) procedure · withdrawal text for consumers · pricing/payment/IP terms · "last updated" date · whether language/theme persistence needs consent in your reading of ePrivacy · whether to show a register note (`COMPANY_REGISTER`).
 
 ## Localization
 URL prefix decides the language (`/en/…`, `/cs/…`), so the choice persists through every link, and hreflang/canonical/`<html lang>`/meta are per language. The header switch keeps you on the same page; clicking it also sets cookie `pixelite_lang` (only used to choose where bare `/` goes). Default = `APP_LOCALE` (`en`). Add copy to **both** `lang/en.php` and `lang/cs.php`; `php tests/run.php` fails if keys differ. Missing keys fall back to English and are logged. Telegram messages are always English.
@@ -94,7 +120,10 @@ CSRF tokens on all forms · server-side validation with whitelists and length li
 ```bash
 cp .env.example .env            # then edit (APP_URL=http://localhost:8080 locally)
 docker compose up -d --build    # http://localhost:8080  (works with OrbStack)
-docker compose exec app php tests/run.php        # 67 checks; needs no real Telegram token
+docker compose exec app php tests/run.php        # PHP suite; never touches the real Telegram chat
+node tests/browser/run.mjs [--quick] [--shots]   # real-Chrome matrix (needs Node + Chrome on the host, app running):
+                                                 #   10 devices x EN/CS x light/dark + consent, theme, menu, forms, hero, exposure
+node tests/browser/styles-dump.mjs out.json && node tests/browser/styles-diff.mjs a.json b.json   # computed-style regression diff
 docker compose logs -f app                        # apache + PHP errors + app log lines
 docker compose exec app tail -f storage/logs/app.log
 docker compose run --rm app php bin/hash-password.php   # → ADMIN_PASSWORD_HASH='…' for .env
@@ -109,8 +138,8 @@ Edits to PHP/CSS are live (bind mount). Production: build the image (code is `CO
 - [x] Order pipeline + SQLite + Telegram notifier (+ retry), admin login/list/detail
 - [x] Rate limiting, CSRF, honeypot, CSP/headers, SEO (canonical, hreflang, OG, JSON-LD, robots, sitemap)
 - [x] Docker, tests, browser/screenshot checks at 320/375/768/1024/1440
-- [ ] Fill real data: `CONTACT_*`, legal identity + retention period in `lang/*.php` privacy, real prices (optional), real portfolio
+- [ ] Fill real data: `COMPANY_*` (name, IČO, address) + `CONTACT_*` in `.env`; retention periods, providers, transfer details, complaint/withdrawal text in `lang/*.php` (search for `to be completed`); real prices (optional); real portfolio
 - [ ] Real Telegram token smoke test; set `ADMIN_*`; production deploy + HTTPS (`APP_URL`, `TRUST_PROXY` if behind a proxy)
-- [ ] Social links (footer) once accounts exist; OG image 1200×630 (currently hero.png); Czech copy review by a native speaker
+- [ ] Social links (footer) once accounts exist; a 1200×630 OG image (currently the old hero.png); Czech copy review by a native speaker
 - Post-review hardening done: atomic rate limiter, fail-closed time-trap, single-use CSRF per accepted order + 2-min duplicate suppression, notification errors can never report a saved order as unsaved, q-value aware `Accept-Language`, last-hop `X-Forwarded-*` (assumes ONE trusted proxy), 12 h absolute admin session, paged admin list.
-- Known issues: muted-text contrast inherited from design (see above) · no email auto-reply to the customer · no backup of `storage/` configured · hero mock-up image still looks like an analytics dashboard (kept: part of the approved visual).
+- Known issues: light-theme contrast of inherited design colours (muted `#8198ae` ≈3:1, white-on-`#3a9fff` buttons ≈2.8:1, band subtitle ≈2.3:1) is left as approved – dark theme meets AA · muted-text contrast inherited from design (see above) · no email auto-reply to the customer · no backup of `storage/` configured.

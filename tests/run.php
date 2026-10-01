@@ -221,6 +221,58 @@ check('sitemap excludes portfolio and admin', !str_contains($sm, 'portfolio') &&
 check('unknown route => 404', Pixelite\handle($mk('GET', '/xyz'))->status === 404);
 check('wrong method => 405', Pixelite\handle($mk('POST', '/en/contact'))->status === 405);
 
+echo "company identity / legal / consent\n";
+Env::set('APP_URL', 'https://pixelite.cz');
+$setCo = function (array $v) { foreach (['COMPANY_NAME', 'COMPANY_ICO', 'COMPANY_ADDRESS', 'COMPANY_DIC', 'COMPANY_REGISTER', 'CONTACT_EMAIL', 'CONTACT_PHONE'] as $k) { Env::set($k, $v[$k] ?? ''); } };
+$page = fn(string $path) => Pixelite\handle($mk('GET', $path))->body;
+$setCo(['COMPANY_NAME' => 'Test s.r.o. & Co', 'COMPANY_ICO' => '012 34 567', 'COMPANY_ADDRESS' => 'Ulice 1, 110 00 Praha', 'COMPANY_DIC' => 'CZ01234567', 'CONTACT_EMAIL' => 'hi@example.cz', 'CONTACT_PHONE' => '+420 111 222 333']);
+foreach (['en', 'cs'] as $l) {
+    $h = $page("/$l/");
+    check("footer ($l) shows company name escaped", str_contains($h, 'Test s.r.o. &amp; Co') && !str_contains($h, 'Test s.r.o. & Co'));
+    check("footer ($l) shows IČO exactly as configured", str_contains($h, '012 34 567'));
+    check("footer ($l) shows address, DIČ, email and phone", str_contains($h, 'Ulice 1, 110 00 Praha') && str_contains($h, 'CZ01234567') && str_contains($h, 'mailto:hi@example.cz') && str_contains($h, 'tel:+420111222333'));
+    check("footer ($l) has privacy, cookies, terms and cookie-settings entries", str_contains($h, "href=\"/$l/privacy\"") && str_contains($h, "href=\"/$l/cookies\"") && str_contains($h, "href=\"/$l/terms\"") && str_contains($h, "href=\"/$l/cookies#settings\" data-cookie-settings"));
+}
+check('footer label is localized (IČO / Company ID)', str_contains($page('/cs/'), '>IČO<') && str_contains($page('/en/'), 'Company ID (IČO)'));
+$setCo([]);
+$h = $page('/en/');
+check('missing identity shows visible placeholders, not blanks', substr_count($h, 'class="placeholder"') >= 4);
+$setCo(['COMPANY_NAME' => 'Test s.r.o.', 'COMPANY_ICO' => '012 34 567', 'COMPANY_ADDRESS' => 'Ulice 1', 'CONTACT_EMAIL' => 'hi@example.cz']);
+check('footer appears on every public page', (function () use ($page) { foreach (['/en/', '/cs/order', '/en/contact', '/cs/privacy', '/en/cookies', '/cs/terms', '/en/portfolio', '/en/nope'] as $p) { if (!str_contains($page($p), 'footer__company')) return false; } return true; })());
+$pv = $page('/en/privacy');
+check('privacy: controller identity comes from config', str_contains($pv, 'Test s.r.o.') && str_contains($pv, '012 34 567') && str_contains($pv, 'Ulice 1'));
+check('privacy: legal basis stated per activity (6(1)(b), (f), consent only for future optional)', str_contains($pv, 'Art. 6(1)(b)') && str_contains($pv, 'Art. 6(1)(f)') && str_contains($pv, 'Art. 6(1)(a)') && str_contains($pv, 'not a consent'));
+check('privacy: does not claim IPs are not collected / no cookies', !preg_match('/do(es)? not collect (your )?IP|no cookies are used/i', $pv) && str_contains($pv, 'access and error logs'));
+check('privacy: names Telegram as recipient, complaint authority and rights', str_contains($pv, 'Telegram') && str_contains($pv, 'uoou.gov.cz') && str_contains($pv, 'right of access'));
+check('privacy: unknown facts stay placeholders (retention, hosting, transfers)', substr_count($pv, 'to be completed') >= 5);
+$pvc = $page('/cs/privacy');
+check('privacy (cs): Czech legal wording incl. GDPR bases and ÚOOÚ', str_contains($pvc, 'čl. 6 odst. 1 písm. b) GDPR') && str_contains($pvc, 'Úřadu pro ochranu osobních údajů') && str_contains($pvc, 'Správcem'));
+$ck = $page('/en/cookies');
+check('cookie policy lists every storage item', str_contains($ck, 'pixelite_consent') && str_contains($ck, 'pixelite_lang') && str_contains($ck, 'pixelite_theme') && str_contains($ck, '<code>pixelite</code>'));
+check('cookie policy says no optional cookies are used (nothing invented)', str_contains($ck, 'None are used at the moment') && !preg_match('/google analytics|_ga\b|facebook|hotjar|gtag/i', $ck . $pv));
+check('cookie policy (cs) renders Czech', str_contains($page('/cs/cookies'), 'Doba platnosti'));
+$cfg = require Pixelite\Paths::root('config/consent.php');
+check('consent registry: no optional service configured', array_filter($cfg['optional']) === []);
+check('consent registry matches the cookies page items', (function () use ($cfg) { foreach ($cfg['storage'] as $it) { if (!isset(I18n::load('en')['cookies']['items'][$it['id']], I18n::load('cs')['cookies']['items'][$it['id']])) return false; } return true; })());
+$home = $page('/en/');
+check('banner markup: hidden by default, equal Accept/Reject, categories empty', preg_match('/id="cookie-banner"[^>]*\shidden[\s>]/', $home) === 1 && str_contains($home, 'data-consent-accept') && str_contains($home, 'data-consent-reject') && str_contains($home, 'data-categories=""'));
+check('no inline scripts/handlers anywhere (CSP-safe)', !preg_match('/<script(?![^>]*\bsrc=)(?![^>]*ld\+json)[^>]*>|\son[a-z]+="/', $home . $page('/cs/order') . $page('/en/cookies')));
+check('no third-party hosts loaded by public pages', !preg_match('#(src|href)="https?://(?!pixelite\.cz|coi\.gov\.cz)#', $home . $page('/en/terms')));
+$tm = $page('/en/terms');
+check('terms: request form is described as non-binding, no payment', str_contains($tm, 'non-binding') && str_contains($tm, 'no payment is taken'));
+check('terms: ADR body + current URL, consumer placeholders for owner', str_contains($tm, 'https://coi.gov.cz/en/information-about-adr/') && str_contains($page('/cs/terms'), 'https://coi.gov.cz/informace-o-adr/') && str_contains($tm, 'to be completed by the owner'));
+check('no obsolete EU ODR platform reference anywhere', (function () { foreach (['lang/en.php', 'lang/cs.php', 'templates', 'src', 'config', 'public/assets'] as $x) { $r = shell_exec('grep -rliE "ec\.europa\.eu/consumers/odr|online dispute resolution|\bODR\b" ' . escapeshellarg(Pixelite\Paths::root($x)) . ' 2>/dev/null'); if (trim((string) $r) !== '') { return false; } } return true; })());
+$sm = $page('/sitemap.xml');
+check('sitemap includes cookies and terms in both languages', str_contains($sm, '/en/cookies') && str_contains($sm, '/cs/terms') && !str_contains($sm, 'portfolio'));
+check('order form asks for acknowledgement, not consent', (function () use ($page) { $o = $page('/en/order'); return str_contains($o, 'I have read how my personal data will be used') && !preg_match('/I agree to the processing/i', $o); })());
+check('head: theme-init.js precedes the stylesheets; favicon + touch icon + color-scheme', (function () use ($home) { return strpos($home, 'theme-init.js') < strpos($home, 'style.css') && str_contains($home, 'rel="icon" href="/favicon.ico"') && str_contains($home, 'icons/favicon.svg') && str_contains($home, 'rel="apple-touch-icon"') && str_contains($home, 'name="color-scheme" content="light dark"'); })());
+check('every icon file referenced exists', is_file(Pixelite\Paths::root('public/favicon.ico')) && is_file(Pixelite\Paths::root('public/assets/icons/favicon.svg')) && is_file(Pixelite\Paths::root('public/assets/icons/apple-touch-icon.png')) && !is_file(Pixelite\Paths::root('public/assets/img/favicon.png')));
+check('old cube logo is gone everywhere; the supplied SVG logo is used', (function () use ($home) { $old = trim((string) shell_exec('grep -rl "logo\\.png" ' . escapeshellarg(Pixelite\Paths::root('templates')) . ' ' . escapeshellarg(Pixelite\Paths::root('src')) . ' ' . escapeshellarg(Pixelite\Paths::root('public/assets/style.css')) . ' 2>/dev/null')); return $old === '' && !is_file(Pixelite\Paths::root('public/assets/img/logo.png')) && substr_count($home, 'img/logo.svg') >= 3 && md5_file(Pixelite\Paths::root('public/assets/img/logo.svg')) === md5_file(Pixelite\Paths::root('public/assets/icons/favicon.svg')); })());
+check('rate limiter purges entries older than 24h on EVERY path (privacy promise)', (function () { $pdo = Database::pdo(); $pdo->prepare('INSERT INTO rate_limits (bucket, hit_at) VALUES (?, ?)')->execute(['old-test', time() - 90000]); RateLimiter::attempt('purge-probe', 5, 60); $n = (int) $pdo->query("SELECT COUNT(*) FROM rate_limits WHERE bucket = 'old-test'")->fetchColumn(); RateLimiter::clear('purge-probe'); return $n === 0; })());
+check('CSS: the explicit-dark and system-dark token blocks are identical', (function () { $css = (string) file_get_contents(Pixelite\Paths::root('public/assets/style.css')); if (!preg_match('/:root\[data-theme="dark"\]\{(.*?)\n\}/s', $css, $a) || !preg_match('/:root:not\(\[data-theme="light"\]\)\{(.*?)\n  \}/s', $css, $b)) return false; $n = fn($x) => preg_replace('/\s+/', ' ', trim($x)); return $n($a[1]) === $n($b[1]) && strlen($n($a[1])) > 800; })());
+check('CSS: every dark-only refinement exists for both dark mechanisms', (function () { $css = (string) file_get_contents(Pixelite\Paths::root('public/assets/style.css')); return substr_count($css, '[data-theme="dark"] .') === substr_count($css, ':root:not([data-theme="light"]) .'); })());
+check('legal_text fills tokens and falls back to placeholder', (function () use ($setCo) { $setCo(['COMPANY_NAME' => 'X']); I18n::set('en'); return legal_text('{company}/{ico}') === 'X/[to be completed]'; })());
+
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();
 echo "\n$pass passed, $fail failed\n";

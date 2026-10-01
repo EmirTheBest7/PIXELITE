@@ -24,7 +24,7 @@
         (location.protocol === 'https:' ? '; Secure' : '');
     });
   });
-}
+
   // Order form: focus the error summary after a failed submit; block double submits.
   var alertBox = document.querySelector('[data-form-alert]');
   if (alertBox) { alertBox.focus(); }

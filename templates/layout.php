@@ -12,7 +12,6 @@ $isHome = $meta['page'] === 'home';
   <?php if ($meta['description'] !== ''): ?><meta name="description" content="<?= e($meta['description']) ?>"><?php endif ?>
 
   <meta name="robots" content="<?= e($meta['robots']) ?>">
-  <meta name="theme-color" content="#3a9fff">
   <link rel="canonical" href="<?= e($canonical) ?>">
 <?php if (!in_array($meta['page'], ['404', '500'], true)): foreach (\Pixelite\I18n::LOCALES as $loc): ?>
   <link rel="alternate" hreflang="<?= $loc ?>" href="<?= e(absolute_url(url($meta['path'], $loc))) ?>">
@@ -27,16 +26,14 @@ $isHome = $meta['page'] === 'home';
   <meta property="og:locale" content="<?= $locale === 'cs' ? 'cs_CZ' : 'en_US' ?>">
   <meta property="og:image" content="<?= e(absolute_url('/assets/img/hero.png')) ?>">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/png" href="<?= e(asset('img/favicon.png')) ?>">
-  <link rel="stylesheet" href="<?= e(asset('vendor/bootstrap.min.css')) ?>">
-  <link rel="stylesheet" href="<?= e(asset('style.css')) ?>">
+<?php require __DIR__ . '/partials/head-assets.php' ?>
 <?php if ($isHome): $c = contact(); ?>
   <script type="application/ld+json"><?= json_encode(array_filter([
       '@context' => 'https://schema.org',
       '@type' => 'Organization',
       'name' => 'Pixelite.cz',
       'url' => absolute_url('/'),
-      'logo' => absolute_url('/assets/img/logo.png'),
+      'logo' => absolute_url('/assets/icons/apple-touch-icon.png'),
       'description' => $meta['description'],
       'email' => $c['email'] ?: null,
       'telephone' => $c['phone'] ?: null,
@@ -45,11 +42,14 @@ $isHome = $meta['page'] === 'home';
 </head>
 <body>
 <a class="skip-link" href="#main"><?= e(t('a11y.skip')) ?></a>
+<?php require __DIR__ . '/partials/consent.php' ?>
 <?php require __DIR__ . '/partials/header.php' ?>
-<main id="main">
+<main id="main" tabindex="-1">
 <?= $content ?>
 </main>
 <?php require __DIR__ . '/partials/footer.php' ?>
 <script src="<?= e(asset('script.js')) ?>" defer></script>
+<script src="<?= e(asset('theme.js')) ?>" defer></script>
+<script src="<?= e(asset('consent.js')) ?>" defer></script>
 </body>
 </html>

@@ -33,6 +33,8 @@ function buildRouter(): Router
     $router->add('GET', '/{lang}', fn() => $page->home());
     $router->add('GET', '/{lang}/contact', fn() => $page->contact());
     $router->add('GET', '/{lang}/privacy', fn() => $page->privacy());
+    $router->add('GET', '/{lang}/cookies', fn() => $page->cookies());
+    $router->add('GET', '/{lang}/terms', fn() => $page->terms());
     $router->add('GET', '/{lang}/portfolio', fn() => $page->portfolio());
     $router->add('GET', '/{lang}/order', fn(Request $r) => $order->show($r));
     $router->add('POST', '/{lang}/order', fn(Request $r) => $order->submit($r));

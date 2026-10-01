@@ -9,7 +9,27 @@
             <a class="btn btn--auto" href="<?= e(url('order')) ?>"><?= e(t('hero.cta')) ?></a>
             <a class="btn btn--revert btn--auto" href="#services"><?= e(t('hero.secondary')) ?></a>
           </div>
-          <img class="site__img" src="<?= e(asset('img/hero.png')) ?>" alt="" width="907" height="503">
+          <div class="hero-laptop" aria-hidden="true">
+            <div class="laptop">
+              <div class="lp-lid">
+                <div class="lp-front">
+                  <div class="lp-screen">
+                    <div class="lp-bar"><i></i><i></i><i></i><span class="lp-url"></span></div>
+                    <div class="lp-page">
+                      <div class="lp-nav"><b class="lp-logo"></b><span></span><span></span><span></span><em class="lp-pill"></em></div>
+                      <div class="lp-copy"><span class="lp-h1"></span><span class="lp-h2"></span><span class="lp-btns"><em class="lp-pill lp-pill--lg"></em><em class="lp-pill lp-pill--ghost"></em></span></div>
+                      <div class="lp-cards">
+                        <div class="lp-card lp-card--purple"><i></i><span></span><span></span></div>
+                        <div class="lp-card lp-card--violet"><i></i><span></span><span></span></div>
+                        <div class="lp-card lp-card--blue"><i></i><span></span><span></span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="lp-base"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

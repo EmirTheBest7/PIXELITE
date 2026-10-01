@@ -1,6 +1,6 @@
 <?php $c = contact(); ?>
 <div class="contacts">
-  <a href="<?= e(url('')) ?>" class="contacts__link"><img src="<?= e(asset('img/logo.png')) ?>" alt="" width="24" height="28"> <span class="contacts_title-ag">PIXELITE<span class="contacts--light">.cz</span></span></a>
+  <a href="<?= e(url('')) ?>" class="contacts__link"><?= logo_mark('contacts__img') ?> <span class="contacts_title-ag">PIXELITE<span class="contacts--light">.cz</span></span></a>
 <?php if (!array_filter($c)): ?>
   <p class="contacts__address"><?= e(t('contact.unset')) ?></p>
 <?php else: ?>

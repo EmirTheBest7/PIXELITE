@@ -2,7 +2,7 @@
 <div class="admin__card">
   <h1 class="row__title admin__title">Order #<?= (int) $o['id'] ?></h1>
   <dl class="admin__dl">
-<?php foreach (['name' => 'Name', 'company' => 'Company', 'email' => 'Email', 'phone' => 'Phone', 'project_type' => 'Project type', 'budget' => 'Budget', 'timeframe' => 'Timeframe', 'locale' => 'Language', 'created_at' => 'Created (UTC)', 'consent_at' => 'Consent given (UTC)'] as $k => $label): ?>
+<?php foreach (['name' => 'Name', 'company' => 'Company', 'email' => 'Email', 'phone' => 'Phone', 'project_type' => 'Project type', 'budget' => 'Budget', 'timeframe' => 'Timeframe', 'locale' => 'Language', 'created_at' => 'Created (UTC)', 'consent_at' => 'Privacy notice acknowledged (UTC)'] as $k => $label): ?>
     <dt><?= $label ?></dt><dd><?= e($o[$k]) ?: '–' ?></dd>
 <?php endforeach ?>
     <dt>Description</dt><dd class="admin__pre"><?= e($o['description']) ?></dd>

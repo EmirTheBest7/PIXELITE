@@ -9,7 +9,7 @@ use Pixelite\Response;
 final class SeoController
 {
     /** Pages that belong in the sitemap. Portfolio and order/sent are intentionally excluded. */
-    private const INDEXABLE = ['', 'order', 'contact', 'privacy'];
+    private const INDEXABLE = ['', 'order', 'contact', 'privacy', 'cookies', 'terms'];
 
     public function robots(): Response
     {
