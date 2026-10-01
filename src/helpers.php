@@ -74,6 +74,7 @@ function legal_text(string $s): string
         '{ico}' => $c['ico'] !== '' ? $c['ico'] : $ph,
         '{address}' => $c['address'] !== '' ? $c['address'] : $ph,
         '{email}' => $c['email'] !== '' ? $c['email'] : $ph,
+        '{vat}' => (string) t('vat.sentence_' . (vat_mode() ?: 'unset')),
     ]);
 }
 
@@ -81,4 +82,11 @@ function legal_text(string $s): string
 function logo_mark(string $class = ''): string
 {
     return '<img' . ($class !== '' ? ' class="' . e($class) . '"' : '') . ' src="' . e(asset('img/logo.svg')) . '" alt="" width="28" height="28">';
+}
+
+/** VAT display setting from .env PRICE_VAT_MODE: incl | excl | none. Anything else (or unset) = unknown => visible placeholder, never a guess. */
+function vat_mode(): string
+{
+    $v = strtolower(trim(\Pixelite\Env::get('PRICE_VAT_MODE')));
+    return in_array($v, ['incl', 'excl', 'none'], true) ? $v : '';
 }

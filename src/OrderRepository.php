@@ -11,10 +11,10 @@ final class OrderRepository
         $now = gmdate('c');
         $pdo = Database::pdo();
         $pdo->prepare('INSERT INTO orders
-            (created_at, locale, name, company, email, phone, project_type, budget, timeframe, description, consent_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+            (created_at, locale, name, company, email, phone, project_type, package, package_name, package_price, price_vat_mode, budget, timeframe, description, consent_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
             ->execute([$now, $locale, $o['name'], $o['company'], $o['email'], $o['phone'],
-                $o['project_type'], $o['budget'], $o['timeframe'], $o['description'], $now]);
+                $o['project_type'], $o['package'] ?? '', $o['package_name'] ?? '', $o['package_price'] ?? '', $o['price_vat_mode'] ?? '', $o['budget'], $o['timeframe'], $o['description'], $now]);
         return (int) $pdo->lastInsertId();
     }
 

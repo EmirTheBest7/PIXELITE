@@ -44,6 +44,7 @@
   --band-bg:var(--c-violet);   --band-text:var(--c-band-text);   --badge-purple:var(--c-purple);
   --btn-strong:#1f72c4;      --btn-strong-hover:#1a63ad;   /* consent controls: white text >= 5:1 */
   --logo-ring:none;          /* dark theme draws a hairline around the (near-black) logo tile so it reads as a tile */
+  --violet-text:#4f58d9;     /* violet as TEXT: AA on light surfaces */
   --text-soft:#4d647c;       /* secondary text for NEW components: AA (>=5:1) on every light surface */
   /* hero laptop */
   --lp-shell:#f1f4f9;   --lp-border:#9fb0c4;   --lp-base:#e6ebf2;   --lp-screen:#fff;   --lp-screen-off:#cfd8e3;
@@ -1041,6 +1042,7 @@ dialog.consent-dialog:not([open]){display:none}   /* browsers without <dialog> s
   --code-fg:#ff9bb4;         --code-bg:#1c2740;
   --band-bg:#4f58d9;         --band-text:#e3e5ff;       --badge-purple:#c4a0ff;
        --text-soft:#9bb0c8;
+       --violet-text:#aeb4ff;
        --logo-ring:0 0 0 1px rgba(155,176,200,0.45);
        --btn-strong:#2068c0;      --btn-strong-hover:#2a77d0;
        --lp-shell:#1b2538;   --lp-border:#41536f;   --lp-base:#141d2e;   --lp-screen:#0c1424;   --lp-screen-off:#1f2b44;
@@ -1076,6 +1078,7 @@ dialog.consent-dialog:not([open]){display:none}   /* browsers without <dialog> s
     --code-fg:#ff9bb4;         --code-bg:#1c2740;
   --band-bg:#4f58d9;         --band-text:#e3e5ff;       --badge-purple:#c4a0ff;
        --text-soft:#9bb0c8;
+       --violet-text:#aeb4ff;
        --logo-ring:0 0 0 1px rgba(155,176,200,0.45);
        --btn-strong:#2068c0;      --btn-strong-hover:#2a77d0;
        --lp-shell:#1b2538;   --lp-border:#41536f;   --lp-base:#141d2e;   --lp-screen:#0c1424;   --lp-screen-off:#1f2b44;
@@ -1191,3 +1194,58 @@ dialog.consent-dialog:not([open]){display:none}   /* browsers without <dialog> s
 .btn--strong{background-color:var(--btn-strong)}
 .btn--strong:hover{background-color:var(--btn-strong-hover)}
 .consent-banner .btn--revert, .consent-dialog .btn--revert{color:var(--text)}
+
+
+/* =====================================================================
+   Pricing packages (reuse .price-box; only the price line, equal heights, credits strip, consultation)
+   ===================================================================== */
+.pricing-row{display:flex;flex-wrap:wrap}
+.pricing-row:before, .pricing-row:after{display:none}                      /* Bootstrap clearfix pseudo-elements would become flex items */
+.pricing-row > .price-box{display:flex;float:none;flex:0 0 100%;max-width:100%}
+.pricing-row .price-box__wrap{flex:1 1 auto;min-width:0}                    /* equal card heights; the CTA stays anchored to the card bottom */
+@media (min-width:768px){ .pricing-row > .price-box{flex-basis:33.3333%;max-width:33.3333%} }
+/* Where CSS subgrid exists, line the card rows up across all three cards (image, title, tagline, text, price, VAT, note, heading, list).
+   Browsers without it keep the flex layout above (equal heights, slightly uneven price rows). */
+@supports (grid-template-rows: subgrid){
+  @media (min-width:768px){
+    .pricing-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(9,auto)}
+    .pricing-row > .price-box{display:grid;grid-row:1 / span 9;grid-template-columns:minmax(0,1fr);grid-template-rows:subgrid;flex:none;width:auto;max-width:none}   /* width:auto - Bootstrap's 33% would apply inside the grid cell */
+    .pricing-row .price-box__wrap{display:grid;grid-row:1 / -1;grid-template-columns:minmax(0,1fr);grid-template-rows:subgrid;align-content:start}
+    .pricing-row .price-box__img{justify-self:center}      /* as a grid item the 130px circle no longer inherits text-align:center */
+  }
+}
+
+.price-box__desc, .price-box__note, .price-box__list-el, .price-box__title{overflow-wrap:break-word}
+.price-box__desc{margin:14px 0 0;font-size:14px;line-height:21px;font-weight:300;color:var(--text)}
+.price-box__from{font-size:18px;font-weight:400;margin-right:2px}
+.price-box--purple .price-box__from{color:var(--badge-purple)}
+.price-box--violet .price-box__from{color:var(--violet-text)}
+.price-box--blue .price-box__from{color:var(--link)}
+.price-box__amount{white-space:nowrap}
+.price-box__discount--light{white-space:nowrap}
+.price-box__vat{margin:4px 0 0;font-size:13px;line-height:18px;font-weight:700;color:var(--text)}
+.price-box__note{margin:6px 0 0;font-size:12px;line-height:17px;color:var(--text-soft)}
+
+.credits{display:flex;align-items:center;gap:16px;max-width:760px;margin:64px auto 0;padding:16px 20px;text-align:left;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);border-left:4px solid var(--c-violet)}
+.credits__icon{flex:none;width:34px;height:34px;color:var(--c-violet)}
+.credits__body p{margin:0}
+.credits__body .credits__badge{margin-bottom:2px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--violet-text)}
+.credits__text{font-size:16px;line-height:22px;color:var(--text)}
+.credits__body .credits__note{margin-top:6px;font-size:13px;line-height:19px;color:var(--text-soft)}
+
+.consult{text-align:center}
+.consult__text{max-width:640px;margin:0 auto 26px;font-size:16px;line-height:24px;color:var(--text)}
+.consult__cta{margin:0}
+
+@media screen and (max-width:480px){
+  .credits{gap:12px;padding:14px 14px;margin-top:52px}
+  .credits__icon{width:26px;height:26px}
+  .credits__text{font-size:15px;line-height:21px}
+}
+
+@media (min-width:768px) and (max-width:991px){      /* three narrow columns: keep "<from> <amount> <currency>" on one line */
+  .pricing-row .price-box__wrap{padding-left:16px;padding-right:16px}
+  .pricing-row .price-box__discount{font-size:23px}
+  .pricing-row .price-box__from{font-size:15px}
+  .pricing-row .price-box__discount--light{font-size:16px}
+}

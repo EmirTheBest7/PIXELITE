@@ -20,6 +20,7 @@ final class OrderValidator
             'email' => $single('email'),
             'phone' => $single('phone'),
             'project_type' => $single('project_type'),
+            'package' => $single('package'),
             'budget' => $single('budget'),
             'timeframe' => $single('timeframe'),
             // multi-line: normalise newlines, strip other control chars
@@ -43,6 +44,9 @@ final class OrderValidator
         }
         if ($clean['phone'] !== '' && (!preg_match('/^\+?[0-9 ()\-\/.]{6,30}$/', $clean['phone']))) {
             $e['phone'] = 'phone_invalid';
+        }
+        if ($clean['package'] !== '' && !in_array($clean['package'], OrderOptions::PACKAGES, true)) {   // optional, but never an arbitrary value
+            $e['package'] = 'choose';
         }
         if (!in_array($clean['project_type'], OrderOptions::PROJECT_TYPES, true)) {
             $e['project_type'] = 'choose';

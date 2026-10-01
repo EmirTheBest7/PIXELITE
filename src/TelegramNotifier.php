@@ -61,6 +61,7 @@ final class TelegramNotifier
             'Phone: ' . (($o['phone'] ?? '') ?: '-'),
             '',
             'Project: ' . I18n::get("order.options.project_type.$type", [], 'en'),
+            ...self::packageLines($o),
             'Budget: ' . I18n::get('order.options.budget.' . ($o['budget'] ?? ''), [], 'en'),
             'Timeline: ' . I18n::get('order.options.timeframe.' . ($o['timeframe'] ?? ''), [], 'en'),
             '',
@@ -75,6 +76,19 @@ final class TelegramNotifier
         $text = implode("\n", $lines);
         // Telegram's hard limit is 4096 chars.
         return mb_strlen($text) > 4000 ? mb_substr($text, 0, 3990) . "\n[truncated]" : $text;
+    }
+
+    /** @return list<string> "Package: …" (+ the price context the customer saw, if recorded) */
+    private static function packageLines(array $o): array
+    {
+        $p = PricingSnapshot::describe($o);
+        if ($p === null) {
+            return ['Package: -'];
+        }
+        if (!$p['recorded']) {
+            return ["Package: {$p['id']} (price context not recorded)"];
+        }
+        return ["Package: {$p['id']} ({$p['name']})", "Price shown: {$p['price']} · {$p['vat']} (starting price, not the agreed price)"];
     }
 
     private function redact(string $s): string

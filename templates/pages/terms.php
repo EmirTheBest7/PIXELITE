@@ -8,7 +8,7 @@
       <div class="col-md-8 col-md-offset-2">
         <div class="prose">
 <?php foreach (t('terms.sections') as $s): ?>
-          <h3><?= e($s['h']) ?></h3>
+          <h3<?= isset($s['id']) ? ' id="' . e($s['id']) . '"' : '' ?>><?= e($s['h']) ?></h3>
 <?php foreach ($s['p'] as $p): ?>
           <p><?= e(legal_text($p)) ?></p>
 <?php endforeach ?>

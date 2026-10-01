@@ -48,6 +48,10 @@ final class Database
             email TEXT NOT NULL,
             phone TEXT NOT NULL DEFAULT "",
             project_type TEXT NOT NULL,
+            package TEXT NOT NULL DEFAULT "",
+            package_name TEXT NOT NULL DEFAULT "",
+            package_price TEXT NOT NULL DEFAULT "",
+            price_vat_mode TEXT NOT NULL DEFAULT "",
             budget TEXT NOT NULL,
             timeframe TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -56,6 +60,13 @@ final class Database
             notification_error TEXT NOT NULL DEFAULT "",
             notified_at TEXT
         )');
+        // Databases created before the package field existed: add the column in place (existing rows get "").
+        $cols = array_column($pdo->query('PRAGMA table_info(orders)')->fetchAll(), 'name');
+        foreach (['package', 'package_name', 'package_price', 'price_vat_mode'] as $col) {   // package = canonical id; the rest = pricing snapshot
+            if (!in_array($col, $cols, true)) {
+                $pdo->exec('ALTER TABLE orders ADD COLUMN ' . $col . ' TEXT NOT NULL DEFAULT ""');
+            }
+        }
         $pdo->exec('CREATE TABLE IF NOT EXISTS rate_limits (
             bucket TEXT NOT NULL,
             hit_at INTEGER NOT NULL

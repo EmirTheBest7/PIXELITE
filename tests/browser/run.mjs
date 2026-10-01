@@ -108,7 +108,7 @@ const CONTRAST = `(() => {
     const L1 = lum(fg), L2 = lum(bg), ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const size = parseFloat(cs.fontSize), bold = parseInt(cs.fontWeight) >= 700, large = size >= 24 || (size >= 18.66 && bold);
     const need = large ? 3 : 4.5;
-    if (ratio < need) { const isNew = !!e.closest('.consent-banner, .consent-dialog, .cookie-table, .prose, .theme, .theme-cycle, .footer, .lang, .form__alert, .form__error, .form__consent, .form__note') && !e.closest('.footer__title'); const k = (isNew ? '[new] ' : '') + e.tagName.toLowerCase() + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\\s+/)[0] : '') + ' ' + ratio.toFixed(2) + ':1 (need ' + need + ')'; res.set(k, (res.get(k) || 0) + 1); }
+    if (ratio < need) { const isNew = !!e.closest('.consent-banner, .consent-dialog, .cookie-table, .prose, .theme, .theme-cycle, .footer, .lang, .form__alert, .form__error, .form__consent, .form__note, .price-box__desc, .price-box__note, .price-box__from, .credits, .consult') && !e.closest('.footer__title'); const k = (isNew ? '[new] ' : '') + e.tagName.toLowerCase() + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\\s+/)[0] : '') + ' ' + ratio.toFixed(2) + ':1 (need ' + need + ')'; res.set(k, (res.get(k) || 0) + 1); }
   }
   return [...res.keys()];
 })()`;
@@ -451,6 +451,78 @@ async function heroScenarios(browser) {
   }
 }
 
+// ================= B2b) PRICING =================
+const NB = '\u00a0';
+const PRICING = {
+  en: { names: ['Template website', 'Basic website', 'Custom website'], from: 'From', amounts: ['2,999', '32,900', '64,900'], cur: 'CZK', ids: ['template', 'basic', 'custom'],
+        credits: ['Orders from 30,000 CZK qualify for up to $100 in Dreamers Ad Credits for advertising.', 'not a cash discount'], consult: 'Non-binding consultation',
+        budgets: ['Up to 10,000 CZK', '10,000–30,000 CZK', '30,000–65,000 CZK', '65,000–100,000 CZK', '100,000+ CZK', 'Not sure yet'] },
+  cs: { names: ['Web ze šablony', 'Základní web', 'Individuální web'], from: 'Od', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'Kč', ids: ['template', 'basic', 'custom'],
+        credits: [`od 30${NB}000${NB}Kč`, `až 100${NB}USD`, 'nikoli o slevu v hotovosti'], consult: 'Nezávazná konzultace',
+        budgets: [`Do 10${NB}000${NB}Kč`, `10${NB}000–30${NB}000${NB}Kč`, `30${NB}000–65${NB}000${NB}Kč`, `65${NB}000–100${NB}000${NB}Kč`, `100${NB}000${NB}Kč a více`, 'Zatím nevím'] },
+};
+async function pricingScenarios(browser) {
+  for (const d of DEVICES) for (const lang of LANGS) for (const theme of THEMES) {
+    const T = (s) => `[pricing/${d.id}/${lang}/${theme}] ${s}`;
+    const W = PRICING[lang];
+    const page = await freshPage(browser, d, theme);
+    await page.goto(url(lang, ''));
+    const r = await page.eval(`(() => {
+      const cards = [...document.querySelectorAll('.pricing-row .price-box')];
+      const info = cards.map((c) => { const w = c.querySelector('.price-box__wrap').getBoundingClientRect(), p = c.querySelector('.price-box__discount'), b = c.querySelector('.price-box__btn a').getBoundingClientRect(); return {
+        id: c.dataset.package, name: c.querySelector('.price-box__title').textContent.trim(), from: c.querySelector('.price-box__from').textContent.trim(), amount: c.querySelector('.price-box__amount').textContent.trim(), cur: c.querySelector('.price-box__discount--light').textContent.trim(),
+        href: new URL(c.querySelector('.price-box__btn a').href).search, features: c.querySelectorAll('.price-box__list-el').length, note: c.querySelector('.price-box__note').textContent.trim().length > 20, vat: c.querySelector('.price-box__vat').textContent.trim(), vatClipped: c.querySelector('.price-box__vat').scrollWidth > c.querySelector('.price-box__vat').clientWidth + 1,
+        left: w.left, right: w.right, h: w.height, priceClipped: p.scrollWidth > p.clientWidth + 1, priceLines: Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight || 30)), btnIn: b.left >= 0 && b.right <= innerWidth, btnH: b.height }; });
+      const cr = document.querySelector('.credits'), cons = document.getElementById('consultation'), last = cards[cards.length - 1].getBoundingClientRect();
+      return { info, sw: document.documentElement.scrollWidth, iw: innerWidth,
+        credits: cr ? cr.textContent.replace(/\\s+/g, ' ') : '', creditsRect: cr ? cr.getBoundingClientRect().toJSON() : null, consultTitle: cons ? cons.querySelector('h2').textContent.trim() : '', consultTop: cons ? cons.getBoundingClientRect().top + scrollY : 0,
+        creditsTop: cr ? cr.getBoundingClientRect().top + scrollY : 0, cardsBottom: last.bottom + scrollY, ctaHref: cons ? new URL(cons.querySelector('a.btn').href).pathname : '',
+        consultText: cons ? cons.querySelector('.consult__text').textContent.trim() : '' };
+    })()`);
+    ok(T('three packages'), r.info.length === 3 && r.info.map((x) => x.id).join() === 'template,basic,custom', JSON.stringify(r.info.map((x) => x.id)));
+    r.info.forEach((c, i) => {
+      ok(T(`${W.names[i]}: "${W.from} ${W.amounts[i]} ${W.cur}"`), c.name === W.names[i] && c.from === W.from && c.amount === W.amounts[i] && c.cur === W.cur, JSON.stringify(c));
+      ok(T(`${c.id}: order link carries package=${W.ids[i]}`), c.href === `?package=${W.ids[i]}`, c.href);
+      ok(T(`${c.id}: VAT line present (configured text or the visible placeholder), never empty or clipped`), c.vat.length > 5 && !c.vatClipped, JSON.stringify(c.vat));
+      ok(T(`${c.id}: six features + conditional-price note`), c.features === 6 && c.note);
+      ok(T(`${c.id}: card inside viewport`), c.left >= -0.5 && c.right <= r.iw + 0.5, `${c.left}..${c.right}/${r.iw}`);
+      ok(T(`${c.id}: price not clipped and on at most 2 lines`), !c.priceClipped && c.priceLines <= 2, `lines=${c.priceLines}`);
+      ok(T(`${c.id}: CTA inside viewport${d.mobile ? ' and >=44px tall' : ''}`), c.btnIn && (!d.mobile || c.btnH >= 44), `h=${c.btnH}`);
+    });
+    if (d.w >= 768) ok(T('cards are equal height (desktop/tablet)'), Math.max(...r.info.map((c) => c.h)) - Math.min(...r.info.map((c) => c.h)) < 1.5, JSON.stringify(r.info.map((c) => Math.round(c.h))));
+    const ctr = await page.eval(`[...document.querySelectorAll('.pricing-row .price-box')].map((c) => { const w = c.querySelector('.price-box__wrap').getBoundingClientRect(), i = c.querySelector('.price-box__img').getBoundingClientRect(); return Math.abs((i.left + i.width / 2) - (w.left + w.width / 2)); })`);
+    ok(T('card illustration (.price-box__img) is horizontally centred in every card'), ctr.length === 3 && ctr.every((x) => x < 1), JSON.stringify(ctr.map((x) => Math.round(x * 10) / 10)));
+    ok(T('exactly one VAT line and one price per card; no customer-facing VAT control'), await page.eval(`(() => { const row = document.querySelector('.pricing-row'); return [...row.querySelectorAll('.price-box')].every((c) => c.querySelectorAll('.price-box__vat').length === 1 && c.querySelectorAll('.price-box__amount').length === 1) && row.querySelectorAll('input, select, textarea, button, [role=switch]').length === 0; })()`));
+    if (d.w >= 768) {
+      const al = await page.eval(`(() => { const top = (sel) => [...document.querySelectorAll('.pricing-row .price-box ' + sel)].map((e) => Math.round(e.getBoundingClientRect().top)); return ['.price-box__title', '.price-box__desc', '.price-box__discount', '.price-box__vat', '.price-box__feat', '.price-box__list'].map((k) => [k, new Set(top(k)).size === 1]); })()`);
+      ok(T('card rows (title, text, price, VAT, heading, list) line up across the three cards'), al.every(([, same]) => same), JSON.stringify(al.filter(([, same]) => !same)));
+    }
+    ok(T('no horizontal overflow'), r.sw <= r.iw, `${r.sw}/${r.iw}`);
+    ok(T('Dreamers Ad Credits strip: threshold, "up to", advertising credit not cash'), W.credits.every((x) => r.credits.includes(x.replaceAll(NB, ' '))) && r.credits.includes('Dreamers Ad Credits'), r.credits.slice(0, 160));
+    ok(T('credits strip fits the viewport'), r.creditsRect.left >= 0 && r.creditsRect.right <= r.iw, JSON.stringify(r.creditsRect));
+    ok(T('credits strip sits below the cards; consultation is a separate section below that'), r.creditsTop > r.cardsBottom - 1 && r.consultTop > r.creditsTop, `${r.cardsBottom}/${r.creditsTop}/${r.consultTop}`);
+    ok(T(`consultation heading "${W.consult}" and text`), r.consultTitle === W.consult && r.consultText.length > 60, r.consultTitle);
+    ok(T('consultation CTA leads to the order page'), r.ctaHref === `/${lang}/order`, r.ctaHref);
+    // contrast of the pricing area (dark: everything; light: new components)
+    const c = await page.eval(CONTRAST);
+    ok(T('pricing area text contrast AA'), c.filter((x) => (theme === 'dark' || x.startsWith('[new]')) && /price-box|credits|consult/.test(x)).length === 0, c.filter((x) => /price-box|credits|consult/.test(x)).slice(0, 3).join('; '));
+    if (SHOTS && ['375', '768', '1440'].some((k) => d.id.includes(k))) { await page.eval('document.getElementById("services").scrollIntoView(); 1'); await page.screenshot(path.join(OUT, `pricing_${d.id}_${lang}_${theme}.png`), { full: false }); }
+    // order flow: CTA -> form preselects the type; budget options are CZK
+    for (const [idx, id] of [[0, 'template'], [1, 'basic'], [2, 'custom']]) {
+      if (theme !== 'light' || (d.id !== 'iphone-se-375' && d.id !== 'desktop-1440')) break;
+      await page.goto(url(lang, ''));
+      await page.tap(`.pricing-row .price-box:nth-child(${idx + 1}) .price-box__btn a`); await sleep(900);
+      const f = await page.eval(`(() => ({ path: location.pathname + location.search, pkg: document.getElementById('f-package').value, pkgText: document.getElementById('f-package').selectedOptions[0].textContent, type: document.getElementById('f-project_type').value, pkgOpts: document.getElementById('f-package').options.length, pkgRequired: document.getElementById('f-package').required, opts: [...document.querySelectorAll('#f-budget option')].slice(1).map((o) => o.textContent), eur: document.body.textContent.includes('€'), fits: [...document.querySelectorAll('#f-package, #f-project_type')].every((e) => { const r = e.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }), sw: document.documentElement.scrollWidth <= innerWidth }))()`);
+      ok(T(`CTA ${idx + 1} opens /order?package=${id} with that package preselected`), f.path === `/${lang}/order?package=${id}` && f.pkg === id, JSON.stringify(f));
+      ok(T('package label shows the name and the starting price'), f.pkgText.includes(W.names[idx]) && f.pkgText.includes(W.amounts[idx]) && f.pkgText.includes(W.cur), f.pkgText);
+      ok(T('project type is a separate field (Website), package select is optional with 4 options'), f.type === 'website' && f.pkgOpts === 4 && f.pkgRequired === false, JSON.stringify([f.type, f.pkgOpts, f.pkgRequired]));
+      ok(T('package + project type controls fit the viewport, no overflow'), f.fits && f.sw);
+      ok(T('budget options are the six CZK ranges, no euros'), JSON.stringify(f.opts) === JSON.stringify(W.budgets) && !f.eur, JSON.stringify(f.opts));
+    }
+    await page.close();
+  }
+}
+
 // ================= B3) STORAGE AUDIT =================
 // What the browser really ends up holding vs. what the cookie policy documents.
 async function storageAudit(browser) {
@@ -549,6 +621,7 @@ try {
   await themeAndNavScenarios(browser);
   await formScenarios(browser);
   await heroScenarios(browser);
+  await pricingScenarios(browser);
   await storageAudit(browser);
 } finally { await browser.close(); }
 

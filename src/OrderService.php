@@ -21,6 +21,7 @@ final class OrderService
             Logger::info('duplicate submit ignored');
             return 0;
         }
+        $clean = PricingSnapshot::capture($clean['package'] ?? '', $locale) + $clean;   // server-side; any client-sent snapshot fields are never read
         $id = $this->repo->create($clean, $locale); // throws => caller shows "not saved" (true: nothing was stored)
         try {
             $this->notify($id);

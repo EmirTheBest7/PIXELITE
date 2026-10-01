@@ -25,7 +25,7 @@ Database::reset();
 
 $valid = [
     'name' => 'Jana Nováková', 'company' => 'Kavárna s.r.o.', 'email' => 'jana@example.cz', 'phone' => '+420 123 456 789',
-    'project_type' => 'website', 'budget' => '1k-3k', 'timeframe' => '1-3m',
+    'project_type' => 'website', 'budget' => '30k-65k', 'timeframe' => '1-3m',
     'description' => "Potřebujeme nový web.\nDěkujeme!",
 ];
 
@@ -63,7 +63,7 @@ echo "telegram\n";
 $n = new TelegramNotifier();
 check('skipped when unconfigured', $n->send($clean + ['id' => 1, 'locale' => 'cs', 'created_at' => 'x'])[0] === 'skipped');
 $msg = $n->format($clean + ['id' => 7, 'locale' => 'cs', 'created_at' => '2026-01-01T00:00:00+00:00']);
-check('message has header, fields and labels in English', str_contains($msg, 'NEW PIXELITE ORDER') && str_contains($msg, 'Budget: €1,000–€3,000') && str_contains($msg, 'Project: Website'));
+check('message has header, fields and labels in English', str_contains($msg, 'NEW PIXELITE ORDER') && str_contains($msg, 'Budget: 30,000–65,000 CZK') && str_contains($msg, 'Project: Website'));
 check('message under 4096 chars even for huge input', mb_strlen($n->format(['description' => str_repeat('ž', 9000)] + $clean + ['id' => 1, 'locale' => 'en', 'created_at' => 'x'])) <= 4096);
 
 // Real HTTP path against a local fake Bot API (proves curl transport, URL shape, JSON body, error handling).
@@ -271,6 +271,182 @@ check('old cube logo is gone everywhere; the supplied SVG logo is used', (functi
 check('rate limiter purges entries older than 24h on EVERY path (privacy promise)', (function () { $pdo = Database::pdo(); $pdo->prepare('INSERT INTO rate_limits (bucket, hit_at) VALUES (?, ?)')->execute(['old-test', time() - 90000]); RateLimiter::attempt('purge-probe', 5, 60); $n = (int) $pdo->query("SELECT COUNT(*) FROM rate_limits WHERE bucket = 'old-test'")->fetchColumn(); RateLimiter::clear('purge-probe'); return $n === 0; })());
 check('CSS: the explicit-dark and system-dark token blocks are identical', (function () { $css = (string) file_get_contents(Pixelite\Paths::root('public/assets/style.css')); if (!preg_match('/:root\[data-theme="dark"\]\{(.*?)\n\}/s', $css, $a) || !preg_match('/:root:not\(\[data-theme="light"\]\)\{(.*?)\n  \}/s', $css, $b)) return false; $n = fn($x) => preg_replace('/\s+/', ' ', trim($x)); return $n($a[1]) === $n($b[1]) && strlen($n($a[1])) > 800; })());
 check('CSS: every dark-only refinement exists for both dark mechanisms', (function () { $css = (string) file_get_contents(Pixelite\Paths::root('public/assets/style.css')); return substr_count($css, '[data-theme="dark"] .') === substr_count($css, ':root:not([data-theme="light"]) .'); })());
+echo "pricing packages / credits / order options\n";
+Env::set('PRICE_VAT_MODE', '');
+$NB = "\u{00A0}";
+$cards = function (string $lang) use ($page) { $h = $page("/$lang/"); preg_match_all('#<div class="col-md-4 col-sm-4 price-box price-box--(\w+)" data-package="(\w+)">(.*?)<div class="price-box__btn">\s*<a class="btn[^"]*" href="([^"]+)"#s', $h, $m, PREG_SET_ORDER); return [$h, $m]; };
+foreach ([
+    'en' => [['template', 'Template website', 'From', '2,999', 'CZK', '/en/order?package=template'], ['basic', 'Basic website', 'From', '32,900', 'CZK', '/en/order?package=basic'], ['custom', 'Custom website', 'From', '64,900', 'CZK', '/en/order?package=custom']],
+    'cs' => [['template', 'Web ze šablony', 'Od', "2{$NB}999", 'Kč', '/cs/order?package=template'], ['basic', 'Základní web', 'Od', "32{$NB}900", 'Kč', '/cs/order?package=basic'], ['custom', 'Individuální web', 'Od', "64{$NB}900", 'Kč', '/cs/order?package=custom']],
+] as $lang => $want) {
+    [$h, $m] = $cards($lang);
+    check("pricing ($lang): exactly three packages in order template/basic/custom", count($m) === 3 && array_column($m, 2) === ['template', 'basic', 'custom'], json_encode(array_column($m, 2)));
+    foreach ($want as $i => [$id, $name, $from, $amount, $cur, $href]) {
+        $c = $m[$i][3] ?? '';
+        check("pricing ($lang/$id): name, \"$from $amount $cur\" and order link", str_contains($c, '>' . $name . '<') && str_contains($c, '<span class="price-box__from">' . $from . '</span>') && str_contains($c, '<span class="price-box__amount">' . $amount . '</span>') && str_contains($c, '<span class="price-box__discount--light">' . $cur . '</span>') && ($m[$i][4] ?? '') === $href, ($m[$i][4] ?? '') . ' | ' . substr(strip_tags($c), 0, 80));
+        check("pricing ($lang/$id): six features and a conditional-price note", substr_count($c, 'price-box__list-el') === 6 && str_contains($c, 'class="price-box__note"'));
+    }
+    check("pricing ($lang): no EUR/USD price in the cards, only the local currency", !preg_match('/€|EUR|\$\s?\d/', implode(' ', array_column($m, 3))));
+}
+check('template package is described as a template implementation, not custom design (en+cs)', str_contains($page('/en/'), 'a template implementation, not a custom design') && str_contains($page('/cs/'), 'nikoli o návrh na míru') && str_contains($page('/cs/'), 'Další práce mohou konečnou cenu zvýšit') && str_contains($page('/en/'), 'Additional work can increase the final price'));
+check('heading says prices are starting prices that depend on scope (en+cs)', str_contains($page('/en/'), 'Starting prices. The final price depends on the scope of your project.') && str_contains($page('/cs/'), 'Konečná cena závisí na rozsahu projektu'));
+$en = $page('/en/'); $cs = $page('/cs/');
+check('Dreamers Ad Credits (en): threshold, "up to $100", advertising credit, not a cash discount', str_contains($en, 'Orders from 30,000 CZK qualify for up to $100 in Dreamers Ad Credits for advertising.') && str_contains($en, 'not a cash discount'));
+check("Dreamers Ad Credits (cs): threshold, \"až 100{$NB}USD\", reklamní kredit, ne sleva", str_contains($cs, "od 30{$NB}000{$NB}Kč") && str_contains($cs, "až 100{$NB}USD") && str_contains($cs, 'Dreamers Ad Credits') && str_contains($cs, 'nikoli o slevu v hotovosti'));
+check('Dreamers: no invented conditions on the landing page (expiry, cash value, refund, automatic)', !preg_match('/expir|valid until|refund|cash value|automatic|vyprš|platnost do|vrácen|automatick/i', preg_replace('#<a [^>]*>.*?</a>#s', '', strip_tags($en . $cs))));
+check('Dreamers conditions live in /terms as an owner placeholder with its own anchor (en+cs)', str_contains($page('/en/terms'), 'id="dreamers"') && substr_count($page('/en/terms'), '[Who provides and issues') === 1 && str_contains($page('/en/terms'), '[Eligibility: which orders') && str_contains($page('/en/terms'), '[Validity or expiry') && str_contains($page('/cs/terms'), 'id="dreamers"') && str_contains($page('/cs/terms'), '[Kdo Dreamers Ad Credits poskytuje') && str_contains($page('/cs/terms'), '[Způsobilost:') && str_contains($en, '/en/terms#dreamers') && str_contains($cs, '/cs/terms#dreamers'));
+check('"Nezávazná konzultace" is spelled correctly, in its own section below the cards (cs) / Non-binding consultation (en)', str_contains($cs, 'Nezávazná konzultace') && !str_contains($cs, 'Nezávazný konzultace') && str_contains($cs, 'Krátce nám popište, co potřebujete. Společně vybereme vhodné řešení a projdeme možnosti před zahájením projektu.') && str_contains($en, 'Non-binding consultation') && strpos($cs, 'id="consultation"') > strrpos($cs, 'price-box__wrap') && strpos($cs, 'id="consultation"') > strpos($cs, 'class="credits"'));
+check('consultation claims no price/free service (non-binding only)', !preg_match('/zdarma|free of charge|for free|free consultation/i', $en . $cs));
+check('no price or credit-threshold number is hard-coded anywhere outside lang/ (templates, src, config, bin, css, js)', (function () { $hits = []; foreach (['templates', 'src', 'config', 'bin', 'public/assets'] as $dir) { $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(Pixelite\Paths::root($dir), FilesystemIterator::SKIP_DOTS)); foreach ($it as $f) { $path = $f->getPathname(); if (!preg_match('/\.(php|css|js)$/', $path) || str_contains($path, '/vendor/')) continue; if (preg_match('/(?<![\d#.\-])(?:2[ ,.\x{00A0}]?999|32[ ,.\x{00A0}]?900|64[ ,.\x{00A0}]?900|30[ ,.\x{00A0}]?000)(?![\d])/u', (string) file_get_contents($path), $m)) $hits[] = basename($path) . ':' . $m[0]; } } return $hits === [] || (fwrite(STDERR, implode(',', $hits) . "\n") && false); })());
+check('no price text is hard-coded in templates (all pricing comes from lang files)', trim((string) shell_exec('grep -rnE "Kč|CZK|[0-9]{1,3}[ ,\x{00A0}][0-9]{3}" ' . escapeshellarg(Pixelite\Paths::root('templates')) . ' 2>/dev/null')) === '');
+check('package ids are stable and identical in both languages', array_column(I18n::load('en')['services']['items'], 'id') === ['template', 'basic', 'custom'] && array_column(I18n::load('cs')['services']['items'], 'id') === ['template', 'basic', 'custom']);
+check('budget whitelist is the six CZK ranges; packages are a separate whitelist, not project types', OrderOptions::BUDGETS === ['under10k', '10k-30k', '30k-65k', '65k-100k', '100k-plus', 'unsure'] && OrderOptions::PACKAGES === ['template', 'basic', 'custom'] && !array_intersect(OrderOptions::PACKAGES, OrderOptions::PROJECT_TYPES));
+check('budget labels are CZK/Kč in both languages, never euros', (function () { foreach (['en' => 'CZK', 'cs' => 'Kč'] as $l => $cur) { foreach (OrderOptions::BUDGETS as $b) { $t = I18n::load($l)['order']['options']['budget'][$b]; if ($b !== 'unsure' && !str_contains($t, $cur)) return false; if (str_contains($t, '€')) return false; } } return true; })());
+check('budget labels line up with the packages and the 30,000 threshold', str_contains(I18n::load('en')['order']['options']['budget']['30k-65k'], '30,000–65,000') && str_contains(I18n::load('cs')['order']['options']['budget']['10k-30k'], "10{$NB}000–30{$NB}000"));
+foreach (['under1k', '1k-3k', '3k-5k', '5k-plus', '999', '', 'under10k; DROP TABLE', '30000'] as $bad) {
+    [, $er] = OrderValidator::validate(['budget' => $bad] + $valid, true);
+    check("validator rejects arbitrary/legacy budget value \"$bad\"", ($er['budget'] ?? '') === 'choose');
+}
+foreach (OrderOptions::BUDGETS as $b) { [, $er] = OrderValidator::validate(['budget' => $b] + $valid, true); check("validator accepts budget $b", !isset($er['budget'])); }
+foreach (['template', 'website'] as $ty) { $o = $page("/en/order?type=$ty"); }
+$mkq = fn(string $p, array $q) => new Request('GET', $p, [], $q, ['REMOTE_ADDR' => '203.0.113.7']);
+$sel = fn(string $body, string $field) => preg_match('#<select[^>]*id="f-' . $field . '"[^>]*>.*?</select>#s', $body, $mm) && preg_match('#<option value="([^"]*)" selected#', $mm[0], $v) ? $v[1] : null;
+foreach (['template' => 'Template website', 'basic' => 'Basic website', 'custom' => 'Custom website'] as $pk => $label) {
+    $b = Pixelite\handle($mkq('/en/order', ['package' => $pk]))->body;
+    check("order ?package=$pk preselects the package \"$label\" and (separately) project type Website", $sel($b, 'package') === $pk && $sel($b, 'project_type') === 'website' && str_contains($b, '>' . $label . ' – From'));
+}
+check('order ?package=<id> works in Czech too', $sel(Pixelite\handle($mkq('/cs/order', ['package' => 'template']))->body, 'package') === 'template');
+check('?package does not override an explicit ?type (they are independent)', (function () use ($mkq, $sel) { $b = Pixelite\handle($mkq('/en/order', ['package' => 'basic', 'type' => 'redesign']))->body; return $sel($b, 'package') === 'basic' && $sel($b, 'project_type') === 'redesign'; })());
+check('?type=template is no longer a project type (ignored)', in_array($sel(Pixelite\handle($mkq('/en/order', ['type' => 'template']))->body, 'project_type'), ['', null], true));
+check('?type=website alone preselects no package', $sel(Pixelite\handle($mkq('/en/order', ['type' => 'website']))->body, 'package') === '' || $sel(Pixelite\handle($mkq('/en/order', ['type' => 'website']))->body, 'package') === null);
+check('unknown ?package is ignored', $sel(Pixelite\handle($mkq('/en/order', ['package' => 'evil"><script>']))->body, 'package') !== 'evil"><script>' && !str_contains(Pixelite\handle($mkq('/en/order', ['package' => 'evil"><script>']))->body, 'evil"><script>'));
+check('order ?type=<unknown> is ignored (nothing preselected)', !str_contains(Pixelite\handle($mkq('/en/order', ['type' => 'evil"><script>']))->body, 'evil"><script>'));
+check('order form offers the six CZK budget options (en) and Kč options (cs)', (function () use ($mkq, $NB) { $e = Pixelite\handle($mkq('/en/order', []))->body; $c = Pixelite\handle($mkq('/cs/order', []))->body; return preg_match('#<select[^>]*id="f-budget".*?</select>#s', $e, $bs) && substr_count($bs[0], 'CZK</option>') === 5 && str_contains($e, 'Up to 10,000 CZK') && str_contains($e, '100,000+ CZK') && !str_contains($e, '€') && str_contains($c, "Do 10{$NB}000{$NB}Kč") && !str_contains($c, '€'); })());
+$tm = $page('/en/terms');
+check('terms: prices are starting prices, VAT question left to the owner, template price conditional', str_contains($tm, 'starting prices') && str_contains($tm, '[Whether the prices include VAT') && str_contains($tm, 'additional work can increase the final price'));
+check('terms (cs): ceny „od“, DPH jako pole pro provozovatele', str_contains($page('/cs/terms'), 'ceny „od“') && str_contains($page('/cs/terms'), '[Zda ceny zahrnují DPH'));
+
+echo "package persistence / VAT display\n";
+check('package is validated separately: empty and each id accepted', (function () use ($valid) { foreach (['', 'template', 'basic', 'custom'] as $pk) { [, $er] = OrderValidator::validate(['package' => $pk] + $valid, true); if (isset($er['package'])) return false; } return true; })());
+foreach (['evil', 'website', 'BASIC', 'basic ', '1', 'basic;--'] as $bad) { [$cl, $er] = OrderValidator::validate(['package' => $bad] + $valid, true); check("package \"$bad\" is rejected (or normalised) server-side", ($er['package'] ?? '') === 'choose' || ($cl['package'] === 'basic' && $bad === 'basic ')); }
+check('package never overrides or replaces project_type', (function () use ($valid) { [$cl, $er] = OrderValidator::validate(['package' => 'template', 'project_type' => 'redesign'] + $valid, true); return $cl['package'] === 'template' && $cl['project_type'] === 'redesign' && !$er; })());
+// DB: new column, and an OLD database (no package column) is migrated in place
+check('fresh database has the package column', in_array('package', array_column(Database::pdo()->query('PRAGMA table_info(orders)')->fetchAll(), 'name'), true));
+check('an existing database without the column is migrated; old rows keep working', (function () use ($tmp, $valid) {
+    $old = "$tmp/old.sqlite"; $pdo = new PDO('sqlite:' . $old);
+    $pdo->exec('CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, locale TEXT NOT NULL, name TEXT NOT NULL, company TEXT NOT NULL DEFAULT "", email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT "", project_type TEXT NOT NULL, budget TEXT NOT NULL, timeframe TEXT NOT NULL, description TEXT NOT NULL, consent_at TEXT NOT NULL, notification_status TEXT NOT NULL DEFAULT "pending", notification_error TEXT NOT NULL DEFAULT "", notified_at TEXT)');
+    $pdo->exec("INSERT INTO orders (created_at, locale, name, email, project_type, budget, timeframe, description, consent_at) VALUES ('2026-01-01T00:00:00+00:00','en','Legacy','l@x.cz','website','unsure','asap','legacy description text','2026-01-01T00:00:00+00:00')");
+    $pdo = null; $prev = Env::get('LEADS_DATABASE_PATH'); Env::set('LEADS_DATABASE_PATH', $old); Database::reset();
+    $repo = new OrderRepository(); $legacy = $repo->find(1); $id = $repo->create(['package' => 'basic'] + $valid, 'en'); $new = $repo->find($id);
+    Env::set('LEADS_DATABASE_PATH', $prev); Database::reset();
+    return $legacy['package'] === '' && $legacy['package_name'] === '' && $legacy['package_price'] === '' && $legacy['price_vat_mode'] === '' && $legacy['name'] === 'Legacy' && $new['package'] === 'basic' && $new['project_type'] === 'website';
+})());
+// full HTTP flow: card link -> form -> POST -> row -> admin list + detail
+Env::set('CONTACT_RATE_LIMIT', '50'); Env::set('TELEGRAM_BOT_TOKEN', ''); Env::set('TELEGRAM_CHAT_ID', '');
+$mk2 = fn(string $m, string $p, array $post = []) => new Request($m, $p, $post, [], ['REMOTE_ADDR' => '203.0.113.77']);
+$_SESSION = []; Pixelite\handle($mk2('GET', '/en/order?package=custom'));
+$_SESSION['form_ts'] = time() - 30;
+$r = Pixelite\handle($mk2('POST', '/en/order', ['_csrf' => Csrf::token(), 'package' => 'custom', 'description' => 'Package persistence check, please ignore', 'email' => 'pkg@example.cz'] + $valid + ['consent' => '1']));
+$row = Database::pdo()->query("SELECT * FROM orders WHERE email = 'pkg@example.cz'")->fetch();
+check('POST with package=custom: stored in its own column, project_type untouched', $r->status === 303 && $row && $row['package'] === 'custom' && $row['project_type'] === 'website', json_encode($row));
+$_SESSION['admin_at'] = time(); $_SESSION['admin_since'] = time();
+$list = Pixelite\handle($mk2('GET', '/admin'))->body; $det = Pixelite\handle($mk2('GET', '/admin/orders/' . $row['id']))->body;
+check('admin list shows a Package column with the selected package', str_contains($list, '<th>Package</th>') && str_contains($list, 'Custom website<br><small>From 64,900 CZK</small>'));
+check('admin detail shows Package separately from Project type', str_contains($det, '<dt>Package</dt><dd><code>custom</code></dd>') && str_contains($det, '<dt>Package name shown</dt><dd>Custom website</dd>') && str_contains($det, 'From 64,900 CZK') && str_contains($det, 'not the agreed price') && str_contains($det, '<dt>Project type</dt>'));
+$_SESSION['form_ts'] = time() - 30;
+Pixelite\handle($mk2('POST', '/en/order', ['_csrf' => Csrf::token(), 'package' => '', 'description' => 'No package selected check, please ignore', 'email' => 'nopkg@example.cz'] + $valid + ['consent' => '1']));
+$none = Database::pdo()->query("SELECT * FROM orders WHERE email = 'nopkg@example.cz'")->fetch();
+check('order without a package stores "" and admin shows a dash', $none && $none['package'] === '' && str_contains(Pixelite\handle($mk2('GET', '/admin/orders/' . $none['id']))->body, '<dt>Package</dt><dd>–</dd>'));
+$_SESSION['form_ts'] = time() - 30;
+$r = Pixelite\handle($mk2('POST', '/en/order', ['_csrf' => Csrf::token(), 'package' => 'enterprise', 'description' => 'Tampered package, please ignore', 'email' => 'bad@example.cz'] + $valid + ['consent' => '1']));
+check('a tampered package value is refused (422) and nothing is stored', $r->status === 422 && !Database::pdo()->query("SELECT 1 FROM orders WHERE email = 'bad@example.cz'")->fetch());
+$_SESSION = [];
+$tg = new TelegramNotifier();
+check('Telegram message carries the package id + the snapshot (name, price shown, VAT context) or "-"', str_contains($tg->format($row + ['created_at' => 'x']), 'Package: custom (Custom website)') && str_contains($tg->format($row + ['created_at' => 'x']), 'Price shown: From 64,900 CZK') && str_contains($tg->format($row + ['created_at' => 'x']), 'not the agreed price') && str_contains($tg->format($none + ['created_at' => 'x']), 'Package: -') && !str_contains($tg->format($none + ['created_at' => 'x']), 'Price shown'));
+// VAT display: configurable, never guessed
+$vatCases = ['incl' => ['Price includes VAT', 'Cena včetně DPH', 'Prices include VAT (DPH).', 'Ceny jsou uvedeny včetně DPH.'], 'excl' => ['Price excludes VAT', 'Cena bez DPH', 'Prices exclude VAT (DPH)', 'Ceny jsou uvedeny bez DPH'], 'none' => ['Not a VAT payer', 'Neplátce DPH', 'We are not a VAT payer', 'Nejsme plátci DPH']];
+foreach ($vatCases as $mode => [$ce, $cc, $te, $tc]) {
+    Env::set('PRICE_VAT_MODE', $mode); $he = $page('/en/'); $hc = $page('/cs/');
+    check("VAT mode \"$mode\": three cards show it in EN and CS, no placeholder left", substr_count($he, 'class="price-box__vat"><' . '') >= 0 && substr_count($he, $ce) === 3 && substr_count($hc, $cc) === 3 && !str_contains($he, 'VAT information – to be completed') && !str_contains($hc, '[DPH – bude doplněno]'));
+    check("VAT mode \"$mode\": /terms states it (EN+CS) instead of the placeholder", str_contains($page('/en/terms'), $te) && str_contains($page('/cs/terms'), $tc) && !str_contains($page('/en/terms'), '[Whether the prices include VAT'));
+    check("VAT mode \"$mode\": starting prices themselves are unchanged", str_contains($he, '>2,999<') && str_contains($he, '>32,900<') && str_contains($he, '>64,900<') && str_contains($hc, "2{$NB}999") && str_contains($hc, "64{$NB}900"));
+}
+foreach (array_keys($vatCases) as $mode) {
+    Env::set('PRICE_VAT_MODE', $mode); $he = $page('/en/'); $others = array_diff(array_keys($vatCases), [$mode]);
+    check("VAT mode \"$mode\": exactly ONE presentation on the cards (no other mode's wording)", substr_count($he, 'class="price-box__vat"') === 3 && (function () use ($he, $vatCases, $others) { foreach ($others as $o) { if (str_contains($he, $vatCases[$o][0])) return false; } return true; })());
+}
+check('no customer-facing VAT toggle: the pricing area has no inputs, selects, buttons or switches', (function () use ($page) { $h = $page('/en/'); preg_match('#<div class="row row--center row--margin pricing-row">(.*?)<div class="credits">#s', $h, $m); return !preg_match('#<(input|select|button|textarea)\b|role="switch"|data-vat#i', $m[1] ?? '<input'); })());
+check('the VAT setting is server-side config only (no JS / query-string override)', !str_contains((string) file_get_contents(Pixelite\Paths::root('public/assets/script.js')), 'vat') && !str_contains($page('/en/') , 'vat='));
+foreach (['', 'maybe', 'INCLUDED', 'yes', '1'] as $invalid) {
+    Env::set('PRICE_VAT_MODE', $invalid); $he = $page('/en/');
+    check("VAT mode \"$invalid\" is not guessed: visible placeholder on all three cards + terms", substr_count($he, '<span class="placeholder">[VAT information – to be completed]</span>') === 3 && str_contains($page('/en/terms'), '[Whether the prices include VAT (DPH) – to be completed by the owner.]') && str_contains($page('/cs/'), '[DPH – bude doplněno]'));
+}
+Env::set('PRICE_VAT_MODE', 'INCL'); check('VAT mode is case-insensitive', substr_count($page('/en/'), 'Price includes VAT') === 3);
+Env::set('PRICE_VAT_MODE', '');
+check('Dreamers sentence is unchanged and still a promotional credit, not a discount', str_contains($page('/en/'), 'Orders from 30,000 CZK qualify for up to $100 in Dreamers Ad Credits for advertising.') && str_contains($page('/en/'), 'not a cash discount'));
+check('/terms#dreamers contains only owner placeholders for the unknown conditions (4 separate ones)', (function () use ($page) { if (!preg_match('#id="dreamers".*?(?=<h3|<p class="prose__meta")#s', $page('/en/terms'), $m)) return false; return substr_count($m[0], '[') === 4 && substr_count($m[0], 'to be completed by the owner') === 4; })());
+
+echo "pricing snapshot: migration / persistence / history\n";
+$cols = fn(PDO $p) => array_column($p->query('PRAGMA table_info(orders)')->fetchAll(), 'name');
+check('fresh database has package + the three snapshot columns', array_diff(['package', 'package_name', 'package_price', 'price_vat_mode'], $cols(Database::pdo())) === []);
+$migrate = function (string $file, string $extraCols) use ($tmp, $cols) {
+    $pdo = new PDO('sqlite:' . $file);
+    $pdo->exec('CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, locale TEXT NOT NULL, name TEXT NOT NULL, company TEXT NOT NULL DEFAULT "", email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT "", project_type TEXT NOT NULL,' . $extraCols . ' budget TEXT NOT NULL, timeframe TEXT NOT NULL, description TEXT NOT NULL, consent_at TEXT NOT NULL, notification_status TEXT NOT NULL DEFAULT "pending", notification_error TEXT NOT NULL DEFAULT "", notified_at TEXT)');
+    $pdo->exec("INSERT INTO orders (created_at, locale, name, email, project_type, budget, timeframe, description, consent_at" . ($extraCols ? ', package' : '') . ") VALUES ('2026-01-01T00:00:00+00:00','en','Old','o@x.cz','website','unsure','asap','old description text','2026-01-01T00:00:00+00:00'" . ($extraCols ? ",'basic'" : '') . ")");
+    $pdo = null; $prev = Env::get('LEADS_DATABASE_PATH'); Env::set('LEADS_DATABASE_PATH', $file); Database::reset();
+    $c = $cols(Database::pdo()); $old = (new OrderRepository())->find(1);
+    Env::set('LEADS_DATABASE_PATH', $prev); Database::reset();
+    return [$c, $old];
+};
+[$c1, $o1] = $migrate("$tmp/m1.sqlite", '');                                        // before packages existed
+[$c2, $o2] = $migrate("$tmp/m2.sqlite", ' package TEXT NOT NULL DEFAULT "",');      // package column only (previous release)
+check('migration: pre-package database gets all four columns; old rows keep empty values', array_diff(['package', 'package_name', 'package_price', 'price_vat_mode'], $c1) === [] && $o1['package'] === '' && $o1['package_name'] === '' && $o1['package_price'] === '' && $o1['price_vat_mode'] === '');
+check('migration: package-only database gets just the snapshot columns; its package id is kept, snapshot stays empty', array_diff(['package_name', 'package_price', 'price_vat_mode'], $c2) === [] && $o2['package'] === 'basic' && $o2['package_name'] === '' && $o2['package_price'] === '' && $o2['price_vat_mode'] === '');
+check('migration is idempotent (opening an already-migrated database again changes nothing)', (function () use ($tmp, $cols) { $prev = Env::get('LEADS_DATABASE_PATH'); Env::set('LEADS_DATABASE_PATH', "$tmp/m2.sqlite"); Database::reset(); $a = $cols(Database::pdo()); Database::reset(); $b = $cols(Database::pdo()); Env::set('LEADS_DATABASE_PATH', $prev); Database::reset(); return $a === $b && count($a) === count(array_unique($a)); })());
+
+$mk3 = fn(string $m, string $p, array $post = []) => new Request($m, $p, $post, [], ['REMOTE_ADDR' => '203.0.113.88']);
+$place = function (string $lang, array $over) use ($mk3, $valid) {
+    static $n = 0; $n++; $_SESSION = []; Pixelite\handle($mk3('GET', "/$lang/order")); $_SESSION['form_ts'] = time() - 30;
+    $email = "snap$n@example.cz";
+    Pixelite\handle($mk3('POST', "/$lang/order", ['_csrf' => Csrf::token(), 'email' => $email, 'description' => "Snapshot test $n, please ignore"] + $over + $valid + ['consent' => '1']));
+    return Database::pdo()->query("SELECT * FROM orders WHERE email = '$email'")->fetch();
+};
+Env::set('PRICE_VAT_MODE', '');
+$en = $place('en', ['package' => 'basic']); $cs = $place('cs', ['package' => 'basic']); $none = $place('en', ['package' => '']);
+check('persistence (en): id stays canonical; name, displayed price and VAT context are snapshotted', $en['package'] === 'basic' && $en['package_name'] === 'Basic website' && $en['package_price'] === 'From 32,900 CZK' && $en['price_vat_mode'] === 'unset', json_encode($en));
+check('persistence (cs): the snapshot is what the Czech customer saw', $cs['package'] === 'basic' && $cs['package_name'] === 'Základní web' && $cs['package_price'] === "Od 32{$NB}900 Kč" && $cs['price_vat_mode'] === 'unset', json_encode($cs));
+check('no package => no snapshot (all empty)', $none['package'] === '' && $none['package_name'] === '' && $none['package_price'] === '' && $none['price_vat_mode'] === '');
+$spoof = $place('en', ['package' => 'basic', 'package_name' => 'HACKED', 'package_price' => 'From 1 CZK', 'price_vat_mode' => 'none']);
+check('a client-supplied snapshot is ignored: values always come from the server', $spoof['package_name'] === 'Basic website' && $spoof['package_price'] === 'From 32,900 CZK' && $spoof['price_vat_mode'] === 'unset');
+Env::set('PRICE_VAT_MODE', 'incl'); $withVat = $place('en', ['package' => 'custom']); Env::set('PRICE_VAT_MODE', '');
+check('VAT display mode in force at submission is recorded (incl)', $withVat['price_vat_mode'] === 'incl' && $withVat['package_price'] === 'From 64,900 CZK');
+
+// regression: change the public price/name AFTER the orders were placed
+$ref = new ReflectionProperty(I18n::class, 'cache'); $saved = $ref->getValue();
+$mut = $saved; foreach (['en', 'cs'] as $l) { $mut[$l] = I18n::load($l); $mut[$l]['services']['items'][1]['amount'] = $l === 'en' ? '39,900' : "39{$NB}900"; $mut[$l]['services']['items'][1]['name'] = $l === 'en' ? 'Basic website PLUS' : 'Základní web PLUS'; }
+$ref->setValue(null, $mut);
+$_SESSION = ['admin_at' => time(), 'admin_since' => time()];
+$landing = $page('/en/'); $list = Pixelite\handle($mk3('GET', '/admin'))->body; $detEn = Pixelite\handle($mk3('GET', '/admin/orders/' . $en['id']))->body; $detCs = Pixelite\handle($mk3('GET', '/admin/orders/' . $cs['id']))->body; $detVat = Pixelite\handle($mk3('GET', '/admin/orders/' . $withVat['id']))->body;
+check('sanity: the public landing page now shows the NEW price', str_contains($landing, '>39,900<') && str_contains($landing, 'Basic website PLUS'));
+check('regression: admin DETAIL of the old order still shows the OLD name and price (en)', str_contains($detEn, 'Basic website</dd>') && str_contains($detEn, 'From 32,900 CZK') && !str_contains($detEn, '39,900') && !str_contains($detEn, 'PLUS'));
+check('regression: admin DETAIL of the old Czech order still shows what the customer saw', str_contains($detCs, 'Základní web</dd>') && str_contains($detCs, "Od 32{$NB}900 Kč") && !str_contains($detCs, '39') && !str_contains($detCs, 'PLUS'));
+check('regression: admin LIST keeps the old price for old orders', str_contains($list, 'Basic website<br><small>From 32,900 CZK</small>') && !str_contains($list, '39,900') && !str_contains($list, 'PLUS'));
+check('regression: Telegram retry text for an old order is built from the snapshot, not today\'s prices', (function () use ($en) { $t = (new TelegramNotifier())->format($en + ['created_at' => 'x']); return str_contains($t, 'Package: basic (Basic website)') && str_contains($t, 'Price shown: From 32,900 CZK') && !str_contains($t, '39,900'); })());
+$newer = $place('en', ['package' => 'basic']);
+check('a NEW order after the change snapshots the new price; the old one is unaffected', $newer['package_price'] === 'From 39,900 CZK' && $newer['package_name'] === 'Basic website PLUS' && Database::pdo()->query('SELECT package_price FROM orders WHERE id = ' . $en['id'])->fetchColumn() === 'From 32,900 CZK');
+Env::set('PRICE_VAT_MODE', 'excl'); $_SESSION = ['admin_at' => time(), 'admin_since' => time()];
+$detVat2 = Pixelite\handle($mk3('GET', '/admin/orders/' . $withVat['id']))->body;
+check('regression: changing the VAT setting later does not rewrite an old order\'s VAT context', str_contains($detVat2, 'prices include VAT') && !str_contains($detVat2, 'prices exclude VAT'));
+Env::set('PRICE_VAT_MODE', '');
+// a legacy row that has only a package id (placed before snapshots existed) must NOT be resolved against today's prices
+Database::pdo()->exec("INSERT INTO orders (created_at, locale, name, email, project_type, package, budget, timeframe, description, consent_at) VALUES ('2026-01-01T00:00:00+00:00','en','Legacy pkg','legacy@x.cz','website','custom','unsure','asap','legacy package order','2026-01-01T00:00:00+00:00')");
+$lid = (int) Database::pdo()->lastInsertId(); $_SESSION = ['admin_at' => time(), 'admin_since' => time()];
+$legacyDet = Pixelite\handle($mk3('GET', "/admin/orders/$lid"))->body; $legacyList = Pixelite\handle($mk3('GET', '/admin'))->body;
+check('legacy order with only a package id shows the id + "not recorded", never today\'s price', str_contains($legacyDet, '<code>custom</code>') && str_contains($legacyDet, 'not recorded') && !str_contains($legacyDet, '64,900') && str_contains($legacyList, '<code>custom</code><br><small>price not recorded</small>'));
+check('legacy Telegram text says the price context was not recorded', str_contains((new TelegramNotifier())->format(Database::pdo()->query("SELECT * FROM orders WHERE id = $lid")->fetch() + ['created_at' => 'x']), 'Package: custom (price context not recorded)'));
+$ref->setValue(null, $saved); $_SESSION = [];
+check('translation cache restored after the regression test', I18n::load('en')['services']['items'][1]['amount'] === '32,900');
+
 check('legal_text fills tokens and falls back to placeholder', (function () use ($setCo) { $setCo(['COMPANY_NAME' => 'X']); I18n::set('en'); return legal_text('{company}/{ico}') === 'X/[to be completed]'; })());
 
 exec('rm -rf ' . escapeshellarg($tmp));

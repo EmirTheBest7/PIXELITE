@@ -31,6 +31,11 @@ final class OrderController extends BaseController
         if (in_array($type, OrderOptions::PROJECT_TYPES, true)) {
             $old['project_type'] = $type;
         }
+        $package = $r->query('package');   // from a pricing card; kept separate from the project type
+        if (in_array($package, OrderOptions::PACKAGES, true)) {
+            $old['package'] = $package;
+            $old['project_type'] ??= 'website';   // every package is a website; the visitor can still change it
+        }
         return $this->form($old, [], '');
     }
 
@@ -42,7 +47,7 @@ final class OrderController extends BaseController
         $window = Env::int('CONTACT_RATE_WINDOW', 900);
 
         $old = [];
-        foreach (['name', 'company', 'email', 'phone', 'project_type', 'budget', 'timeframe', 'description'] as $f) {
+        foreach (['name', 'company', 'email', 'phone', 'project_type', 'package', 'budget', 'timeframe', 'description'] as $f) {
             $old[$f] = $r->post($f);
         }
 

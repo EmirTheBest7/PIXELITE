@@ -5,7 +5,7 @@
 <?php else: ?>
   <div class="table-responsive">
     <table class="table admin__table">
-      <thead><tr><th>#</th><th>Created (UTC)</th><th>Name</th><th>Email</th><th>Project</th><th>Budget</th><th>Lang</th><th>Telegram</th></tr></thead>
+      <thead><tr><th>#</th><th>Created (UTC)</th><th>Name</th><th>Email</th><th>Project</th><th>Package</th><th>Budget</th><th>Lang</th><th>Telegram</th></tr></thead>
       <tbody>
 <?php foreach ($orders as $o): ?>
         <tr>
@@ -14,6 +14,8 @@
           <td><?= e($o['name']) ?><?= $o['company'] !== '' ? '<br><small>' . e($o['company']) . '</small>' : '' ?></td>
           <td><?= e($o['email']) ?></td>
           <td><?= e($o['project_type']) ?></td>
+<?php $pk = \Pixelite\PricingSnapshot::describe($o); ?>
+          <td><?php if ($pk === null): ?>–<?php elseif ($pk['recorded']): ?><?= e($pk['name']) ?><br><small><?= e($pk['price']) ?></small><?php else: ?><code><?= e($pk['id']) ?></code><br><small>price not recorded</small><?php endif ?></td>
           <td><?= e($o['budget']) ?></td>
           <td><?= e($o['locale']) ?></td>
           <td><span class="admin__status admin__status--<?= e($o['notification_status']) ?>"><?= e($o['notification_status']) ?></span></td>

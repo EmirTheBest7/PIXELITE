@@ -2,14 +2,14 @@
 /** @var array $old @var array $errors @var string $formError @var string $csrf */
 $field = fn(string $k): string => e($old[$k] ?? '');
 $err = fn(string $k): string => isset($errors[$k]) ? (string) t('order.errors.' . $errors[$k]) : '';
-$select = function (string $name) use ($old, $errors, $err): void {
+$select = function (string $name, ?array $opts = null, bool $required = true) use ($old, $errors, $err): void {
     $err_msg = $err($name); $cur = $old[$name] ?? '';
     echo '<div class="form__field--half-wrap">';
     echo '<label class="sr-only" for="f-' . $name . '">' . e(t("order.fields.$name")) . '</label>';
-    echo '<select class="form__field form__select' . ($err_msg ? ' is-invalid' : '') . '" id="f-' . $name . '" name="' . $name . '" required'
+    echo '<select class="form__field form__select' . ($err_msg ? ' is-invalid' : '') . '" id="f-' . $name . '" name="' . $name . '"' . ($required ? ' required' : '')
         . ($err_msg ? ' aria-invalid="true" aria-describedby="e-' . $name . '"' : '') . '>';
-    echo '<option value=""' . ($cur === '' ? ' selected' : '') . ' disabled>' . e(t("order.fields.$name")) . '</option>';
-    foreach (t("order.options.$name") as $val => $label) {
+    echo '<option value=""' . ($cur === '' ? ' selected' : '') . ($required ? ' disabled' : '') . '>' . e(t("order.fields.$name")) . '</option>';
+    foreach ($opts ?? t("order.options.$name") as $val => $label) {
         echo '<option value="' . e($val) . '"' . ($cur === (string) $val ? ' selected' : '') . '>' . e($label) . '</option>';
     }
     echo '</select>';
@@ -52,10 +52,14 @@ $text = function (string $name, string $type = 'text', bool $required = false, s
             <?php $text('email', 'email', true, 'email'); $text('phone', 'tel', false, 'tel'); ?>
           </div>
           <div class="form-group">
-            <?php $select('project_type'); $select('budget'); ?>
+            <?php
+              $pkgOpts = [];   // "<name> – <from> <amount> <currency>", straight from the pricing data
+              foreach (t('services.items') as $it) { $pkgOpts[$it['id']] = $it['name'] . ' – ' . $it['from'] . ' ' . $it['amount'] . ' ' . $it['currency']; }
+              $select('project_type'); $select('package', $pkgOpts, false);
+            ?>
           </div>
           <div class="form-group">
-            <?php $select('timeframe'); ?>
+            <?php $select('budget'); $select('timeframe'); ?>
           </div>
           <div class="form-group">
             <?php $e = $err('description'); ?>
