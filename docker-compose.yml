@@ -1,0 +1,11 @@
+# Local development: code is bind-mounted, so edits show up without rebuilding.
+# .env is read by the app itself (src/Env.php) – deliberately NOT passed via env_file,
+# because compose would mangle the `$` characters in ADMIN_PASSWORD_HASH.
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    restart: unless-stopped
