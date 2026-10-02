@@ -24,7 +24,7 @@ src/               namespace Pixelite\ (autoloaded by src/bootstrap.php)
   Controllers/     Page, Order, Admin, Seo (+ BaseController)
   OrderValidator, OrderService, PricingSnapshot, OrderRepository, TelegramNotifier   ← order pipeline
   Company (legal identity from .env), Auth, Csrf, Session, RateLimiter, Database, I18n, Env, Logger, View, Router, Request, Response
-templates/         layout.php, partials/ (header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
+templates/         layout.php, partials/ (package-cards, credits, faq, steps, header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
 lang/en.php cs.php all copy. Identical key sets (tests enforce it)
 config/portfolio.php  portfolio data (placeholders, clearly marked)
 config/consent.php    cookie/consent registry (storage inventory + optional services: empty)
@@ -66,6 +66,8 @@ Every public route exists per language: `/en/…` and `/cs/…`. Bare `/` → 30
 | `GET /{lang}/order` `?type=landing\|website\|webapp…` | project request form (prefilled type) |
 | `POST /{lang}/order` | validate → save → Telegram → 303 to sent |
 | `GET /{lang}/order/sent` | one-time success page (flash), noindex |
+| `GET /{lang}/pricing` | packages (shared cards partial), credits strip, why-they-differ, comparison table, included / not included, price factors, FAQ, CTA. Data only from `services.items` + `pricing.*` / `faq.*` lang keys; VAT line from `PRICE_VAT_MODE`; exact exclusions are a visible owner placeholder |
+| `GET /{lang}/process` | five-step workflow (`process.steps`), notes, owner placeholder for timelines/revisions/hosting/handover, CTA to order |
 | `GET /{lang}/contact` | contact details from env + CTA to order |
 | `GET /{lang}/privacy` | privacy policy (controller identity from `.env`; unknown legal facts stay `[placeholders]`) |
 | `GET /{lang}/cookies` | cookie policy: every cookie / storage item + "Cookie settings" (`#settings` opens the dialog) |
@@ -74,7 +76,7 @@ Every public route exists per language: `/en/…` and `/cs/…`. Bare `/` → 30
 | `GET /robots.txt`, `/sitemap.xml` | sitemap has hreflang alternates; excludes portfolio/admin/sent |
 | `GET /admin/login`, `POST /admin/login` | staff login (English only) |
 | `GET /admin` · `GET /admin/orders/{id}` · `POST /admin/orders/{id}/retry` · `POST /admin/logout` | protected |
-Not built on purpose: separate Services/About pages (services live on the landing). Terms exist but only state facts about how the site works; commercial terms are owner placeholders.
+Not built on purpose: `/about` (waits for real founder/company content), separate Services pages (services live on the landing). Terms exist but only state facts about how the site works; commercial terms are owner placeholders.
 To publish the portfolio later: add real projects to `config/portfolio.php`, remove `noindex` (`PageController::portfolio`), add it to nav/footer + `SeoController::INDEXABLE`.
 
 ## Pricing, credits and consultation (landing `#services`)

@@ -28,7 +28,7 @@ const DEVICES = [
 const LANGS = ['en', 'cs'];
 const THEMES = ['light', 'dark'];
 const PAGES = [
-  { key: 'home', path: '', h1: 1 }, { key: 'order', path: 'order' }, { key: 'contact', path: 'contact' },
+  { key: 'home', path: '', h1: 1 }, { key: 'pricing', path: 'pricing' }, { key: 'process', path: 'process' }, { key: 'order', path: 'order' }, { key: 'contact', path: 'contact' },
   { key: 'privacy', path: 'privacy' }, { key: 'cookies', path: 'cookies' }, { key: 'terms', path: 'terms' },
   { key: 'portfolio', path: 'portfolio', robots: 'noindex' }, { key: '404', path: 'zzz-not-found', status: 404, robots: 'noindex' },
 ];
@@ -525,6 +525,51 @@ async function pricingScenarios(browser) {
 
 // ================= B3) STORAGE AUDIT =================
 // What the browser really ends up holding vs. what the cookie policy documents.
+// ================= New pages: /pricing and /process =================
+async function newPagesScenarios(browser) {
+  for (const d of DEVICES) for (const lang of LANGS) for (const theme of THEMES) {
+    const T = (s) => `[pricing+process/${d.id}/${lang}/${theme}] ${s}`;
+    const page = await freshPage(browser, d, theme);
+    await page.goto(url(lang, 'pricing'));
+    const g = await page.eval(`(() => {
+      const cards = [...document.querySelectorAll('.price-box')].map((c) => ({ id: c.dataset.package, href: c.querySelector('.price-box__btn a').getAttribute('href'), vat: c.querySelector('.price-box__vat').textContent.trim() }));
+      const tbl = document.querySelector('table.compare'); const tr = tbl.getBoundingClientRect();
+      const det = [...document.querySelectorAll('.faq__item')];
+      const vis = (e) => { const r = e.getBoundingClientRect(), cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.display !== 'none'; };
+      return { cards, tableInside: tr.left >= -1 && tr.right <= innerWidth + 1, rows: tbl.querySelectorAll('tbody tr').length, cells: [...tbl.querySelectorAll('td')].filter(vis).length,
+        scope: document.querySelectorAll('.scope__card').length, faq: det.length, placeholders: document.querySelectorAll('.placeholder').length,
+        cta: [...document.querySelectorAll('.sect--violet a.btn')].map((a) => a.getAttribute('href')), credits: !!document.querySelector('.credits a[href$="/terms#dreamers"]'), hrefFaq: !!document.getElementById('faq') };
+    })()`);
+    ok(T('three package cards link to /order?package=<id>'), g.cards.map((c) => c.href).join() === ['template', 'basic', 'custom'].map((i) => `/${lang}/order?package=${i}`).join() && g.cards.map((c) => c.id).join() === 'template,basic,custom', JSON.stringify(g.cards));
+    ok(T('each card shows exactly one VAT line (a real statement or the visible placeholder)'), g.cards.every((c) => c.vat.length > 5));
+    ok(T('comparison table: 8 rows, 24 visible cells, inside the viewport'), g.rows === 8 && g.cells === 24 && g.tableInside, JSON.stringify({ r: g.rows, c: g.cells, i: g.tableInside }));
+    ok(T('scope cards, six FAQ items, credits link and #faq anchor present'), g.scope === 3 && g.faq === 6 && g.credits && g.hrefFaq);
+    ok(T('closing CTAs go to /order and /process'), g.cta.includes(`/${lang}/order`) && g.cta.includes(`/${lang}/process`), g.cta.join());
+    // FAQ opens and closes with a real tap / keyboard
+    await page.tap('.faq__item:first-child .faq__q');
+    ok(T('FAQ opens on tap'), await page.eval(`document.querySelector('.faq__item').open === true`));
+    await page.tap('.faq__item:first-child .faq__q');
+    ok(T('FAQ closes on second tap'), await page.eval(`document.querySelector('.faq__item').open === false`));
+    const a = await page.eval(AUDIT);
+    ok(T('no horizontal overflow after interaction'), a.scrollW <= a.innerW && a.overflow.length === 0, `${a.scrollW}/${a.innerW}`);
+    // tapping a package CTA lands on the order form with the package preselected
+    if (d.w === 375 || d.w === 1440) {
+      await page.tap('.price-box[data-package="basic"] .price-box__btn a');
+      ok(T('package CTA opens the order form with the package preselected'), (await page.eval('location.pathname + location.search')) === `/${lang}/order?package=basic` && (await page.eval(`document.querySelector('[name="package"]').value`)) === 'basic');
+    }
+    await page.goto(url(lang, 'process'));
+    const pr = await page.eval(`(() => ({ steps: document.querySelectorAll('.steps__item').length, nums: [...document.querySelectorAll('.steps__item')].map((e) => getComputedStyle(e, ':before').content).join(), cta: [...document.querySelectorAll('a.btn')].map((a) => a.getAttribute('href')), ph: document.querySelectorAll('.placeholder').length }))()`);
+    ok(T('process: five numbered steps, CTA to /order, link to /pricing'), pr.steps === 5 && pr.nums.split(',').every((n) => n === 'counter(step)') && pr.cta.includes(`/${lang}/order`) && pr.cta.includes(`/${lang}/pricing`), JSON.stringify(pr));
+    // home: new connections
+    await page.goto(url(lang, ''));
+    const h = await page.eval(`(() => ({ pricing: !!document.querySelector('a.btn[href="/${lang}/pricing"]'), process: !!document.querySelector('a.btn[href="/${lang}/process"]'), faq: document.querySelectorAll('.faq__item').length, steps: document.querySelectorAll('.steps__item').length, cards: document.querySelectorAll('.price-box').length }))()`);
+    ok(T('home: pricing + process links, 3 FAQ items, 5 compact steps, original 3 cards'), h.pricing && h.process && h.faq === 3 && h.steps === 5 && h.cards === 3, JSON.stringify(h));
+    const a2 = await page.eval(AUDIT);
+    ok(T('home: no horizontal overflow'), a2.scrollW <= a2.innerW && a2.overflow.length === 0);
+    await page.close();
+  }
+}
+
 async function storageAudit(browser) {
   const T = (s) => `[storage] ${s}`;
   const d = DESKTOP;
@@ -592,7 +637,7 @@ async function httpChecks() {
   }
   const sm = await (await get('/sitemap.xml')).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
-  ok('sitemap lists the 6 public pages x 2 languages', locs.length === 12, String(locs.length));
+  ok('sitemap lists the 8 public pages x 2 languages', locs.length === 16, String(locs.length));
   ok('sitemap excludes portfolio/admin/sent/404', !locs.some((l) => /portfolio|admin|sent|zzz/.test(l)));
   ok('sitemap includes cookies and terms', locs.includes('/en/cookies') && locs.includes('/cs/terms'));
   const rb = await (await get('/robots.txt')).text(); ok('robots.txt blocks /admin and points to sitemap', /Disallow: \/admin/.test(rb) && /Sitemap:/.test(rb));
@@ -622,6 +667,7 @@ try {
   await formScenarios(browser);
   await heroScenarios(browser);
   await pricingScenarios(browser);
+  await newPagesScenarios(browser);
   await storageAudit(browser);
 } finally { await browser.close(); }
 

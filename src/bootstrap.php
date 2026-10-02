@@ -31,6 +31,8 @@ function buildRouter(): Router
     $seo = new SeoController();
 
     $router->add('GET', '/{lang}', fn() => $page->home());
+    $router->add('GET', '/{lang}/pricing', fn() => $page->pricing());
+    $router->add('GET', '/{lang}/process', fn() => $page->process());
     $router->add('GET', '/{lang}/contact', fn() => $page->contact());
     $router->add('GET', '/{lang}/privacy', fn() => $page->privacy());
     $router->add('GET', '/{lang}/cookies', fn() => $page->cookies());

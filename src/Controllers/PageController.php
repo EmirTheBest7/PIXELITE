@@ -13,6 +13,16 @@ final class PageController extends BaseController
         return $this->page('home', '');
     }
 
+    public function pricing(): Response
+    {
+        return $this->page('pricing', 'pricing');
+    }
+
+    public function process(): Response
+    {
+        return $this->page('process', 'process');
+    }
+
     public function contact(): Response
     {
         return $this->page('contact', 'contact');

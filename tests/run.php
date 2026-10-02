@@ -449,6 +449,49 @@ check('translation cache restored after the regression test', I18n::load('en')['
 
 check('legal_text fills tokens and falls back to placeholder', (function () use ($setCo) { $setCo(['COMPANY_NAME' => 'X']); I18n::set('en'); return legal_text('{company}/{ico}') === 'X/[to be completed]'; })());
 
+echo "pricing + process pages\n";
+Env::set('PRICE_VAT_MODE', '');
+foreach (['en', 'cs'] as $lang) {
+    foreach (['pricing', 'process'] as $pg) {
+        $h = $page("/$lang/$pg");
+        check("$pg ($lang): renders with one h1, title, description, canonical, hreflang pair + x-default, og tags, indexable", substr_count($h, '<h1') === 1 && preg_match('#<title>[^<]{10,}</title>#', $h) && preg_match('#<meta name="description" content="[^"]{30,}"#', $h) && str_contains($h, '<link rel="canonical" href="https://pixelite.cz/' . $lang . '/' . $pg . '">') && str_contains($h, 'hreflang="en" href="https://pixelite.cz/en/' . $pg . '"') && str_contains($h, 'hreflang="cs" href="https://pixelite.cz/cs/' . $pg . '"') && str_contains($h, 'hreflang="x-default"') && str_contains($h, 'property="og:title"') && str_contains($h, 'content="index,follow"'));
+        check("$pg ($lang): no missing-translation key leaks into the page", !preg_match('/\b(pricing|process|faq|home_more|nav|footer)\.[a-z_]+\b/', strip_tags($h)));
+    }
+    $h = $page("/$lang/pricing");
+    preg_match_all('#<div class="col-md-4 col-sm-4 price-box price-box--(\w+)" data-package="(\w+)">(.*?)<div class="price-box__btn">\s*<a class="btn[^"]*" href="([^"]+)"#s', $h, $m, PREG_SET_ORDER);
+    check("pricing ($lang): same three package cards and order links as the landing page", array_column($m, 2) === ['template', 'basic', 'custom'] && array_column($m, 4) === ["/$lang/order?package=template", "/$lang/order?package=basic", "/$lang/order?package=custom"], json_encode(array_column($m, 4)));
+    $cards = fn(string $x) => (function () use ($x) { preg_match('#<div class="row row--center row--margin pricing-row">.*?<div class="credits">#s', $x, $mm); return $mm[0] ?? ''; })();
+    check("pricing ($lang): card markup is byte-identical to the landing page (shared partial)", $cards($h) !== '' && $cards($h) === $cards($page("/$lang/")));
+    check("pricing ($lang): Dreamers Ad Credits strip matches the landing page and links to the terms", str_contains($h, 'class="credits"') && str_contains($h, '/' . $lang . '/terms#dreamers') && (preg_match('#<div class="credits">.*?</div>\s*</div>#s', $h, $a) && preg_match('#<div class="credits">.*?</div>\s*</div>#s', $page("/$lang/"), $b) && $a[0] === $b[0]));
+    check("pricing ($lang): comparison table has a header cell per package and 8 labelled rows", substr_count($h, '<tr>') === 9 && substr_count($h, 'scope="row"') === 8 && substr_count($h, 'data-label=') === 24);
+    check("pricing ($lang): included + not-included lists for each package (6 features each)", substr_count($h, 'scope__list--yes') === 3 && substr_count($h, 'scope__list--no') === 3 && substr_count($h, 'class="scope__card ') === 3);
+    check("pricing ($lang): exclusions detail is a visible owner placeholder, not invented", substr_count($h, 'class="placeholder"') >= 1 && (str_contains($h, 'to be completed by the owner') || str_contains($h, 'doplní provozovatel')));
+    check("pricing ($lang): FAQ has six native <details> items and an anchor", substr_count($h, '<details class="faq__item">') === 6 && str_contains($h, 'id="faq"'));
+    check("pricing ($lang): CTAs lead to /order and /process", str_contains($h, 'href="/' . $lang . '/order"') && str_contains($h, 'href="/' . $lang . '/process"'));
+    check("pricing ($lang): no EUR/USD price, no guarantee/delivery-time claims invented", !preg_match('/€|EUR\b/', $h) && !preg_match('/guarantee|garanc|within \d+ (days|weeks)|do \d+ (dnů|týdnů)|\d+ hours/i', strip_tags($h)));
+    $pr = $page("/$lang/process");
+    check("process ($lang): five numbered steps, CTA to /order, link to pricing, owner placeholder for timelines", substr_count($pr, 'class="steps__item"') === 5 && str_contains($pr, 'href="/' . $lang . '/order"') && str_contains($pr, 'href="/' . $lang . '/pricing"') && str_contains($pr, 'class="placeholder"'));
+    check("process ($lang): makes no delivery-time, guarantee or hosting promises", !preg_match('/guarantee|garanc|within \d+|do \d+ (dnů|týdnů)|\d+ hours|\d+ hodin/i', strip_tags($pr)));
+    $home = $page("/$lang/");
+    check("landing ($lang): links to /pricing, /process, FAQ preview with three questions, compact five-step preview", str_contains($home, 'href="/' . $lang . '/pricing"') && str_contains($home, 'href="/' . $lang . '/process"') && substr_count($home, '<details class="faq__item">') === 3 && substr_count($home, 'class="steps__item"') === 5 && str_contains($home, 'steps--compact'));
+    check("nav + footer ($lang): Pricing and How it works are linked", substr_count($home, 'href="/' . $lang . '/pricing"') >= 3 && substr_count($home, 'href="/' . $lang . '/process"') >= 3);
+}
+$sm = $page('/sitemap.xml');
+foreach (['pricing', 'process'] as $pg) {
+    check("sitemap lists /$pg in both languages with hreflang alternates", str_contains($sm, "https://pixelite.cz/en/$pg</loc>") && str_contains($sm, "https://pixelite.cz/cs/$pg</loc>") && str_contains($sm, "hreflang=\"cs\" href=\"https://pixelite.cz/cs/$pg\""));
+}
+check('comparison table uses neutral "Not specified" / "Není specifikováno" for unmentioned features (no implied exclusion)', substr_count($page('/en/pricing'), 'Not specified</span>') === 6 && substr_count($page('/cs/pricing'), 'Není specifikováno</span>') === 6 && !str_contains($page('/en/pricing'), 'Not listed') && !str_contains($page('/cs/pricing'), 'Neuvedeno'));
+check('/about is not built yet (404) and not in the sitemap', Pixelite\handle($mk('GET', '/en/about'))->status === 404 && !str_contains($sm, '/about'));
+foreach ($vatCases as $mode => [$ce, $cc, $te, $tc]) {
+    Env::set('PRICE_VAT_MODE', $mode);
+    $he = $page('/en/pricing'); $hc = $page('/cs/pricing');
+    check("pricing VAT mode \"$mode\": intro, cards and FAQ show it (EN+CS), no placeholder", substr_count($he, $ce) === 3 && substr_count($hc, $cc) === 3 && str_contains($he, $te) && str_contains($hc, $tc) && !str_contains($he, 'VAT information – to be completed') && !str_contains($hc, '[DPH – bude doplněno]') && !str_contains($he, '[Whether the prices include VAT'));
+}
+Env::set('PRICE_VAT_MODE', 'bogus');
+check('pricing with an invalid VAT mode shows the visible placeholder (cards + intro), never a guess', substr_count($page('/en/pricing'), 'VAT information – to be completed') >= 4 && substr_count($page('/cs/pricing'), '[DPH – bude doplněno]') >= 4);
+Env::set('PRICE_VAT_MODE', '');
+check('pricing page: starting prices come from the same data (no price text in the template)', str_contains($page('/en/pricing'), '>2,999<') && str_contains($page('/cs/pricing'), "2{$NB}999") && str_contains($page('/cs/pricing'), "Od 64{$NB}900 Kč"));
+
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();
 echo "\n$pass passed, $fail failed\n";
