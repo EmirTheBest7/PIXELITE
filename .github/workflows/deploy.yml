@@ -20,4 +20,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./  # Adresář v repozitáři, který se má nahrát (./ je kořen)
-        server-dir: ./web/  # Cílový adresář na FTP Endory (např. ./web/ pokud nahráváte tam)
+        server-dir: ./home/html/pixelite.cz  # Cílový adresář na FTP Endory (např. ./web/ pokud nahráváte tam)
