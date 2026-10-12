@@ -1,0 +1,23 @@
+name: Deploy na Endoru přes FTP
+
+on:
+  push:
+    branches:
+      - main  # Skript se spustí při pushnutí do větve main
+
+jobs:
+  web-deploy:
+    name: Nahrání souborů
+    runs-on: ubuntu-latest
+    steps:
+    - name: Získat nejnovější kód z repo
+      uses: actions/checkout@v4
+
+    - name: Synchronizace přes FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./  # Adresář v repozitáři, který se má nahrát (./ je kořen)
+        server-dir: ./web/  # Cílový adresář na FTP Endory (např. ./web/ pokud nahráváte tam)
