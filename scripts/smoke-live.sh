@@ -10,14 +10,14 @@ code() { req -o /dev/null -w '%{http_code}' "$1"; }
 
 echo "waiting for the new deployment to be served…"
 for i in $(seq 1 12); do
-  if req "$base/" | grep -qi 'pixelite'; then ok "homepage serves the Pixelite app (attempt $i)"; break; fi
+  if req -L "$base/" | grep -qi 'pixelite'; then ok "homepage serves the Pixelite app (attempt $i)"; break; fi
   [ "$i" = 12 ] && bad "homepage still not the Pixelite app after 12 attempts"; sleep 10
 done
 
-home="$(req "$base/")"
+home="$(req -L "$base/")"
 echo "$home" | grep -qi 'Hello World' && bad "placeholder 'Hello World' still visible" || ok "no placeholder text"
-c="$(code "$base/")"; [ "$c" = 200 ] && ok "GET / -> 200" || bad "GET / -> $c"
-r="$(req -o /dev/null -w '%{http_code} %{redirect_url}' "$base/")"; echo "  info bare / -> $r"
+r="$(req -o /dev/null -w '%{http_code} %{redirect_url}' "$base/")"
+case "$r" in "302 $base/en/"|"302 $base/cs/"|"200 ") ok "GET / -> $r (language redirect)";; *) bad "GET / -> $r";; esac
 for p in en/ cs/ en/pricing cs/pricing en/process cs/process en/order cs/contact en/privacy en/cookies en/terms; do
   c="$(code "$base/$p")"; [ "$c" = 200 ] && ok "GET /$p -> 200" || bad "GET /$p -> $c"
 done

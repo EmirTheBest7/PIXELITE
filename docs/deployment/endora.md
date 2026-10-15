@@ -9,7 +9,9 @@
 | PHP 7.4 / 8.2 / 8.3 / 8.4 / 8.5 selectable per domain in MyEndora → Hosting → PHP nastavení. Free plan: `max_execution_time` 10, `memory_limit` 64 MB. | Endora help "Jak zjistit a změnit verzi PHP?", "Srovnání webhostingů". |
 | Apache + `.htaccess` are available (nginx in front; HTTP→HTTPS redirect happens there, `X-Forwarded-Proto` is set). | Endora help ".htaccess", live response headers. |
 | Endora creates a placeholder `public_html/index.php` that prints "Hello World!". | Live: `GET /` and `GET /index.php` both returned it. |
-| SFTP/SSH is not offered for the Free plan (WebSSH only); the FTP protocol/port actually accepted is **verified by the `Inspect Endora target` workflow**, not assumed. | Endora help "Co je SSH"; workflow output. |
+| Port 21 speaks plain FTP and accepts explicit FTPS (its certificate does not match the host name in the secret, so strict verification fails); port **222 is SFTP** (`SSH-2.0-mod_sftp` banner); 22 and 990 are closed. | Inspect workflow run 38772926699; banner grab on 222. The deployment currently uses plain FTP on 21 (FTP-Deploy-Action cannot do SFTP). |
+| PHP 8.5.9 via FPM, no `open_basedir`, the login directory (parent of `public_html`) is readable, writable and **not web-served**; `.htaccess` rewrites and `Require all denied` work; pdo_sqlite, mbstring, curl, openssl, intl present; `memory_limit` 256M, `max_execution_time` 90. | Temporary probe in the inspect workflow (randomly named, removed in the same run). |
+| The host **injects an ad banner** ("Na FreeHostingu …", with an Endora link and an inline `<style>` that `@import`s Google Fonts) at the top of every HTML response. The strict CSP blocks that inline style, so the banner shows unstyled and the console logs one CSP violation per page. | Live HTML of `/en/`. Removing it requires a paid Endora plan (Fun/Max: "bez reklamy"); the CSP is deliberately not loosened. |
 
 ## Root cause of the "Hello World" page
 
@@ -59,7 +61,8 @@ Safety switch: the upload is a **dry run** (it prints exactly what it would crea
 1. In MyEndora → Hosting → **PHP nastavení**: choose PHP **8.3** (or newer) for the domain.
 2. Create `.env` in the **FTP login directory, next to `public_html/`** (MyEndora → FTP a soubory → Správa souborů, or any
    FTP client), based on `.env.example`. Minimum for production: `APP_URL=https://pixelite.cz`, `APP_LOCALE=cs` (or `en`),
-   `TRUST_PROXY=true` (nginx is the single trusted proxy; without it HTTPS/HSTS and per-visitor rate limiting are wrong),
+   leave `TRUST_PROXY` unset (the 2026-10-15 probe showed the host already sets `HTTPS=on` and `REMOTE_ADDR` = the visitor IP, so
+   trusting `X-Forwarded-For` would only make the rate limiter spoofable),
    `COMPANY_*`, `CONTACT_*`, `PRICE_VAT_MODE`, `TELEGRAM_*`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (single-quoted).
    Never commit it and never paste it into an issue/chat.
 3. GitHub → Settings → Secrets and variables → Actions: secrets `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`; optional
