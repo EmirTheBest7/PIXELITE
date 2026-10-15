@@ -84,4 +84,8 @@ daily FTP backups on paid plans.
 
 - Free plan: 10 s execution limit, 64 MB memory, 5 PHP workers; the host may inject its own markup (check the live HTML
   against the strict CSP).
-- Plain FTP sends credentials unencrypted; use `FTP_PROTOCOL=ftps` once the inspect workflow shows it works.
+- Transport: port 21 offers explicit FTPS, but its certificate is a `*.nameserver.sk` wildcard (issued to the hoster, valid
+  until 2026-10-25), never `ftp.pixelite.cz`, so strict host-name verification cannot succeed. Options: `FTP_PROTOCOL=ftps` with
+  `FTP_SECURITY=loose` (encrypted, but not authenticated against active man-in-the-middle) or plain `ftp` (cleartext). Port 222
+  (SFTP, host-key authenticated) is the proper channel but needs a different upload tool; ask Endora which host name matches
+  the certificate if you want strict FTPS.

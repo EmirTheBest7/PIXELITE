@@ -94,6 +94,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
           port: ${{ vars.FTP_PORT || '21' }}
+          security: ${{ vars.FTP_SECURITY || 'strict' }}
           timeout: 60000
           local-dir: ./build/endora/app/
           server-dir: ./
@@ -117,6 +118,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
           port: ${{ vars.FTP_PORT || '21' }}
+          security: ${{ vars.FTP_SECURITY || 'strict' }}
           timeout: 60000
           local-dir: ./build/endora/public_html/
           server-dir: ./public_html/
