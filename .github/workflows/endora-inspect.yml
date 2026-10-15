@@ -1,0 +1,137 @@
+name: Inspect Endora target (read-only)
+
+# Manual only. Answers, with evidence, the facts a deployment depends on: which FTP protocol works, what the FTP
+# login directory contains, and (optional probe) how PHP / .htaccess behave on the real host.
+# It never uploads the application. The optional probe writes ONE randomly named temporary directory plus ONE
+# temporary file and deletes both again in the same run. No secret is printed (Actions masks the secret values).
+
+on:
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Also run the temporary PHP/.htaccess probe (uploads and removes two randomly named temporary items)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://pixelite.cz' }}
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Protocol and port check
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          set +x
+          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
+          echo "secret FTP_SERVER is set: $([ -n "$FTP_SERVER" ] && echo yes || echo NO)"
+          echo "contains scheme (ftp:// etc.): $(echo "$FTP_SERVER" | grep -q '://' && echo yes || echo no)"
+          echo "contains whitespace/slash: $(echo "$FTP_SERVER" | grep -Eq '[[:space:]/]' && echo yes || echo no)"
+          for port in 21 990 22; do
+            if timeout 8 bash -c "exec 3<>/dev/tcp/$host/$port" 2>/dev/null; then echo "tcp port $port: open"; else echo "tcp port $port: closed/filtered"; fi
+          done
+
+      - name: FTP login and directory listing (plain FTP vs explicit FTPS)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set +x
+          host="${FTP_SERVER#ftp://}"; host="${host%%/*}"
+          try() { # $1 = label, $2 = lftp settings
+            echo "=== $1"
+            lftp -u "$FTP_USERNAME,$FTP_PASSWORD" "ftp://$host" -e "$2 set net:max-retries 1; set net:timeout 20; set net:reconnect-interval-base 2; echo -n 'pwd: '; pwd; echo '--- login directory (name, depth 1) ---'; cls -1 -F; bye" 2>&1 | head -80
+            echo "exit: ${PIPESTATUS[0]}"
+          }
+          try "plain FTP" "set ftp:ssl-allow no;"
+          try "explicit FTPS, certificate verified" "set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate yes;"
+          try "explicit FTPS, certificate NOT verified (shows whether only the certificate is the problem)" "set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate no;"
+
+      - name: Contents of public_html and deployment state files
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set +x
+          host="${FTP_SERVER#ftp://}"; host="${host%%/*}"
+          lftp -u "$FTP_USERNAME,$FTP_PASSWORD" "ftp://$host" -e "set ftp:ssl-allow no; set net:max-retries 1; set net:timeout 20; echo '--- public_html (depth 1, with sizes) ---'; cls -1 -F -s public_html; echo '--- state files at login dir ---'; cls -1 -a .ftp-deploy-sync-state*.json; echo '--- state files in public_html ---'; cls -1 -a public_html/.ftp-deploy-sync-state*.json; echo '--- .env at login dir? ---'; cls -1 -a .env; bye" 2>&1 | head -120
+
+      - name: Temporary PHP / .htaccess probe
+        if: ${{ inputs.probe }}
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set +x
+          host="${FTP_SERVER#ftp://}"; host="${host%%/*}"
+          rnd="$(openssl rand -hex 8)"
+          dir="pixelite-probe-$rnd"; marker="pixelite-probe-$rnd.txt"
+          mkdir -p "work/$dir"
+          echo "marker outside public_html" > "work/$marker"
+          cat > "work/$dir/probe.php" <<PHP
+          <?php
+          header('Content-Type: text/plain'); header('Cache-Control: no-store');
+          \$parent = dirname(__DIR__, 2);
+          echo "php_version=" . PHP_VERSION . "\n";
+          echo "sapi=" . PHP_SAPI . "\n";
+          echo "server_software=" . (\$_SERVER['SERVER_SOFTWARE'] ?? '-') . "\n";
+          echo "document_root_basename=" . basename(\$_SERVER['DOCUMENT_ROOT'] ?? '') . "\n";
+          echo "script_dir_depth_to_login_dir=" . (basename(dirname(__DIR__)) === 'public_html' ? 'public_html is the parent of this probe dir' : 'unexpected:' . basename(dirname(__DIR__))) . "\n";
+          echo "login_dir_marker_readable=" . (is_readable(\$parent . '/$marker') ? 'yes' : 'no') . "\n";
+          echo "login_dir_writable=" . (is_writable(\$parent) ? 'yes' : 'no') . "\n";
+          \$t = \$parent . '/pixelite-probe-mkdir-$rnd';
+          echo "login_dir_can_mkdir=" . (@mkdir(\$t, 0775) ? 'yes' : 'no') . "\n"; @rmdir(\$t);
+          echo "open_basedir=" . (ini_get('open_basedir') ?: '(none)') . "\n";
+          echo "sqlite_pdo=" . (extension_loaded('pdo_sqlite') ? 'yes' : 'NO') . "\n";
+          foreach (['mbstring', 'curl', 'openssl', 'json', 'session', 'fileinfo', 'intl', 'ctype'] as \$e) echo "ext_\$e=" . (extension_loaded(\$e) ? 'yes' : 'no') . "\n";
+          echo "allow_url_fopen=" . ini_get('allow_url_fopen') . "\n";
+          echo "memory_limit=" . ini_get('memory_limit') . "\n";
+          echo "max_execution_time=" . ini_get('max_execution_time') . "\n";
+          echo "https_var=" . (\$_SERVER['HTTPS'] ?? '(unset)') . "\n";
+          echo "x_forwarded_proto=" . (\$_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '(unset)') . "\n";
+          echo "x_forwarded_for_present=" . (isset(\$_SERVER['HTTP_X_FORWARDED_FOR']) ? 'yes' : 'no') . "\n";
+          echo "remote_addr_is_runner_ip_or_proxy=" . (\$_SERVER['REMOTE_ADDR'] ?? '-') . "\n";
+          echo "request_uri=" . (\$_SERVER['REQUEST_URI'] ?? '-') . "\n";
+          PHP
+          printf 'secret\n' > "work/$dir/.secret"
+          printf 'SQLite format 3\n' > "work/$dir/data.sqlite"
+          cat > "work/$dir/.htaccess" <<'HT'
+          Options -Indexes -MultiViews
+          DirectoryIndex probe.php
+          <IfModule mod_authz_core.c>
+            <FilesMatch "^\.(?!well-known)">
+              Require all denied
+            </FilesMatch>
+            <FilesMatch "\.(?:sqlite3?|db|log)$">
+              Require all denied
+            </FilesMatch>
+          </IfModule>
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteRule ^ probe.php [L]
+          HT
+          lftp -u "$FTP_USERNAME,$FTP_PASSWORD" "ftp://$host" -e "set ftp:ssl-allow no; set net:max-retries 1; set net:timeout 20; put -O . 'work/$marker'; mirror -R --no-perms 'work/$dir' 'public_html/$dir'; bye" 2>&1 | tail -3
+          echo "--- HTTP results (site URL: $SITE_URL) ---"
+          code() { curl -s -o /dev/null -m 20 -w '%{http_code}' "$1"; }
+          sleep 3
+          echo "GET /$dir/            -> $(code "$SITE_URL/$dir/") (probe output follows)"
+          curl -s -m 20 "$SITE_URL/$dir/" | head -40
+          echo "GET /$dir/some/route  -> $(code "$SITE_URL/$dir/some/route") (expect 200: rewrite to probe.php works in .htaccess)"
+          echo "GET /$dir/data.sqlite -> $(code "$SITE_URL/$dir/data.sqlite") (expect 403: FilesMatch + Require all denied works)"
+          echo "GET /$dir/.secret     -> $(code "$SITE_URL/$dir/.secret") (expect 403: dotfiles denied)"
+          echo "GET /$dir/.htaccess   -> $(code "$SITE_URL/$dir/.htaccess") (expect 403)"
+          echo "GET /$marker (marker outside public_html) -> $(code "$SITE_URL/$marker") (expect 404: login dir is NOT web-served)"
+          echo "--- cleanup ---"
+          lftp -u "$FTP_USERNAME,$FTP_PASSWORD" "ftp://$host" -e "set ftp:ssl-allow no; set net:max-retries 1; set net:timeout 20; rm -r 'public_html/$dir'; rm '$marker'; echo '--- leftovers (expect none) ---'; cls -1 -a 'public_html/pixelite-probe-*'; cls -1 -a 'pixelite-probe-*'; bye" 2>&1 | tail -6

@@ -492,6 +492,37 @@ check('pricing with an invalid VAT mode shows the visible placeholder (cards + i
 Env::set('PRICE_VAT_MODE', '');
 check('pricing page: starting prices come from the same data (no price text in the template)', str_contains($page('/en/pricing'), '>2,999<') && str_contains($page('/cs/pricing'), "2{$NB}999") && str_contains($page('/cs/pricing'), "Od 64{$NB}900 Kč"));
 
+echo "Endora deployment artifact (build + pre-upload gate)\n";
+$art = "$tmp/artifact";
+$sh = fn(string $c): array => (function () use ($c) { exec($c . ' 2>&1', $o, $rc); return [$rc, implode("\n", $o)]; })();
+[$rc, $o] = $sh('php ' . escapeshellarg(Pixelite\Paths::root('scripts/build-endora.php')) . ' ' . escapeshellarg($art));
+check('build script produces public_html/ + app/', $rc === 0 && is_file("$art/public_html/index.php") && is_file("$art/app/src/bootstrap.php"), $o);
+$verify = fn(string $dir, bool $http = false) => $sh('php ' . escapeshellarg(Pixelite\Paths::root('scripts/verify-endora-artifact.php')) . ' ' . escapeshellarg($dir) . ($http ? ' --http' : ''));
+[$rc, $o] = $verify($art, true);
+check('a correct artifact passes every layout / leakage / asset gate and serves the real site over HTTP', $rc === 0 && str_contains($o, ' 0 failed'), substr($o, -400));
+$mutate = function (string $name, callable $fn, string $expect) use ($art, $tmp, $sh, $verify) {
+    $copy = "$tmp/mut-" . bin2hex(random_bytes(3));
+    $sh('cp -R ' . escapeshellarg($art) . ' ' . escapeshellarg($copy));
+    $fn($copy);
+    [$rc, $o] = $verify($copy);
+    check("gate rejects: $name", $rc !== 0 && str_contains($o, $expect), substr($o, -300));
+    $sh('rm -rf ' . escapeshellarg($copy));
+};
+$mutate('repository root uploaded into the document root (src/ inside public_html)', fn($d) => $sh('cp -R ' . escapeshellarg("$d/app/src") . ' ' . escapeshellarg("$d/public_html/src")), 'public_html top level');
+$mutate('missing front controller (placeholder page would win)', fn($d) => unlink("$d/public_html/index.php"), 'public_html/index.php exists');
+$mutate('missing stylesheet', fn($d) => unlink("$d/public_html/assets/style.css"), 'every asset()');
+$mutate('missing font file', fn($d) => unlink((glob("$d/public_html/assets/fonts/*.ttf") ?: [''])[0]), 'every url() in style.css');
+$mutate('.env file shipped', fn($d) => file_put_contents("$d/app/.env", "X=1\n"), 'no env files');
+$mutate('SQLite database shipped', fn($d) => file_put_contents("$d/app/storage/leads.sqlite", 'x'), 'no env files');
+$mutate('tests directory shipped', fn($d) => (mkdir("$d/app/tests") && file_put_contents("$d/app/tests/run.php", '<?php')), 'no env files');
+$mutate('CLAUDE.md / docs shipped', fn($d) => file_put_contents("$d/app/CLAUDE.md", '# x'), 'no env files');
+$mutate('a Telegram-token-shaped string in a shipped file', fn($d) => file_put_contents("$d/app/config/leak.php", "<?php return '123456789:" . str_repeat('A', 35) . "';"), 'Telegram token');
+$mutate('.htaccess without the front-controller rewrite', fn($d) => file_put_contents("$d/public_html/.htaccess", "Options -Indexes\n"), '.htaccess:');
+$mutate('private dir moved under the web root', fn($d) => $sh('mv ' . escapeshellarg("$d/app/templates") . ' ' . escapeshellarg("$d/public_html/templates")), 'private directories');
+check('Paths::publicDir() resolves public/ in development and public_html/ in the hosting layout', Pixelite\Paths::publicDir() === Pixelite\Paths::root('public') && is_file(Pixelite\Paths::publicDir('assets/style.css')));
+check('index.php is layout-agnostic (requires ../src/bootstrap.php relative to its own directory)', str_contains((string) file_get_contents(Pixelite\Paths::root('public/index.php')), "__DIR__ . '/../src/bootstrap.php'"));
+check('.htaccess denies dotfiles and data extensions, no listing, rewrites to the front controller', (function () { $h = (string) file_get_contents(Pixelite\Paths::root('public/.htaccess')); return str_contains($h, 'Options -Indexes') && str_contains($h, 'Require all denied') && str_contains($h, 'Deny from all') && str_contains($h, 'RewriteRule ^ index.php [L]'); })());
+
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();
 echo "\n$pass passed, $fail failed\n";

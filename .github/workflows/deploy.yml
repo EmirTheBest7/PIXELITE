@@ -1,23 +1,139 @@
-name: Deploy na Endoru přes FTP
+name: Deploy to Endora (FTP)
+
+# Endora's web server serves ONLY ./public_html/ (see docs/deployment/endora.md). The repository root is therefore
+# never uploaded. scripts/build-endora.php turns the repo into two parts:
+#   build/endora/public_html/  ->  FTP ./public_html/   (index.php, .htaccess, assets/, favicon.ico)
+#   build/endora/app/          ->  FTP ./               (src, templates, lang, config, storage/.gitkeep — outside the web root)
+# The upload only happens after the tests and scripts/verify-endora-artifact.php passed, and only when the
+# repository variable DEPLOY_ENABLED is "true"; otherwise the FTP step runs as a DRY RUN that lists what it would change.
+# .env is never part of the artifact: create it once on the server (see docs/deployment/endora.md).
 
 on:
   push:
-    branches:
-      - main  # Skript se spustí při pushnutí do větve main
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: print the planned changes, upload nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-endora
+  cancel-in-progress: false
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://pixelite.cz' }}
 
 jobs:
-  web-deploy:
-    name: Nahrání souborů
-    runs-on: ubuntu-latest
+  verify:
+    name: Test, build and verify artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-    - name: Získat nejnovější kód z repo
-      uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-    - name: Synchronizace přes FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./  # Adresář v repozitáři, který se má nahrát (./ je kořen)
-        server-dir: ./public_html/ # Cílový adresář na FTP Endory (např. ./web/ pokud nahráváte tam)
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_sqlite, mbstring, curl, openssl, intl
+          coverage: none
+
+      - name: PHP test suite (never talks to the real Telegram chat; uses fakes and a temporary database)
+        run: php tests/run.php
+
+      - name: Build Endora artifact
+        run: php scripts/build-endora.php
+
+      - name: Verify artifact (layout, leaked files, assets, real HTTP smoke test of the built artifact)
+        run: php scripts/verify-endora-artifact.php build/endora --http
+
+      - name: Upload artifact for the deploy job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: endora-artifact
+          path: build/endora
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Upload to Endora
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LIVE: ${{ vars.DEPLOY_ENABLED == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+    steps:
+      - name: Mode
+        run: |
+          if [ "$LIVE" = "true" ]; then echo "::notice::LIVE deployment"; else echo "::notice::DRY RUN – nothing will be uploaded or deleted (set repository variable DEPLOY_ENABLED=true and run without dry_run to deploy)"; fi
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: endora-artifact
+          path: build/endora
+
+      - name: Re-check the downloaded artifact layout
+        run: |
+          test -f build/endora/public_html/index.php
+          test -f build/endora/app/src/bootstrap.php
+          test ! -e build/endora/public_html/src
+          test -z "$(find build/endora -name '.env*' -o -name '*.sqlite' -o -name '*.log' -o -name '.git*' ! -name '.gitkeep' | head -1)"
+
+      # 1) private application code at the FTP login directory (outside the web root). Own state file so it never
+      #    mixes with the public_html state. Only files this action itself uploaded before are ever deleted.
+      - name: FTP – private app (./)
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
+          port: ${{ vars.FTP_PORT || '21' }}
+          timeout: 60000
+          local-dir: ./build/endora/app/
+          server-dir: ./
+          state-name: .ftp-deploy-sync-state-app.json
+          dry-run: ${{ env.LIVE != 'true' }}
+          dangerous-clean-slate: false
+          log-level: standard
+          exclude: |
+            **/.git*/**
+            **/.env*
+            **/*.sqlite*
+            **/*.log
+
+      # 2) the document root. Same state file name as the earlier deployments, so files uploaded back then (src/,
+      #    tests/, CLAUDE.md, … in the WRONG place) are recognised and removed — and nothing else.
+      - name: FTP – web root (./public_html/)
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
+          port: ${{ vars.FTP_PORT || '21' }}
+          timeout: 60000
+          local-dir: ./build/endora/public_html/
+          server-dir: ./public_html/
+          dry-run: ${{ env.LIVE != 'true' }}
+          dangerous-clean-slate: false
+          log-level: standard
+          exclude: |
+            **/.git*/**
+            **/.env*
+
+  smoke:
+    name: Live smoke test
+    needs: deploy
+    if: ${{ vars.DEPLOY_ENABLED == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check the live site
+        run: bash scripts/smoke-live.sh "$SITE_URL"

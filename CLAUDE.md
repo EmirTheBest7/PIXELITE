@@ -32,6 +32,8 @@ storage/           git-ignored runtime data: leads.sqlite, logs/app.log, .salt
 tests/run.php      dependency-free PHP test runner (+ fake_telegram.php)
 tests/browser/    real-Chrome CDP suite (run.mjs matrix, cdp.mjs driver, styles-dump/diff for CSS regression checks)
 bin/hash-password.php
+scripts/            build-endora.php (artifact), verify-endora-artifact.php (pre-upload gate), smoke-live.sh (live check)
+.github/workflows/  deploy.yml (CI → Endora FTP), endora-inspect.yml (read-only host inspection)
 ```
 
 ## Design system (from the original landing page; tokens are `:root` vars in style.css)
@@ -143,6 +145,9 @@ docker compose run --rm app php bin/hash-password.php   # → ADMIN_PASSWORD_HAS
 Verify real credentials with `docker compose exec app php bin/telegram-check.php` (sends one labelled test message; exit 0 = delivered).
 Telegram: create a bot with @BotFather, message it, read `https://api.telegram.org/bot<TOKEN>/getUpdates` for `chat.id`, set both vars, submit `/en/order`. Tests exercise the real HTTP path against `tests/fake_telegram.php`; **a real bot token has not been tested from this repo.**
 Edits to PHP/CSS are live (bind mount). Production: build the image (code is `COPY`'d) and mount a persistent volume at `/var/www/html/storage`, provide secrets via a mounted `.env` or real environment variables (`APP_ENV`/`APP_DEBUG` in `.env.example` are legacy keys the code does not read).
+
+## Deployment (Endora shared hosting)
+Endora serves only `public_html/`. CI never uploads the repo root: `scripts/build-endora.php` maps `public/` → `public_html/` and ships `src/ templates/ lang/ config/ storage/.gitkeep` as private siblings (FTP login dir); `.env` is created by hand next to `public_html/` and never uploaded. `scripts/verify-endora-artifact.php --http` is the pre-upload gate (layout, leaked files, assets, real HTTP smoke test) and runs in CI and in `tests/run.php`. Upload is a dry run unless repo variable `DEPLOY_ENABLED=true`; `dangerous-clean-slate` stays off. Facts, evidence, setup and rollback: `docs/deployment/endora.md`. `Paths::publicDir()` resolves `public/` or `public_html/`.
 
 ## Status
 - [x] Audit, design tokens, self-hosted assets, HTML fixes

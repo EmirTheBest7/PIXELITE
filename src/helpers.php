@@ -31,7 +31,7 @@ function absolute_url(string $path): string
 /** Cache-busted asset URL. */
 function asset(string $path): string
 {
-    $file = Paths::root('public/assets/' . $path);
+    $file = Paths::publicDir('assets/' . $path);
     return '/assets/' . $path . (is_file($file) ? '?v=' . filemtime($file) : '');
 }
 

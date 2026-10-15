@@ -1,5 +1,22 @@
-Options -Indexes
+Options -Indexes -MultiViews
 DirectoryIndex index.php
+
+# Defence in depth: this directory only ever needs index.php and static assets. Dotfiles (.htaccess, deploy
+# state files, .env, .git …) and data/config/backup extensions are refused even if one lands here by mistake.
+<IfModule mod_authz_core.c>
+  <FilesMatch "^\.(?!well-known)">
+    Require all denied
+  </FilesMatch>
+  <FilesMatch "\.(?:sqlite3?|db|log|bak|sql|sh|md|ya?ml|ini|dist|lock|env|inc|orig|swp)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "^\.(?!well-known)|\.(?:sqlite3?|db|log|bak|sql|sh|md|ya?ml|ini|dist|lock|env|inc|orig|swp)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
 
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
