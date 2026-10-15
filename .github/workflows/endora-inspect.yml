@@ -57,6 +57,19 @@ jobs:
           try "explicit FTPS, certificate verified" "set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate yes;"
           try "explicit FTPS, certificate NOT verified (shows whether only the certificate is the problem)" "set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate no;"
 
+      - name: FTPS certificate and SFTP banner (public information only)
+        run: |
+          set +x
+          for h in ftp.pixelite.cz 195.181.248.46; do
+            echo "=== explicit FTPS certificate presented for $h:21"
+            echo QUIT | timeout 25 openssl s_client -connect "$h:21" -starttls ftp -servername "$h" 2>/dev/null > /tmp/cert.txt || true
+            openssl x509 -in /tmp/cert.txt -noout -subject -issuer -dates -ext subjectAltName 2>&1 | head -8
+            echo "verify result: $(grep -m1 'Verify return code' /tmp/cert.txt)"
+          done
+          echo "=== port 222 banner"
+          (printf '' | timeout 8 nc -w 5 ftp.pixelite.cz 222 | head -c 80) 2>&1 || true
+          echo
+
       - name: Contents of public_html and deployment state files
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
