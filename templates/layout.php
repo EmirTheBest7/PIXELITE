@@ -48,6 +48,7 @@ $isHome = $meta['page'] === 'home';
 <?= $content ?>
 </main>
 <?php require __DIR__ . '/partials/footer.php' ?>
+<script src="<?= e(asset('endora-banner.js')) ?>" defer></script>
 <script src="<?= e(asset('script.js')) ?>" defer></script>
 <script src="<?= e(asset('theme.js')) ?>" defer></script>
 <script src="<?= e(asset('consent.js')) ?>" defer></script>
