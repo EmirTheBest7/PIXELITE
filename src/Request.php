@@ -32,6 +32,17 @@ final class Request
         return is_string($v) ? $v : '';
     }
 
+    /** Path and query exactly as requested (before slash normalisation); '' outside a real HTTP request. */
+    public function rawUri(): string
+    {
+        return (string) ($this->server['REQUEST_URI'] ?? '');
+    }
+
+    public function host(): string
+    {
+        return strtolower(preg_replace('/:\d+$/', '', $this->header('Host')));
+    }
+
     public function header(string $name): string
     {
         return (string) ($this->server['HTTP_' . strtoupper(str_replace('-', '_', $name))] ?? '');

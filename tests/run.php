@@ -523,6 +523,58 @@ check('Paths::publicDir() resolves public/ in development and public_html/ in th
 check('index.php is layout-agnostic (requires ../src/bootstrap.php relative to its own directory)', str_contains((string) file_get_contents(Pixelite\Paths::root('public/index.php')), "__DIR__ . '/../src/bootstrap.php'"));
 check('.htaccess denies dotfiles and data extensions, no listing, rewrites to the front controller', (function () { $h = (string) file_get_contents(Pixelite\Paths::root('public/.htaccess')); return str_contains($h, 'Options -Indexes') && str_contains($h, 'Require all denied') && str_contains($h, 'Deny from all') && str_contains($h, 'RewriteRule ^ index.php [L]'); })());
 
+echo "seo regression\n";
+$seoPaths = ['', 'pricing', 'process', 'order', 'contact', 'privacy', 'cookies', 'terms'];
+$titles = []; $descs = [];
+foreach (['en', 'cs'] as $lang) {
+    foreach ($seoPaths as $pg) {
+        $h = $page("/$lang/$pg");
+        preg_match('#<title>(.*?)</title>#s', $h, $tm); preg_match('#name="description" content="(.*?)"#', $h, $dm);
+        $titles[] = $tm[1] ?? ''; $descs[] = $dm[1] ?? '';
+        $canon = "https://pixelite.cz/$lang/$pg";
+        check("seo $lang/$pg: html lang, one h1, canonical self, reciprocal hreflang, index,follow, twitter+og image meta", str_contains($h, "<html lang=\"$lang\">") && substr_count($h, '<h1') === 1 && str_contains($h, '<link rel="canonical" href="' . $canon . '">') && str_contains($h, 'hreflang="en" href="https://pixelite.cz/en/' . $pg . '"') && str_contains($h, 'hreflang="cs" href="https://pixelite.cz/cs/' . $pg . '"') && str_contains($h, 'hreflang="x-default" href="https://pixelite.cz/en/' . $pg . '"') && str_contains($h, 'content="index,follow"') && str_contains($h, 'name="twitter:title"') && str_contains($h, 'name="twitter:image"') && str_contains($h, 'property="og:image:width"'));
+        preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $h, $lm);
+        $okLd = count($lm[1]) === 1;
+        foreach ($lm[1] as $j) { $d = json_decode($j, true); $okLd = $okLd && is_array($d) && ($d['@context'] ?? '') === 'https://schema.org' && !str_contains($j, 'aggregateRating') && !str_contains($j, 'review'); }
+        check("seo $lang/$pg: exactly one valid JSON-LD block, no invented ratings/reviews", $okLd);
+        if ($pg !== '') {
+            $d = json_decode($lm[1][0], true);
+            check("seo $lang/$pg: BreadcrumbList ends at the canonical URL", ($d['@type'] ?? '') === 'BreadcrumbList' && end($d['itemListElement'])['item'] === $canon && $d['itemListElement'][0]['item'] === "https://pixelite.cz/$lang/");
+        } else {
+            $d = json_decode($lm[1][0], true);
+            check("seo $lang/: Organization + WebSite graph with absolute URLs", array_column($d['@graph'], '@type') === ['Organization', 'WebSite'] && $d['@graph'][1]['publisher']['@id'] === 'https://pixelite.cz/#organization');
+        }
+    }
+}
+check('seo: page titles are unique across all public pages and languages', count(array_unique($titles)) === count($titles), implode(' | ', array_diff_assoc($titles, array_unique($titles))));
+check('seo: meta descriptions are unique across all public pages and languages', count(array_unique($descs)) === count($descs));
+foreach (['en', 'cs'] as $lang) {
+    $pf = $page("/$lang/portfolio");
+    check("seo $lang/portfolio: noindex and not in sitemap", str_contains($pf, 'content="noindex,nofollow"') && !str_contains($page('/sitemap.xml'), 'portfolio'));
+}
+$rob = $page('/robots.txt');
+check('robots.txt: blocks /admin only, references the absolute sitemap', str_contains($rob, 'Disallow: /admin') && str_contains($rob, 'Sitemap: https://pixelite.cz/sitemap.xml') && !str_contains($rob, 'Disallow: /en') && !str_contains($rob, 'Disallow: /cs'));
+$sm = $page('/sitemap.xml');
+check('sitemap: valid XML, 16 canonical URLs, no sent/admin/order-success', ($x = simplexml_load_string($sm)) !== false && substr_count($sm, '<loc>') === 16 && !str_contains($sm, '/sent') && !str_contains($sm, 'admin'));
+// canonical URL redirects (only in a real HTTP request, i.e. when REQUEST_URI is known)
+$mkUri = fn(string $uri, string $host = 'pixelite.cz', string $m = 'GET') => new Request($m, '/' . trim((string) parse_url($uri, PHP_URL_PATH), '/'), [], [], ['REMOTE_ADDR' => '203.0.113.9', 'REQUEST_URI' => $uri, 'HTTP_HOST' => $host]);
+foreach ([['/en', '/en/'], ['/cs?x=1', '/cs/?x=1'], ['/en/pricing/', '/en/pricing'], ['/cs/order/?package=basic', '/cs/order?package=basic']] as [$from, $to]) {
+    $rr = Pixelite\handle($mkUri($from));
+    check("redirect $from → $to (301)", $rr->status === 301 && ($rr->headers['Location'] ?? '') === $to);
+}
+$rr = Pixelite\handle($mkUri('/en/pricing', 'www.pixelite.cz'));
+check('www host → apex (301, https origin from APP_URL)', $rr->status === 301 && ($rr->headers['Location'] ?? '') === 'https://pixelite.cz/en/pricing');
+foreach ([['/en/', 'GET'], ['/en/pricing', 'GET'], ['/admin/login', 'GET'], ['/en/order', 'POST'], ['/sitemap.xml', 'GET']] as [$u, $m]) {
+    check("no redirect for canonical $m $u", Pixelite\handle($mkUri($u, 'pixelite.cz', $m))->status !== 301);
+}
+check('missing local assets referenced by every page do not exist as 404s', (function () use ($page, $seoPaths) {
+    foreach (['en', 'cs'] as $lang) foreach ($seoPaths as $pg) {
+        preg_match_all('#(?:href|src)="(/assets/[^"?]+)#', $page("/$lang/$pg"), $am);
+        foreach ($am[1] as $a) { if (!is_file(Pixelite\Paths::publicDir(substr($a, 1)))) return false; }
+    }
+    return true;
+})());
+
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();
 echo "\n$pass passed, $fail failed\n";

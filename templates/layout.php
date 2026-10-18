@@ -25,19 +25,48 @@ $isHome = $meta['page'] === 'home';
   <meta property="og:url" content="<?= e($canonical) ?>">
   <meta property="og:locale" content="<?= $locale === 'cs' ? 'cs_CZ' : 'en_US' ?>">
   <meta property="og:image" content="<?= e(absolute_url('/assets/img/hero.png')) ?>">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="907">
+  <meta property="og:image:height" content="503">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?= e($meta['title']) ?>">
+<?php if ($meta['description'] !== ''): ?>  <meta name="twitter:description" content="<?= e($meta['description']) ?>">
+<?php endif ?>
+  <meta name="twitter:image" content="<?= e(absolute_url('/assets/img/hero.png')) ?>">
 <?php require __DIR__ . '/partials/head-assets.php' ?>
-<?php if ($isHome): $c = contact(); ?>
-  <script type="application/ld+json"><?= json_encode(array_filter([
-      '@context' => 'https://schema.org',
-      '@type' => 'Organization',
-      'name' => 'Pixelite.cz',
-      'url' => absolute_url('/'),
-      'logo' => absolute_url('/assets/icons/apple-touch-icon.png'),
-      'description' => $meta['description'],
-      'email' => $c['email'] ?: null,
-      'telephone' => $c['phone'] ?: null,
-  ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+<?php
+$ldFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG;
+$ld = null;
+if ($isHome) {
+    $c = contact();
+    $ld = ['@context' => 'https://schema.org', '@graph' => [
+        array_filter([
+            '@type' => 'Organization',
+            '@id' => absolute_url('/#organization'),
+            'name' => 'Pixelite.cz',
+            'url' => absolute_url('/'),
+            'logo' => absolute_url('/assets/icons/apple-touch-icon.png'),
+            'description' => $meta['description'],
+            'email' => $c['email'] ?: null,
+            'telephone' => $c['phone'] ?: null,
+        ]),
+        [
+            '@type' => 'WebSite',
+            '@id' => absolute_url('/#website'),
+            'name' => 'Pixelite.cz',
+            'url' => absolute_url('/'),
+            'inLanguage' => ['en', 'cs'],
+            'publisher' => ['@id' => absolute_url('/#organization')],
+        ],
+    ]];
+} elseif (!in_array($meta['page'], ['404', '500', 'portfolio'], true)) {
+    $ld = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Pixelite.cz', 'item' => absolute_url(url(''))],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => trim(preg_replace('/\s*[–-]\s*Pixelite\.cz$/u', '', $meta['title'])), 'item' => $canonical],
+    ]];
+}
+if ($ld !== null): ?>
+  <script type="application/ld+json"><?= json_encode($ld, $ldFlags) ?></script>
 <?php endif ?>
 </head>
 <body>

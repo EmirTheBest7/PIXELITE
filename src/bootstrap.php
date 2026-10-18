@@ -109,9 +109,41 @@ function securityHeaders(Response $resp, Request $r): void
     }
 }
 
+/**
+ * One URL per page: www → apex host, `/en` → `/en/`, `/en/pricing/` → `/en/pricing` (301, query kept).
+ * Only for GET/HEAD in a real HTTP request (REQUEST_URI present); never touches /admin or POSTs.
+ */
+function canonicalRedirect(Request $r): ?Response
+{
+    $uri = $r->rawUri();
+    if ($uri === '' || !in_array($r->method, ['GET', 'HEAD'], true)) {
+        return null;
+    }
+    $path = (string) parse_url($uri, PHP_URL_PATH);
+    $query = (string) parse_url($uri, PHP_URL_QUERY);
+    $target = $path;
+    if (preg_match('#^/(?:en|cs)$#', $path)) {
+        $target = $path . '/';
+    } elseif (preg_match('#^/(?:en|cs)/.+/$#', $path)) {
+        $target = rtrim($path, '/');
+    }
+    $origin = rtrim(Env::get('APP_URL', 'https://pixelite.cz'), '/');
+    $apexHost = strtolower((string) parse_url($origin, PHP_URL_HOST));
+    $wrongHost = $apexHost !== '' && $r->host() === 'www.' . $apexHost;
+    if ($target === $path && !$wrongHost) {
+        return null;
+    }
+    $base = $wrongHost ? $origin : '';
+    return new Response(301, '', ['Location' => $base . $target . ($query !== '' ? '?' . $query : '')]);
+}
+
 function handle(Request $r): Response
 {
     I18n::set(I18n::default());
+    if (($redirect = canonicalRedirect($r)) !== null) {
+        securityHeaders($redirect, $r);
+        return $redirect;
+    }
     try {
         $resp = buildRouter()->dispatch($r) ?? notFound($r);
     } catch (\Throwable $ex) {
