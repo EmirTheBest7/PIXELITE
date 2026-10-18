@@ -14,6 +14,7 @@ use Pixelite\RateLimiter;
 use Pixelite\Request;
 use Pixelite\Response;
 use Pixelite\Session;
+use Pixelite\TemplateCatalog;
 
 final class OrderController extends BaseController
 {
@@ -36,6 +37,12 @@ final class OrderController extends BaseController
             $old['package'] = $package;
             $old['project_type'] ??= 'website';   // every package is a website; the visitor can still change it
         }
+        $tpl = $r->query('template');       // from a gallery card; validated again on submit
+        if (TemplateCatalog::has($tpl)) {
+            $old['template'] = $tpl;
+            $old['project_type'] ??= 'website';
+            $old['package'] ??= 'template';   // a gallery design is built as the Template-website package; the visitor can still change it
+        }
         return $this->form($old, [], '');
     }
 
@@ -47,7 +54,7 @@ final class OrderController extends BaseController
         $window = Env::int('CONTACT_RATE_WINDOW', 900);
 
         $old = [];
-        foreach (['name', 'company', 'email', 'phone', 'project_type', 'package', 'budget', 'timeframe', 'description'] as $f) {
+        foreach (['name', 'company', 'email', 'phone', 'project_type', 'package', 'template', 'budget', 'timeframe', 'description'] as $f) {
             $old[$f] = $r->post($f);
         }
 

@@ -62,6 +62,7 @@ final class TelegramNotifier
             '',
             'Project: ' . I18n::get("order.options.project_type.$type", [], 'en'),
             ...self::packageLines($o),
+            ...self::templateLines($o),
             'Budget: ' . I18n::get('order.options.budget.' . ($o['budget'] ?? ''), [], 'en'),
             'Timeline: ' . I18n::get('order.options.timeframe.' . ($o['timeframe'] ?? ''), [], 'en'),
             '',
@@ -76,6 +77,13 @@ final class TelegramNotifier
         $text = implode("\n", $lines);
         // Telegram's hard limit is 4096 chars.
         return mb_strlen($text) > 4000 ? mb_substr($text, 0, 3990) . "\n[truncated]" : $text;
+    }
+
+    /** @return list<string> the website design the customer picked from the gallery (nothing for orders without one) */
+    private static function templateLines(array $o): array
+    {
+        $slug = (string) ($o['template'] ?? '');
+        return $slug === '' ? [] : ['Design: ' . (($o['template_name'] ?? '') ?: $slug) . " ($slug)"];
     }
 
     /** @return list<string> "Package: …" (+ the price context the customer saw, if recorded) */

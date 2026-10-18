@@ -3,6 +3,7 @@
 $nav = [
     ['', 'nav.home'],
     ['#services', 'nav.services'],
+    ['templates', 'nav.templates'],
     ['pricing', 'nav.pricing'],
     ['process', 'nav.process'],
     ['contact', 'nav.contact'],

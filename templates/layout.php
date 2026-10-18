@@ -2,6 +2,7 @@
 /** @var array $meta @var string $locale @var string $content */
 $canonical = absolute_url(url($meta['path']));
 $isHome = $meta['page'] === 'home';
+$shareImage = absolute_url($meta['image'] ?? '/assets/img/hero.png');
 ?>
 <!DOCTYPE html>
 <html lang="<?= e($locale) ?>">
@@ -24,15 +25,17 @@ $isHome = $meta['page'] === 'home';
   <meta property="og:description" content="<?= e($meta['description']) ?>">
   <meta property="og:url" content="<?= e($canonical) ?>">
   <meta property="og:locale" content="<?= $locale === 'cs' ? 'cs_CZ' : 'en_US' ?>">
-  <meta property="og:image" content="<?= e(absolute_url('/assets/img/hero.png')) ?>">
+  <meta property="og:image" content="<?= e($shareImage) ?>">
+<?php if (empty($meta['image'])): ?>
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="907">
   <meta property="og:image:height" content="503">
+<?php endif ?>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?= e($meta['title']) ?>">
 <?php if ($meta['description'] !== ''): ?>  <meta name="twitter:description" content="<?= e($meta['description']) ?>">
 <?php endif ?>
-  <meta name="twitter:image" content="<?= e(absolute_url('/assets/img/hero.png')) ?>">
+  <meta name="twitter:image" content="<?= e($shareImage) ?>">
 <?php require __DIR__ . '/partials/head-assets.php' ?>
 <?php
 $ldFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG;
@@ -60,10 +63,12 @@ if ($isHome) {
         ],
     ]];
 } elseif (!in_array($meta['page'], ['404', '500', 'portfolio'], true)) {
-    $ld = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
-        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Pixelite.cz', 'item' => absolute_url(url(''))],
-        ['@type' => 'ListItem', 'position' => 2, 'name' => trim(preg_replace('/\s*[–-]\s*Pixelite\.cz$/u', '', $meta['title'])), 'item' => $canonical],
-    ]];
+    $crumbs = $meta['crumbs'] ?? [[trim(preg_replace('/\s*[–-]\s*Pixelite\.cz$/u', '', $meta['title'])), $meta['path']]];
+    $items = [['@type' => 'ListItem', 'position' => 1, 'name' => 'Pixelite.cz', 'item' => absolute_url(url(''))]];
+    foreach ($crumbs as $i => [$label, $path]) {
+        $items[] = ['@type' => 'ListItem', 'position' => $i + 2, 'name' => $label, 'item' => absolute_url(url($path))];
+    }
+    $ld = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $items];
 }
 if ($ld !== null): ?>
   <script type="application/ld+json"><?= json_encode($ld, $ldFlags) ?></script>
@@ -79,6 +84,9 @@ if ($ld !== null): ?>
 <?php require __DIR__ . '/partials/footer.php' ?>
 <script src="<?= e(asset('endora-banner.js')) ?>" defer></script>
 <script src="<?= e(asset('script.js')) ?>" defer></script>
+<?php if (in_array($meta['page'], ['templates', 'template'], true)): ?>
+<script src="<?= e(asset('templates.js')) ?>" defer></script>
+<?php endif ?>
 <script src="<?= e(asset('theme.js')) ?>" defer></script>
 <script src="<?= e(asset('consent.js')) ?>" defer></script>
 </body>

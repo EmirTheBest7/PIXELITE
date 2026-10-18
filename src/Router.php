@@ -8,12 +8,13 @@ final class Router
     /** @var list<array{string,string,callable}> */
     private array $routes = [];
 
-    /** Pattern tokens: {lang} (en|cs) and {id} (digits). */
+    /** Pattern tokens: {lang} (en|cs), {id} (digits) and {slug} (lowercase letters, digits, hyphens). */
     public function add(string $method, string $pattern, callable $handler): void
     {
         $regex = strtr(preg_quote($pattern, '#'), [
             '\{lang\}' => '(?<lang>' . implode('|', I18n::LOCALES) . ')',
             '\{id\}' => '(?<id>\d+)',
+            '\{slug\}' => '(?<slug>[a-z0-9][a-z0-9-]{0,63})',
         ]);
         $this->routes[] = [$method, '#^' . $regex . '$#', $handler];
     }

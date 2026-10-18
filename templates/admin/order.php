@@ -12,6 +12,9 @@
 <?php elseif ($pk !== null): ?>
     <dt>Package price shown</dt><dd>– <small>(not recorded: order placed before pricing snapshots existed)</small></dd>
 <?php endif ?>
+<?php elseif ($k === 'budget' && ($o['template'] ?? '') !== ''): ?>
+    <dt>Chosen design</dt><dd><a href="/admin/templates/<?= e($o['template']) ?>"><?= e($o['template_name'] ?: $o['template']) ?></a> <small>(<code><?= e($o['template']) ?></code>)</small></dd>
+    <dt><?= $label ?></dt><dd><?= e($o[$k]) ?: '–' ?></dd>
 <?php else: ?>
     <dt><?= $label ?></dt><dd><?= e($o[$k]) ?: '–' ?></dd>
 <?php endif ?>

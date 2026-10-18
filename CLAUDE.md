@@ -21,13 +21,16 @@ public/            docroot. index.php = front controller; .htaccess rewrites to 
   assets/          style.css (tokens at top), script.js, img/, fonts/, vendor/
 src/               namespace Pixelite\ (autoloaded by src/bootstrap.php)
   bootstrap.php    router table, error handling, security headers
-  Controllers/     Page, Order, Admin, Seo (+ BaseController)
+  Controllers/     Page, Order, Admin, AdminTemplates, Templates, Seo (+ BaseController)
+  TemplateCatalog, TemplatePrompts   ← design gallery (public metadata) and the admin-only prompt table
   OrderValidator, OrderService, PricingSnapshot, OrderRepository, TelegramNotifier   ← order pipeline
   Company (legal identity from .env), Auth, Csrf, Session, RateLimiter, Database, I18n, Env, Logger, View, Router, Request, Response
-templates/         layout.php, partials/ (package-cards, credits, faq, steps, header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
+templates/         demos/ (live demo documents of catalog designs), layout.php, partials/ (package-cards, credits, faq, steps, header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
 lang/en.php cs.php all copy. Identical key sets (tests enforce it)
 config/portfolio.php  portfolio data (placeholders, clearly marked)
+config/templates.php  design catalog (public metadata only; prompts never here)
 config/consent.php    cookie/consent registry (storage inventory + optional services: empty)
+private/           git-ignored local package of admin-only prompts (repo is public; never deployed)
 storage/           git-ignored runtime data: leads.sqlite, logs/app.log, .salt
 tests/run.php      dependency-free PHP test runner (+ fake_telegram.php)
 tests/browser/    real-Chrome CDP suite (run.mjs matrix, cdp.mjs driver, styles-dump/diff for CSS regression checks)
@@ -74,9 +77,13 @@ Every public route exists per language: `/en/…` and `/cs/…`. Bare `/` → 30
 | `GET /{lang}/privacy` | privacy policy (controller identity from `.env`; unknown legal facts stay `[placeholders]`) |
 | `GET /{lang}/cookies` | cookie policy: every cookie / storage item + "Cookie settings" (`#settings` opens the dialog) |
 | `GET /{lang}/terms` | non-binding-request terms + consumer info + ADR (Česká obchodní inspekce); owner placeholders |
+| `GET /{lang}/templates` `?q=&category=&style=&sort=&page=` | design gallery (search/filters/sort/pagination; filtered views are noindex with the plain gallery as canonical) |
+| `GET /{lang}/templates/{slug}` | design page: live preview (iframe, Desktop/Phone), features, price line from the Template package, order CTA |
+| `GET /{lang}/templates/{slug}/demo` | the design itself, own CSP, `frame-ancestors 'self'`, noindex; not in the sitemap |
 | `GET /{lang}/portfolio` | **hidden**: reachable, noindex, not linked, not in sitemap |
 | `GET /robots.txt`, `/sitemap.xml` | sitemap has hreflang alternates; excludes portfolio/admin/sent |
 | `GET /admin/login`, `POST /admin/login` | staff login (English only) |
+| `GET /admin/templates` · `GET/POST /admin/templates/{slug}` · `POST /admin/templates/import` | admin-only prompt library (list/filter, view + copy, edit with versions, JSON import) |
 | `GET /admin` · `GET /admin/orders/{id}` · `POST /admin/orders/{id}/retry` · `POST /admin/logout` | protected |
 Not built on purpose: `/about` (waits for real founder/company content), separate Services pages (services live on the landing). Terms exist but only state facts about how the site works; commercial terms are owner placeholders.
 To publish the portfolio later: add real projects to `config/portfolio.php`, remove `noindex` (`PageController::portfolio`), add it to nav/footer + `SeoController::INDEXABLE`.
@@ -115,6 +122,14 @@ Implemented: controller identity, per-activity legal bases (Art. 6(1)(b)/(f); (a
 
 ## SEO notes
 One URL per page: `canonicalRedirect()` (`src/bootstrap.php`) 301s `www.` → apex (host from `APP_URL`), `/en` → `/en/`, `/en/pricing/` → `/en/pricing`; only GET/HEAD with a real `REQUEST_URI`. Head carries canonical, reciprocal hreflang (+x-default), OG (with image size) and Twitter tags. JSON-LD (`layout.php`, one block per page): home = `Organization` + `WebSite` graph; other indexable pages = `BreadcrumbList`. No ratings/reviews/Offer markup on purpose (nothing verified to mark up). `tests/run.php` "seo regression" covers titles/descriptions uniqueness, canonical/hreflang, JSON-LD, sitemap, robots, redirects, local assets. Not verifiable without accounts: Search Console indexing, CrUX field data.
+
+## Design gallery and prompts
+Customers pick a design and order a customised website (Template-website package price, from the pricing data). Full guide: `docs/templates/README.md`.
+- Catalog = `config/templates.php` (public metadata) + `lang/*` (`templates.items.<slug>`). The only entry is **Lumora** (Pixelite's own template); demo document `templates/demos/lumora.html`, assets `public/assets/templates/lumora/` (Lenis MIT and Onest OFL notices shipped next to them). No third-party template collection is used.
+- The demo route sets its own CSP (same-origin, no inline blocks, `style-src-attr 'unsafe-inline'` for animation-delay attributes) and `frame-ancestors 'self'`; everything else keeps `frame-ancestors 'none'`.
+- Orders store `template` + server-derived `template_name` (migrated in place; old rows keep `""`); shown in admin and Telegram.
+- Prompts/dev notes: SQLite `template_prompts` only (admin-only, CSRF, validated import, versions). The package file lives in git-ignored `private/` and is never deployed; production is populated through the admin import.
+- `scripts/capture-template-previews.mjs` (host-only) records posters/preview from the live demo and gates console errors, overflow and third-party requests.
 
 ## Localization
 URL prefix decides the language (`/en/…`, `/cs/…`), so the choice persists through every link, and hreflang/canonical/`<html lang>`/meta are per language. The header switch keeps you on the same page; clicking it also sets cookie `pixelite_lang` (only used to choose where bare `/` goes). Default = `APP_LOCALE` (`en`). Add copy to **both** `lang/en.php` and `lang/cs.php`; `php tests/run.php` fails if keys differ. Missing keys fall back to English and are logged. Telegram messages are always English.

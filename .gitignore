@@ -4,3 +4,6 @@
 !/storage/.gitkeep
 tests/browser/out/
 build/
+
+# Private admin-only prompt packages (repo is PUBLIC; never commit)
+/private/

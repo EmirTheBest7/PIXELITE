@@ -107,6 +107,8 @@ export async function launch() {
         }
         await sleep(250);
       },
+      /** Move the pointer (no click) – hover/cursor effects. */
+      async move(x, y) { await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }); },
       async key(key, code = key) {
         const vk = key === 'Tab' ? 9 : key === 'Escape' ? 27 : key === 'Enter' ? 13 : key === ' ' ? 32 : 0;
         const text = key === 'Enter' ? '\r' : key === ' ' ? ' ' : undefined;

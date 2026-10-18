@@ -21,6 +21,7 @@ final class OrderValidator
             'phone' => $single('phone'),
             'project_type' => $single('project_type'),
             'package' => $single('package'),
+            'template' => $single('template'),
             'budget' => $single('budget'),
             'timeframe' => $single('timeframe'),
             // multi-line: normalise newlines, strip other control chars
@@ -47,6 +48,9 @@ final class OrderValidator
         }
         if ($clean['package'] !== '' && !in_array($clean['package'], OrderOptions::PACKAGES, true)) {   // optional, but never an arbitrary value
             $e['package'] = 'choose';
+        }
+        if ($clean['template'] !== '' && !TemplateCatalog::has($clean['template'])) {   // optional, but only a real catalog slug
+            $e['template'] = 'choose';
         }
         if (!in_array($clean['project_type'], OrderOptions::PROJECT_TYPES, true)) {
             $e['project_type'] = 'choose';

@@ -349,7 +349,7 @@ async function themeAndNavScenarios(browser) {
     ok(T('theme-color meta follows theme'), (await page.eval('document.querySelector("meta[name=theme-color]").content')) === '#0a0f1a');
     await page.goto(url('cs', 'contact'));
     ok(T('Dark persists across pages and language'), (await page.eval('document.documentElement.getAttribute("data-theme")')) === 'dark');
-    const firstScripts = await page.eval(`[...document.head.children].filter((e) => e.tagName === 'SCRIPT' || (e.tagName === 'LINK' && e.rel === 'stylesheet')).map((e) => e.tagName + ':' + (e.getAttribute('src') || e.getAttribute('href')).split('?')[0].split('/').pop())`);
+    const firstScripts = await page.eval(`[...document.head.children].filter((e) => (e.tagName === 'SCRIPT' && e.getAttribute('src')) || (e.tagName === 'LINK' && e.rel === 'stylesheet'))   /* JSON-LD data blocks are not scripts that run */.map((e) => e.tagName + ':' + (e.getAttribute('src') || e.getAttribute('href')).split('?')[0].split('/').pop())`);
     ok(T('theme-init.js is a blocking script before any stylesheet (no flash)'), firstScripts[0] === 'SCRIPT:theme-init.js', firstScripts.join(','));
     // footer group works with keyboard
     await page.eval('document.querySelector(\'.footer [data-theme-set="system"]\').focus()');
@@ -637,7 +637,7 @@ async function httpChecks() {
   }
   const sm = await (await get('/sitemap.xml')).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
-  ok('sitemap lists the 8 public pages x 2 languages', locs.length === 16, String(locs.length));
+  ok('sitemap lists the 8 core pages + the design gallery + each catalog design (Lumora), x 2 languages', locs.length === 20 && locs.some((l) => l.endsWith('/en/templates/lumora')) && !locs.some((l) => l.includes('/demo')), String(locs.length));
   ok('sitemap excludes portfolio/admin/sent/404', !locs.some((l) => /portfolio|admin|sent|zzz/.test(l)));
   ok('sitemap includes cookies and terms', locs.includes('/en/cookies') && locs.includes('/cs/terms'));
   const rb = await (await get('/robots.txt')).text(); ok('robots.txt blocks /admin and points to sitemap', /Disallow: \/admin/.test(rb) && /Sitemap:/.test(rb));

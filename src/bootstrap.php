@@ -7,6 +7,8 @@ use Pixelite\Controllers\AdminController;
 use Pixelite\Controllers\OrderController;
 use Pixelite\Controllers\PageController;
 use Pixelite\Controllers\SeoController;
+use Pixelite\Controllers\TemplatesController;
+use Pixelite\Controllers\AdminTemplatesController;
 
 spl_autoload_register(static function (string $class): void {
     if (str_starts_with($class, 'Pixelite\\')) {
@@ -29,6 +31,8 @@ function buildRouter(): Router
     $order = new OrderController();
     $admin = new AdminController();
     $seo = new SeoController();
+    $templates = new TemplatesController();
+    $adminTemplates = new AdminTemplatesController();
 
     $router->add('GET', '/{lang}', fn() => $page->home());
     $router->add('GET', '/{lang}/pricing', fn() => $page->pricing());
@@ -38,6 +42,9 @@ function buildRouter(): Router
     $router->add('GET', '/{lang}/cookies', fn() => $page->cookies());
     $router->add('GET', '/{lang}/terms', fn() => $page->terms());
     $router->add('GET', '/{lang}/portfolio', fn() => $page->portfolio());
+    $router->add('GET', '/{lang}/templates', fn(Request $r) => $templates->index($r));
+    $router->add('GET', '/{lang}/templates/{slug}', fn(Request $r, array $p) => $templates->show($r, $p));
+    $router->add('GET', '/{lang}/templates/{slug}/demo', fn(Request $r, array $p) => $templates->demo($r, $p));
     $router->add('GET', '/{lang}/order', fn(Request $r) => $order->show($r));
     $router->add('POST', '/{lang}/order', fn(Request $r) => $order->submit($r));
     $router->add('GET', '/{lang}/order/sent', fn(Request $r) => $order->sent($r));
@@ -49,6 +56,10 @@ function buildRouter(): Router
     $router->add('POST', '/admin/login', fn(Request $r) => $admin->login($r));
     $router->add('POST', '/admin/logout', fn(Request $r) => $admin->logout($r));
     $router->add('GET', '/admin', fn(Request $r) => $admin->index($r));
+    $router->add('GET', '/admin/templates', fn(Request $r) => $adminTemplates->index($r));
+    $router->add('POST', '/admin/templates/import', fn(Request $r) => $adminTemplates->import($r));
+    $router->add('GET', '/admin/templates/{slug}', fn(Request $r, array $p) => $adminTemplates->show($r, $p));
+    $router->add('POST', '/admin/templates/{slug}', fn(Request $r, array $p) => $adminTemplates->save($r, $p));
     $router->add('GET', '/admin/orders/{id}', fn(Request $r, array $p) => $admin->show($r, $p));
     $router->add('POST', '/admin/orders/{id}/retry', fn(Request $r, array $p) => $admin->retry($r, $p));
 

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumora — Independent Design & Engineering Studio</title>
+  <meta name="description" content="Lumora is an independent studio crafting brands, products, and the systems that connect them — bold ideas, shipped with quiet precision." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="robots" content="noindex,nofollow" />   <!-- a demo of a catalog design, not a page of its own -->
+  <link rel="stylesheet" href="/assets/templates/lumora/lumora.css">
+</head>
+<body>
+
+  <!-- Skip link for accessibility -->
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- Fullscreen Dark Intro PageLoader -->
+  <div id="page-loader" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+    <div class="loader-center" id="loader-center">
+      <div class="loader-brand">
+        <span class="loader-brand-icon">
+          <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+            <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+          </svg>
+        </span>
+        Lumora
+      </div>
+      <p class="loader-tagline">Bold ideas, shipped with quiet precision.</p>
+    </div>
+    <div class="loader-progress-wrap">
+      <div class="loader-track">
+        <div class="loader-fill" id="loader-fill"></div>
+      </div>
+      <div class="loader-meta">
+        <span>Loading</span>
+        <span class="loader-counter" id="loader-counter">000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Header Overlay -->
+  <header id="site-header">
+    <div class="shell header-inner">
+      <button class="brand-btn" id="header-brand-btn" aria-label="Lumora Home">
+        <span class="brand-logo-mark">
+          <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+            <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+          </svg>
+        </span>
+        Lumora
+      </button>
+
+      <nav class="nav-primary" aria-label="Primary navigation">
+        <ul>
+          <li><button class="nav-primary-btn" data-target="home" aria-current="page">Home</button></li>
+          <li><button class="nav-primary-btn" data-target="works">Work</button></li>
+          <li><button class="nav-primary-btn" data-target="services">Services <span class="nav-caret">▾</span></button></li>
+          <li><button class="nav-primary-btn" data-target="about">Studio</button></li>
+          <li><button class="nav-primary-btn" data-target="careers">Careers</button></li>
+          <li><button class="nav-primary-btn open-modal-trigger">Contact</button></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="clock-chip" id="clock-chip">
+          <span class="clock-label">Local time</span>
+          <span class="clock-time" id="clock-time">9:41am</span>
+          <span class="clock-sep">•</span>
+          <span class="clock-date" id="clock-date">12 March, 2025</span>
+        </div>
+        <button class="menu-trigger-btn" id="menu-open-btn" aria-label="Open menu">
+          <span class="menu-trigger-inner">
+            <svg viewBox="0 0 24 24" width="0.875rem" height="0.875rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span class="menu-label-text">Menu</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Shell -->
+  <main id="main">
+
+    <!-- 1) Hero Section -->
+    <section id="home">
+      <!-- Full-bleed liquid reveal background -->
+      <div class="liquid-reveal-wrap" id="liquid-wrap">
+        <!-- Always-shown base image (beforeSrc = .../hero/after.jpg) -->
+        <img
+          class="liquid-reveal-base"
+          src="/assets/templates/lumora/img/after.jpg"
+          alt="Lumora Hero Art"
+          fetchpriority="high"
+        />
+        <!-- Cursor revealed brush canvas (afterSrc = .../hero/before.jpg) -->
+        <canvas id="liquid-canvas" aria-hidden="true"></canvas>
+      </div>
+
+      <!-- Legibility vignette -->
+      <div class="hero-vignette" aria-hidden="true"></div>
+
+      <!-- Giant brand watermark -->
+      <div class="hero-watermark" id="hero-watermark" aria-hidden="true">LUMORA</div>
+
+      <!-- Content Grid -->
+      <div class="shell hero-content">
+        <!-- Left Column -->
+        <div class="hero-left-col">
+          <div class="eyebrow tone-dark reveal-item" id="hero-eyebrow">
+            <span class="eyebrow-dot"></span>
+            Independent Studio
+          </div>
+
+          <h1 class="hero-h1" id="hero-h1">
+            <span class="reveal-line-wrap"><span class="reveal-line-inner">Bold ideas,</span></span>
+            <span class="reveal-line-wrap"><span class="reveal-line-inner">shipped with</span></span>
+            <span class="reveal-line-wrap"><span class="reveal-line-inner">quiet precision</span></span>
+          </h1>
+
+          <div class="hero-rating-row reveal-item" id="hero-rating">
+            <span class="hero-stars" aria-label="5 stars">
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.9l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"/></svg>
+            </span>
+            <span class="hero-rating-text">200+ brands shipped</span>
+          </div>
+
+          <div class="hero-cta-row reveal-item" id="hero-ctas">
+            <!-- Let's Talk button -->
+            <button class="pill-btn pill-btn--dark pill-btn--arrow open-modal-trigger">
+              <span class="pill-btn-inner">
+                Let's Talk
+                <span class="pill-badge arrow-shift-right">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </span>
+              </span>
+            </button>
+            <!-- View Work button -->
+            <button class="pill-btn pill-btn--outline pill-btn--no-arrow" id="hero-view-work-btn" data-target="works">
+              <span class="pill-btn-inner">View Work</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="hero-right-col">
+          <!-- HeroCard Carousel -->
+          <div class="hero-card reveal-item" id="hero-card">
+            <div class="hero-card-row" id="hero-card-click-area">
+              <div class="hero-card-tile">
+                <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+                  <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+                </svg>
+              </div>
+              <div class="hero-card-panel">
+                <div class="hero-card-slot" id="hero-card-slot">
+                  <div class="hero-card-slide is-active" data-index="0">
+                    <span class="hero-card-caption">Conversion design</span>
+                    <span class="hero-card-title">Crafted to convert.</span>
+                  </div>
+                  <div class="hero-card-slide is-next" data-index="1">
+                    <span class="hero-card-caption">Engineering</span>
+                    <span class="hero-card-title">Built to scale.</span>
+                  </div>
+                  <div class="hero-card-slide is-next" data-index="2">
+                    <span class="hero-card-caption">Brand systems</span>
+                    <span class="hero-card-title">Designed to last.</span>
+                  </div>
+                </div>
+                <div class="hero-card-bottom">
+                  <div class="hero-card-dashes">
+                    <span class="hero-card-dash active"></span>
+                    <span class="hero-card-dash inactive"></span>
+                    <span class="hero-card-dash inactive"></span>
+                  </div>
+                  <div class="hero-card-nav-btns">
+                    <button class="hero-card-arrow-btn hero-card-arrow-prev" id="hero-card-prev" aria-label="Previous item">
+                      <svg viewBox="0 0 24 24" width="0.875rem" height="0.875rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M13 6l6 6-6 6"/>
+                      </svg>
+                    </button>
+                    <button class="hero-card-arrow-btn" id="hero-card-next" aria-label="Next item">
+                      <svg viewBox="0 0 24 24" width="0.875rem" height="0.875rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M13 6l6 6-6 6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partners -->
+          <div class="hero-partners reveal-item" id="hero-partners">
+            <div class="hero-partners-label">Trusted by</div>
+            <div class="hero-partners-grid">
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Kaido
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Northpeak
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Vellum
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Orbit
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Brightline
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Cobalt
+              </span>
+              <span class="partner-item">
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>
+                Mesa
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Status Bar -->
+      <div class="shell hero-status-bar reveal-item" id="hero-status-bar">
+        <span>Working since 2014</span>
+        <span class="status-bar-center">Remote-first, worldwide</span>
+        <span class="status-bar-right">
+          Scroll to explore <span>↓</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- 2) About Section -->
+    <section id="about">
+      <div class="shell about-shell">
+        <div class="about-globe-col">
+          <span class="about-big-globe" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4">
+              <circle cx="12" cy="12" r="9.25"/>
+              <path d="M12 2.75c2.6 2.3 4 5.8 4 9.25s-1.4 6.95-4 9.25c-2.6-2.3-4-5.8-4-9.25s1.4-6.95 4-9.25zM2.75 12h18.5"/>
+            </svg>
+          </span>
+          <div class="eyebrow tone-dark" style="position:relative;">
+            <span class="eyebrow-dot"></span>
+            The Studio
+          </div>
+          <div class="about-globe-note reveal-on-scroll" style="--delay: 100ms;">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4">
+              <circle cx="12" cy="12" r="9.25"/>
+              <path d="M12 2.75c2.6 2.3 4 5.8 4 9.25s-1.4 6.95-4 9.25c-2.6-2.3-4-5.8-4-9.25s1.4-6.95 4-9.25zM2.75 12h18.5"/>
+            </svg>
+            <span>A distributed team building across every time zone.</span>
+          </div>
+        </div>
+
+        <div class="about-statement-col">
+          <h2 class="about-h2" id="about-statement-h2">
+            <!-- Word-by-word reveal generated by JS -->
+            We partner with ambitious teams to ship digital products, brand systems, and the strategy that holds them together.
+          </h2>
+
+          <div class="about-footer-row reveal-on-scroll" style="--delay: 200ms;">
+            <div class="social-chips-wrap">
+              <span class="social-chips-label">Find us online</span>
+              <div class="social-chips-list">
+                <a href="#twitter" class="social-chip twitter" aria-label="X / Twitter">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4l16 16M20 4 4 20"/>
+                  </svg>
+                </a>
+                <a href="#behance" class="social-chip behance" aria-label="Behance">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/>
+                  </svg>
+                </a>
+                <a href="#dribbble" class="social-chip dribbble" aria-label="Dribbble">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <button class="pill-btn pill-btn--outline pill-btn--arrow" data-target="about">
+              <span class="pill-btn-inner">
+                About Us
+                <span class="pill-badge arrow-shift-right">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3) CreateBand ("We Build → Better") -->
+    <section class="create-band-section">
+      <ul class="shell create-band-shell">
+        <li class="create-band-item reveal-on-scroll" style="--delay: 0ms;">
+          <div class="create-tile variant-light">We</div>
+        </li>
+        <li class="create-band-item reveal-on-scroll" style="--delay: 120ms;">
+          <div class="create-tile variant-accent">Build</div>
+        </li>
+        <li class="create-band-item reveal-on-scroll" style="--delay: 240ms;">
+          <div class="create-tile variant-dark">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </div>
+        </li>
+        <li class="create-band-item reveal-on-scroll" style="--delay: 360ms;">
+          <div class="create-tile variant-ghost">Better</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 4) Portfolio Section -->
+    <section id="works">
+      <div class="shell portfolio-shell">
+        <div class="portfolio-header">
+          <div class="eyebrow tone-dark eyebrow-bordered reveal-on-scroll" style="--delay: 0ms;">
+            <span class="eyebrow-dot"></span>
+            Portfolio
+          </div>
+          <h2 class="portfolio-h2 line-reveal-target" style="--delay: 120ms;">
+            <span class="reveal-line-wrap"><span class="reveal-line-inner">Selected Work</span></span>
+          </h2>
+        </div>
+
+        <ul class="portfolio-grid">
+          <!-- Card 1 -->
+          <li class="portfolio-card-wrap reveal-on-scroll" style="--delay: 0ms;">
+            <a href="#work-aster" class="portfolio-card">
+              <div class="portfolio-card-meta">
+                <span>Branding — 2025</span>
+                <span class="portfolio-card-badge">
+                  <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17 17 7M8 7h9v9"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="portfolio-watermark" aria-hidden="true">
+                <span class="portfolio-watermark-inner">
+                  <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+                    <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+                  </svg>
+                  <span class="portfolio-reg">®</span>
+                </span>
+              </div>
+              <div class="portfolio-card-bottom">
+                <h3 class="portfolio-card-title">Aster Labs</h3>
+                <p class="portfolio-card-desc">A complete identity and go-to-market system for a fast-moving research startup.</p>
+                <div class="portfolio-tags">
+                  <span class="tag-chip">Branding</span>
+                  <span class="tag-chip">Strategy</span>
+                  <span class="tag-chip">Design</span>
+                </div>
+              </div>
+            </a>
+          </li>
+
+          <!-- Card 2 -->
+          <li class="portfolio-card-wrap reveal-on-scroll" style="--delay: 90ms;">
+            <a href="#work-nova" class="portfolio-card">
+              <div class="portfolio-card-meta">
+                <span>Product — 2024</span>
+                <span class="portfolio-card-badge">
+                  <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17 17 7M8 7h9v9"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="portfolio-watermark" aria-hidden="true">
+                <span class="portfolio-watermark-inner">
+                  <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+                    <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+                  </svg>
+                  <span class="portfolio-reg">®</span>
+                </span>
+              </div>
+              <div class="portfolio-card-bottom">
+                <h3 class="portfolio-card-title">Nova Finance</h3>
+                <p class="portfolio-card-desc">A finance platform reimagined — clear data, calm interfaces, and effortless flows.</p>
+                <div class="portfolio-tags">
+                  <span class="tag-chip">Product Design</span>
+                  <span class="tag-chip">Web App</span>
+                  <span class="tag-chip">QA</span>
+                </div>
+              </div>
+            </a>
+          </li>
+
+          <!-- Card 3 -->
+          <li class="portfolio-card-wrap reveal-on-scroll" style="--delay: 180ms;">
+            <a href="#work-helio" class="portfolio-card">
+              <div class="portfolio-card-meta">
+                <span>Identity — 2023</span>
+                <span class="portfolio-card-badge">
+                  <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17 17 7M8 7h9v9"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="portfolio-watermark" aria-hidden="true">
+                <span class="portfolio-watermark-inner">
+                  <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+                    <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+                  </svg>
+                  <span class="portfolio-reg">®</span>
+                </span>
+              </div>
+              <div class="portfolio-card-bottom">
+                <h3 class="portfolio-card-title">Helio Studio</h3>
+                <p class="portfolio-card-desc">A bold visual identity and art direction system built to scale across every surface.</p>
+                <div class="portfolio-tags">
+                  <span class="tag-chip">Brand Identity</span>
+                  <span class="tag-chip">Art Direction</span>
+                </div>
+              </div>
+            </a>
+          </li>
+
+          <!-- Card 4 -->
+          <li class="portfolio-card-wrap reveal-on-scroll" style="--delay: 270ms;">
+            <a href="#work-pulse" class="portfolio-card">
+              <div class="portfolio-card-meta">
+                <span>Mobile — 2023</span>
+                <span class="portfolio-card-badge">
+                  <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17 17 7M8 7h9v9"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="portfolio-watermark" aria-hidden="true">
+                <span class="portfolio-watermark-inner">
+                  <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+                    <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+                  </svg>
+                  <span class="portfolio-reg">®</span>
+                </span>
+              </div>
+              <div class="portfolio-card-bottom">
+                <h3 class="portfolio-card-title">Pulse Health</h3>
+                <p class="portfolio-card-desc">A wellness app grounded in research, shipped end to end from concept to release.</p>
+                <div class="portfolio-tags">
+                  <span class="tag-chip">Mobile App</span>
+                  <span class="tag-chip">UX Research</span>
+                  <span class="tag-chip">Development</span>
+                </div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5) Services Section -->
+    <section id="services">
+      <div class="shell services-shell">
+        <div class="eyebrow tone-dark reveal-on-scroll" style="--delay: 0ms;">
+          <span class="eyebrow-dot"></span>
+          Services
+        </div>
+        <h2 class="services-h2 line-reveal-target" style="--delay: 120ms;">
+          <span class="reveal-line-wrap"><span class="reveal-line-inner">What we do best</span></span>
+        </h2>
+
+        <ul class="services-list">
+          <!-- Row 1 -->
+          <li class="services-row-item reveal-on-scroll" style="--delay: 0ms;">
+            <a href="#service-dev" class="service-row-link">
+              <span class="service-index">01</span>
+              <h3 class="service-title">Software Development</h3>
+              <p class="service-desc">Scalable web & mobile products built to last.</p>
+              <span class="service-badge">
+                <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M8 7h9v9"/>
+                </svg>
+              </span>
+            </a>
+          </li>
+
+          <!-- Row 2 -->
+          <li class="services-row-item reveal-on-scroll" style="--delay: 80ms;">
+            <a href="#service-design" class="service-row-link">
+              <span class="service-index">02</span>
+              <h3 class="service-title">Product Design</h3>
+              <p class="service-desc">Interfaces that feel effortless and look sharp.</p>
+              <span class="service-badge">
+                <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M8 7h9v9"/>
+                </svg>
+              </span>
+            </a>
+          </li>
+
+          <!-- Row 3 -->
+          <li class="services-row-item reveal-on-scroll" style="--delay: 160ms;">
+            <a href="#service-qa" class="service-row-link">
+              <span class="service-index">03</span>
+              <h3 class="service-title">Quality Assurance</h3>
+              <p class="service-desc">Rigorous testing for flawless, confident releases.</p>
+              <span class="service-badge">
+                <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M8 7h9v9"/>
+                </svg>
+              </span>
+            </a>
+          </li>
+
+          <!-- Row 4 -->
+          <li class="services-row-item reveal-on-scroll" style="--delay: 240ms;">
+            <a href="#service-consulting" class="service-row-link">
+              <span class="service-index">04</span>
+              <h3 class="service-title">Consulting</h3>
+              <p class="service-desc">Strategy and direction for ambitious teams.</p>
+              <span class="service-badge">
+                <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M8 7h9v9"/>
+                </svg>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6) Stats Section -->
+    <section class="stats-section">
+      <div class="shell stats-shell">
+        <div class="stats-panel reveal-on-scroll" style="--delay: 0ms;">
+          <div class="eyebrow tone-light">
+            <span class="eyebrow-dot"></span>
+            By the numbers
+          </div>
+          <h2 class="stats-h2 line-reveal-target" style="--delay: 120ms;">
+            <span class="reveal-line-wrap"><span class="reveal-line-inner">Proof in the work, not the words.</span></span>
+          </h2>
+
+          <ul class="stats-grid">
+            <li class="stat-item reveal-on-scroll" style="--delay: 0ms;">
+              <div class="stat-number-wrap">
+                <span class="stat-counter" data-target="150">0</span>
+                <span class="stat-suffix">+</span>
+              </div>
+              <div class="stat-label">Projects delivered</div>
+            </li>
+
+            <li class="stat-item reveal-on-scroll" style="--delay: 90ms;">
+              <div class="stat-number-wrap">
+                <span class="stat-counter" data-target="98">0</span>
+                <span class="stat-suffix">%</span>
+              </div>
+              <div class="stat-label">Client retention</div>
+            </li>
+
+            <li class="stat-item reveal-on-scroll" style="--delay: 180ms;">
+              <div class="stat-number-wrap">
+                <span class="stat-counter" data-target="12">0</span>
+                <span class="stat-suffix"></span>
+              </div>
+              <div class="stat-label">Years of craft</div>
+            </li>
+
+            <li class="stat-item reveal-on-scroll" style="--delay: 270ms;">
+              <div class="stat-number-wrap">
+                <span class="stat-counter" data-target="40">0</span>
+                <span class="stat-suffix">+</span>
+              </div>
+              <div class="stat-label">Team members</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 7) Footer -->
+  <footer id="site-footer">
+    <div class="shell footer-shell">
+      <!-- CTA Row -->
+      <div class="footer-cta-row">
+        <h2 class="footer-h2 line-reveal-target" id="footer-cta-h2">
+          <span class="reveal-line-wrap"><span class="reveal-line-inner" style="transition-delay: 0ms;">Have a project in mind?</span></span>
+          <span class="reveal-line-wrap"><span class="reveal-line-inner" style="transition-delay: 100ms;">Let's get to work.</span></span>
+        </h2>
+
+        <button class="pill-btn pill-btn--light pill-btn--arrow open-modal-trigger">
+          <span class="pill-btn-inner">
+            Start a project
+            <span class="pill-badge arrow-shift-up-right">
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17 17 7M8 7h9v9"/>
+              </svg>
+            </span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Links Grid -->
+      <div class="footer-cols-grid">
+        <!-- Brand Col -->
+        <div class="footer-col">
+          <div class="footer-brand-title">
+            <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+              <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+            </svg>
+            Lumora
+          </div>
+          <p class="footer-brand-desc">An independent studio crafting brands, products, and the systems that connect them.</p>
+        </div>
+
+        <!-- Company Col -->
+        <div class="footer-col">
+          <div class="footer-col-heading">Company</div>
+          <ul class="footer-links-list">
+            <li><a href="#about" class="animated-link" data-target="about"><span>About</span></a></li>
+            <li><a href="#careers" class="animated-link" data-target="careers"><span>Careers</span></a></li>
+            <li><a href="#partners" class="animated-link" data-target="partners"><span>Partners</span></a></li>
+            <li><button class="animated-link open-modal-trigger"><span>Contact</span></button></li>
+          </ul>
+        </div>
+
+        <!-- Services Col -->
+        <div class="footer-col">
+          <div class="footer-col-heading">Services</div>
+          <ul class="footer-links-list">
+            <li><a href="#development" class="animated-link"><span>Development</span></a></li>
+            <li><a href="#design" class="animated-link"><span>Design</span></a></li>
+            <li><a href="#qa" class="animated-link"><span>Quality Assurance</span></a></li>
+            <li><a href="#consulting" class="animated-link"><span>Consulting</span></a></li>
+          </ul>
+        </div>
+
+        <!-- Social Col -->
+        <div class="footer-col">
+          <div class="footer-col-heading">Social</div>
+          <ul class="footer-links-list">
+            <li><a href="#twitter" class="animated-link"><span>X / Twitter</span></a></li>
+            <li><a href="#behance" class="animated-link"><span>Behance</span></a></li>
+            <li><a href="#dribbble" class="animated-link"><span>Dribbble</span></a></li>
+            <li><a href="#linkedin" class="animated-link"><span>LinkedIn</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Legal Bar -->
+      <div class="footer-legal-bar">
+        <span>© 2025 Lumora Studio. All rights reserved.</span>
+        <div class="footer-legal-links">
+          <a href="#privacy" class="animated-link legal-link"><span>Privacy</span></a>
+          <a href="#terms" class="animated-link legal-link"><span>Terms</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Giant footer watermark -->
+    <div class="footer-watermark" aria-hidden="true">LUMORA</div>
+  </footer>
+
+  <!-- 8) Full-Screen NavMenu Overlay -->
+  <div id="nav-menu-overlay" aria-hidden="true">
+    <div class="shell nav-menu-top">
+      <div class="nav-menu-brand">
+        <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+          <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+        </svg>
+        Lumora
+      </div>
+      <button class="nav-close-btn" id="nav-menu-close-btn">
+        <svg viewBox="0 0 24 24" width="0.875rem" height="0.875rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4l16 16M20 4 4 20"/>
+        </svg>
+        Close
+      </button>
+    </div>
+
+    <div class="shell nav-menu-body">
+      <ul class="nav-menu-list">
+        <li>
+          <button class="nav-menu-link-btn" data-target="home" style="--i: 0;">
+            <span class="nav-menu-index">01</span>
+            <span class="nav-menu-label">Home</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-menu-link-btn" data-target="works" style="--i: 1;">
+            <span class="nav-menu-index">02</span>
+            <span class="nav-menu-label">Work</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-menu-link-btn" data-target="services" style="--i: 2;">
+            <span class="nav-menu-index">03</span>
+            <span class="nav-menu-label">Services</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-menu-link-btn" data-target="about" style="--i: 3;">
+            <span class="nav-menu-index">04</span>
+            <span class="nav-menu-label">Studio</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-menu-link-btn" data-target="careers" style="--i: 4;">
+            <span class="nav-menu-index">05</span>
+            <span class="nav-menu-label">Careers</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-menu-link-btn open-modal-trigger" style="--i: 5;">
+            <span class="nav-menu-index">06</span>
+            <span class="nav-menu-label">Contact</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="shell nav-menu-bottom">
+      <span id="nav-menu-local-time">Local time — 9:41am</span>
+      <button class="nav-menu-cta open-modal-trigger">Start a project →</button>
+    </div>
+  </div>
+
+  <!-- 9) Request Modal Dialog -->
+  <div id="request-modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card" id="modal-card">
+      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close dialog">
+        <svg viewBox="0 0 24 24" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4l16 16M20 4 4 20"/>
+        </svg>
+      </button>
+
+      <!-- Default Form State -->
+      <div id="modal-form-state">
+        <div class="modal-header-block">
+          <div class="modal-eyebrow">
+            <span class="modal-eyebrow-dot"></span>
+            Start a project
+          </div>
+          <h2 class="modal-h2">Tell us what you're building.</h2>
+        </div>
+
+        <form class="modal-form" id="request-form">
+          <div class="form-group">
+            <label class="form-label" for="req-name">Name</label>
+            <input class="form-input" type="text" id="req-name" required placeholder="Your name" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="req-email">Email</label>
+            <input class="form-input" type="email" id="req-email" required placeholder="you@company.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="req-project">Project</label>
+            <textarea class="form-textarea" id="req-project" rows="4" required placeholder="A few words about your project, timeline, and budget."></textarea>
+          </div>
+
+          <div class="modal-form-bottom">
+            <span class="modal-reply-note">We reply within one business day.</span>
+            <button class="pill-btn pill-btn--dark pill-btn--arrow" type="submit" id="request-submit-btn">
+              <span class="pill-btn-inner">
+                <span id="submit-btn-label">Send request</span>
+                <span class="pill-badge arrow-shift-up-right">
+                  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17 17 7M8 7h9v9"/>
+                  </svg>
+                </span>
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success State -->
+      <div class="modal-success-state" id="modal-success-state">
+        <div class="modal-success-badge">
+          <svg viewBox="0 0 48 48" width="1em" height="1em" fill="currentColor">
+            <path d="M24 2c2.2 13.8 7.9 19.6 22 22-14.1 2.4-19.8 8.2-22 22-2.2-13.8-7.9-19.6-22-22 14.1-2.4 19.8-8.2 22-22Z"/>
+          </svg>
+        </div>
+        <h2 class="modal-success-title">Request received</h2>
+        <p class="modal-success-desc">Thanks for reaching out — we'll get back to you within one business day.</p>
+        <button class="pill-btn pill-btn--dark pill-btn--no-arrow" id="modal-success-close-btn">
+          <span class="pill-btn-inner">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/assets/templates/lumora/lumora.js"></script>
+</body>
+</html>

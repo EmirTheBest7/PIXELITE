@@ -52,6 +52,8 @@ final class Database
             package_name TEXT NOT NULL DEFAULT "",
             package_price TEXT NOT NULL DEFAULT "",
             price_vat_mode TEXT NOT NULL DEFAULT "",
+            template TEXT NOT NULL DEFAULT "",
+            template_name TEXT NOT NULL DEFAULT "",
             budget TEXT NOT NULL,
             timeframe TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -62,11 +64,20 @@ final class Database
         )');
         // Databases created before the package field existed: add the column in place (existing rows get "").
         $cols = array_column($pdo->query('PRAGMA table_info(orders)')->fetchAll(), 'name');
-        foreach (['package', 'package_name', 'package_price', 'price_vat_mode'] as $col) {   // package = canonical id; the rest = pricing snapshot
+        foreach (['package', 'package_name', 'package_price', 'price_vat_mode', 'template', 'template_name'] as $col) {   // package = canonical id; the rest = pricing snapshot
             if (!in_array($col, $cols, true)) {
                 $pdo->exec('ALTER TABLE orders ADD COLUMN ' . $col . ' TEXT NOT NULL DEFAULT ""');
             }
         }
+        // Admin-only prompt library. Lives in the (git-ignored, non-web) SQLite file – never in tracked source or public assets.
+        $pdo->exec('CREATE TABLE IF NOT EXISTS template_prompts (
+            slug TEXT PRIMARY KEY,
+            version INTEGER NOT NULL DEFAULT 1,
+            body TEXT NOT NULL,
+            origin TEXT NOT NULL DEFAULT "",
+            notes TEXT NOT NULL DEFAULT "",
+            updated_at TEXT NOT NULL
+        )');
         $pdo->exec('CREATE TABLE IF NOT EXISTS rate_limits (
             bucket TEXT NOT NULL,
             hit_at INTEGER NOT NULL

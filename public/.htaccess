@@ -23,7 +23,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [L]
 
 <IfModule mod_headers.c>
-  <FilesMatch "\.(png|jpe?g|webp|avif|svg|ico|ttf|woff2?|css|js)$">
+  <FilesMatch "\.(png|jpe?g|webp|avif|svg|ico|webm|mp4|ttf|woff2?|css|js)$">
     Header set Cache-Control "public, max-age=2592000"
   </FilesMatch>
 </IfModule>

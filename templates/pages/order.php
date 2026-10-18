@@ -58,6 +58,23 @@ $text = function (string $name, string $type = 'text', bool $required = false, s
               $select('project_type'); $select('package', $pkgOpts, false);
             ?>
           </div>
+          <div class="form-group tpick" data-template-pick>
+            <label class="tpick__label" for="f-template"><?= e(t('templates.order_label')) ?></label>
+            <div class="tpick__row">
+<?php $tcur = $old['template'] ?? ''; $tcat = \Pixelite\TemplateCatalog::all(); ?>
+              <img class="tpick__thumb" data-template-thumb src="<?= $tcur !== '' && isset($tcat[$tcur]) ? e(\Pixelite\TemplateCatalog::mediaUrl($tcat[$tcur], 'poster-640.jpg')) : '' ?>" width="160" height="100" alt="<?= e(t('templates.order_thumb_alt')) ?>"<?= $tcur === '' || !isset($tcat[$tcur]) ? ' hidden' : '' ?>>
+              <div class="tpick__controls">
+                <select class="form__field form__select<?= isset($errors['template']) ? ' is-invalid' : '' ?>" id="f-template" name="template"<?= isset($errors['template']) ? ' aria-invalid="true" aria-describedby="e-template"' : '' ?>>
+                  <option value=""><?= e(t('templates.order_none')) ?></option>
+<?php foreach ($tcat as $slug => $te): ?>
+                  <option value="<?= e($slug) ?>" data-thumb="<?= e(\Pixelite\TemplateCatalog::mediaUrl($te, 'poster-640.jpg')) ?>"<?= $tcur === $slug ? ' selected' : '' ?>><?= e(t("templates.items.$slug.title")) ?></option>
+<?php endforeach ?>
+                </select>
+                <p class="tpick__note"><?= e(t('templates.order_note')) ?> <a href="<?= e(url('templates')) ?>"><?= e(t('templates.order_change')) ?></a></p>
+<?php if (isset($errors['template'])): ?><p class="form__error" id="e-template"><?= e($err('template')) ?></p><?php endif ?>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <?php $select('budget'); $select('timeframe'); ?>
           </div>

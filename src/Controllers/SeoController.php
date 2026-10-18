@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Pixelite\Controllers;
 
 use Pixelite\I18n;
+use Pixelite\TemplateCatalog;
 use Pixelite\Response;
 
 final class SeoController
@@ -20,7 +21,9 @@ final class SeoController
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
             . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
-        foreach (self::INDEXABLE as $path) {
+        $paths = self::INDEXABLE;
+        array_splice($paths, 2, 0, array_merge(['templates'], array_map(static fn(string $s): string => "templates/$s", array_keys(TemplateCatalog::all()))));
+        foreach ($paths as $path) {
             foreach (I18n::LOCALES as $loc) {
                 $xml .= '  <url><loc>' . e(absolute_url(url($path, $loc))) . '</loc>';
                 foreach (I18n::LOCALES as $alt) {

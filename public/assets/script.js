@@ -35,4 +35,15 @@
       if (b) { setTimeout(function () { b.disabled = true; }, 0); }
     });
   }
+
+  // Order form: show the thumbnail of the chosen design and keep it in sync when the visitor changes the selection.
+  var pick = document.querySelector('[data-template-pick]');
+  if (pick) {
+    var sel = pick.querySelector('select');
+    var thumb = pick.querySelector('[data-template-thumb]');
+    sel.addEventListener('change', function () {
+      var src = sel.options[sel.selectedIndex].getAttribute('data-thumb');
+      if (src) { thumb.src = src; thumb.hidden = false; } else { thumb.hidden = true; }
+    });
+  }
 })();
