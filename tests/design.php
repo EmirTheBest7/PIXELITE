@@ -32,14 +32,14 @@ foreach (I18n::LOCALES as $lg) {
             && str_contains($b, "<html lang=\"$lg\">") && substr_count($b, '<h1') === 1
             && str_contains($b, 'rel="canonical" href="https://pixelite.cz/' . $lg . '/' . $path . '"') | ($pg === '' && str_contains($b, 'rel="canonical" href="https://pixelite.cz/' . $lg . '/"'))
             && str_contains($b, $idx ? 'content="index,follow"' : 'content="noindex,nofollow"')
-            && substr_count($b, 'data-design-switch') === 2 && str_contains($b, 'href="/legacy/' . $lg . '/' . $path . '" rel="nofollow" data-design-switch');
+            && substr_count($b, 'data-design-switch') === 1 && str_contains($b, 'href="/legacy/' . $lg . '/' . $path . '" rel="nofollow" data-design-switch');
         if (!$ok) { $bad[] = $pg . ':' . $r->status; }
     }
-    check("new design ($lg): every public page renders the new design with the correct canonical/robots and a Legacy menu item (desktop + mobile menu) pointing at /legacy/$lg/…", $bad === [], implode(' ', $bad));
+    check("new design ($lg): every public page renders the new design with the correct canonical/robots and a Legacy link in the footer (not in the navigation) pointing at /legacy/$lg/…", $bad === [], implode(' ', $bad));
 }
 foreach (['en' => 'Legacy website', 'cs' => 'Původní web', 'ru' => 'Прежняя версия сайта', 'uk' => 'Попередня версія сайту'] as $lg => $label) {
     $b = $dg("/$lg/pricing")->body;
-    check("legacy menu item ($lg) is localized and discreet (menu item, not a banner)", str_contains($b, '>' . $label . '</a>') && !preg_match('#<(?:div|aside|section)[^>]*(?:legacy|design-banner)#i', $b) && substr_count($b, 'class="pill__link pill__link--version"') === 1);
+    check("legacy link ($lg) is localized, discreet and in the footer (not in the navigation, not a banner)", str_contains($b, '>' . $label . '</a>') && !preg_match('#<(?:div|aside|section)[^>]*(?:legacy|design-banner)#i', $b) && substr_count($b, 'class="footer__link footer__link--version"') === 1 && !str_contains($b, 'pill__link--version'));
 }
 check('new design pages are CSP-clean: no inline <script>, <style> or style="" attributes, no third-party hosts', (function () use ($dg, $routes) {
     foreach (I18n::LOCALES as $lg) { foreach ($routes as $pg) {

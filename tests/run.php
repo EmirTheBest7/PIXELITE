@@ -519,7 +519,7 @@ $mutate = function (string $name, callable $fn, string $expect) use ($art, $tmp,
 $mutate('repository root uploaded into the document root (src/ inside public_html)', fn($d) => $sh('cp -R ' . escapeshellarg("$d/app/src") . ' ' . escapeshellarg("$d/public_html/src")), 'public_html top level');
 $mutate('missing front controller (placeholder page would win)', fn($d) => unlink("$d/public_html/index.php"), 'public_html/index.php exists');
 $mutate('missing stylesheet', fn($d) => unlink("$d/public_html/assets/style.css"), 'every asset()');
-$mutate('missing font file', fn($d) => unlink((glob("$d/public_html/assets/fonts/*.ttf") ?: [''])[0]), 'every url() in style.css');
+$mutate('missing font file', fn($d) => unlink((glob("$d/public_html/assets/fonts/onest/*.woff2") ?: [''])[0]), 'every url() in style.css');
 $mutate('.env file shipped', fn($d) => file_put_contents("$d/app/.env", "X=1\n"), 'no env files');
 $mutate('SQLite database shipped', fn($d) => file_put_contents("$d/app/storage/leads.sqlite", 'x'), 'no env files');
 $mutate('tests directory shipped', fn($d) => (mkdir("$d/app/tests") && file_put_contents("$d/app/tests/run.php", '<?php')), 'no env files');

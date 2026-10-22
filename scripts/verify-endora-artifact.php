@@ -204,7 +204,7 @@ if (preg_match_all('#url\(\s*[\'"]?(?!data:|https?:|\#)([^)\'"?\#]+)#', $css, $m
     }
 }
 check('every url() in style.css resolves inside public_html/assets', $cssMissing === [], implode(', ', $cssMissing));
-check('self-hosted fonts present (no third-party font/CDN reference in CSS or templates)', count(glob("$web/assets/fonts/*.ttf") ?: []) >= 3 && !preg_match('#https?://(fonts\.|cdn|ajax)#i', $css));
+check('self-hosted Onest font files + licence present (no third-party font/CDN reference in CSS or templates)', count(glob("$web/assets/fonts/onest/*.woff2") ?: []) >= 4 && is_file("$web/assets/fonts/onest/OFL.txt") && !preg_match('#https?://(fonts\.|cdn|ajax)#i', $css));
 
 if ($http) {
     echo "built artifact served over HTTP (php -S, document root = public_html)\n";

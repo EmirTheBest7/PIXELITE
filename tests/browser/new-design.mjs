@@ -106,13 +106,12 @@ try {
     // language switch keeps the page
     await page.goto(`${BASE}/en/process`); await sleep(200);
     ok('language links keep the same page', await page.eval(`[...document.querySelectorAll('.pill .lang__link')].map(a=>new URL(a.href).pathname).join()`) === '/en/process,/cs/process,/ru/process,/uk/process');
-    // Legacy website: a discreet item in the mobile menu; opens the legacy design on the corresponding page and language, and the way back works
+    // Legacy website: a discreet footer link (not in the navigation); opens the legacy design on the corresponding page and language, and the way back works
     for (const [lang, p, label, back] of [['en', 'pricing', 'Legacy website', 'New design'], ['cs', 'process', 'Původní web', 'Nový design'], ['ru', 'contact', 'Прежняя версия сайта', 'Новый дизайн'], ['uk', 'templates/lumora', 'Попередня версія сайту', 'Новий дизайн']]) {
       await page.goto(`${BASE}/${lang}/${p}`); await sleep(300);
-      await page.tap('[data-nav-toggle]'); await sleep(350);
-      const item = await page.eval(`(() => { const a = document.querySelector('#navbar [data-design-switch]'); const r = a.getBoundingClientRect(); return { text: a.textContent.trim(), href: a.getAttribute('href'), vis: r.width > 0 && r.height > 0, size: parseFloat(getComputedStyle(a).fontSize) }; })()`);
-      ok(`mobile menu (${lang}): discreet localized "${label}" item linking to /legacy/${lang}/${p}`, item.text === label && item.href === `/legacy/${lang}/${p}` && item.vis && item.size <= 16, JSON.stringify(item));
-      await page.tap('#navbar [data-design-switch]'); await sleep(1500);
+      const item = await page.eval(`(() => { const a = document.querySelector('.footer [data-design-switch]'); const r = a.getBoundingClientRect(); return { text: a.textContent.trim(), href: a.getAttribute('href'), vis: r.width > 0 && r.height > 0, size: parseFloat(getComputedStyle(a).fontSize) }; })()`);
+      ok(`footer (${lang}): discreet localized "${label}" item linking to /legacy/${lang}/${p}`, item.text === label && item.href === `/legacy/${lang}/${p}` && item.vis && item.size <= 16, JSON.stringify(item));
+      await page.eval(`document.querySelector('.footer [data-design-switch]').click(); true`); await sleep(1500);
       const L = await page.eval(`({ path: location.pathname, css: !!document.querySelector('link[href*="/assets/style.css"]'), newcss: !!document.querySelector('link[href*="/assets/site.css"]'), lang: document.documentElement.lang, robots: document.querySelector('meta[name=robots]').content, canon: document.querySelector('link[rel=canonical]').getAttribute('href') })`);
       ok(`legacy design opens (${lang}) on the same page and language, noindex,follow, canonical = the new-design URL`, L.path === `/legacy/${lang}/${p}` && L.css && !L.newcss && L.lang === lang && L.robots === 'noindex,follow' && L.canon.endsWith(`/${lang}/${p}`) && !L.canon.includes('/legacy'), JSON.stringify(L));
       ok(`legacy design (${lang}): no console errors, no failed requests`, page.log.console.length === 0 && page.log.exceptions.length === 0 && page.log.failed.length === 0 && page.log.badResponses.length === 0, JSON.stringify([...page.log.console, ...page.log.badResponses]).slice(0, 200));
@@ -133,9 +132,9 @@ try {
     ok('theme cycle light→(system→light→dark) changes data-theme', await page.eval(`document.documentElement.getAttribute('data-theme')==='light'`));
     await page.tap('[data-theme-cycle]'); await sleep(200);
     ok('theme cycle reaches dark', await page.eval(`document.documentElement.getAttribute('data-theme')==='dark'`));
-    ok('desktop: nav links present, aria-current on Home', await page.eval(`document.querySelectorAll('.pill__link').length===7 && document.querySelector('.pill__link[aria-current]').getAttribute('href')==='/en/' && document.querySelector('.pill__link--version').getAttribute('href')==='/legacy/en/'`));
-    await page.tap('.pill__link--version'); await sleep(1500);
-    ok('desktop: the Legacy item opens /legacy/en/ (legacy design) and the legacy header offers "New design"', (await page.eval('location.pathname')) === '/legacy/en/' && await page.eval(`document.querySelector('[data-design-switch]').getAttribute('href')==='/en/'`));
+    ok('desktop: nav links present, aria-current on Home', await page.eval(`document.querySelectorAll('.pill__link').length===6 && document.querySelector('.pill__link[aria-current]').getAttribute('href')==='/en/' && !document.querySelector('.pill [data-design-switch]') && document.querySelector('.footer [data-design-switch]').getAttribute('href')==='/legacy/en/'`));
+    await page.eval(`document.querySelector('.footer [data-design-switch]').click(); true`); await sleep(1500);
+    ok('desktop: the footer Legacy link opens /legacy/en/ (legacy design) and the legacy header offers "New design"', (await page.eval('location.pathname')) === '/legacy/en/' && await page.eval(`document.querySelector('[data-design-switch]').getAttribute('href')==='/en/'`));
     await page.tap('[data-design-switch]'); await sleep(1500);
     ok('desktop: …and back to the new design', (await page.eval('location.pathname')) === '/en/' && await page.eval(`!!document.querySelector('link[href*="site.css"]')`));
     await page.close();
@@ -241,6 +240,27 @@ try {
     ok('the home page is indexable in the default design (index,follow) and the legacy one is not', /content="index,follow"/.test(body) && /content="noindex,follow"/.test(await (await fetch(`${BASE}/legacy/en/`)).text()));
     ok('no third-party URLs in the HTML', !/(src|href)="https?:\/\/(?!127\.0\.0\.1|localhost|pixelite\.cz|www\.pixelite\.cz)/.test(body.replace(/href="https?:\/\/(www\.)?(coi\.gov\.cz)[^"]*"/g, '')));
   }
+// Customer sign-in/registration are reachable from the navigation: desktop pill (>=1360 px) and the mobile menu; the pill never collides in any language
+{
+  for (const lang of LANGS) {
+    const page = await chrome.newPage({ width: 1360, height: 800, dpr: 1 });
+    await page.goto(`${BASE}/${lang}/`); await sleep(500);
+    const r = await page.eval(`(() => { const q = (s) => document.querySelector(s); const last = [...document.querySelectorAll('.pill__links li')].pop().getBoundingClientRect().right; const a = q('.pill__login'); return { gap: Math.round(q('.pill__right').getBoundingClientRect().left - last), login: a ? new URL(a.href).pathname : null, vis: !!a && a.getBoundingClientRect().width > 0 }; })()`);
+    ok(`desktop pill (${lang}) at 1360 px: a visible Sign in link to /${lang}/login and no collision between the menu items and the right-hand tools`, r.login === `/${lang}/login` && r.vis && r.gap >= 8, JSON.stringify(r));
+    await page.tap('.lang-dd__btn'); await sleep(250);
+    const dd = await page.eval(`(() => { const m = document.querySelector('.lang-dd__menu'); const r = m.getBoundingClientRect(); return { open: document.querySelector('[data-lang-dd]').open, items: [...m.querySelectorAll('.lang__link')].map(a => a.textContent.trim()).join('|'), inView: r.right <= innerWidth && r.width > 100 }; })()`);
+    ok(`language dropdown (${lang}): opens with four flagged language names, inside the viewport`, dd.open && dd.inView && dd.items === '\u{1F1EC}\u{1F1E7}English|\u{1F1E8}\u{1F1FF}Čeština|\u{1F1F7}\u{1F1FA}Русский|\u{1F1FA}\u{1F1E6}Українська', JSON.stringify(dd));
+    await page.key('Escape'); await sleep(200);
+    ok(`language dropdown (${lang}): Escape closes it`, !(await page.eval(`document.querySelector('[data-lang-dd]').open`)));
+    await page.close?.();
+    const m = await chrome.newPage({ width: 390, height: 844, dpr: 2, mobile: true });
+    await m.goto(`${BASE}/${lang}/`); await sleep(400);
+    await m.tap('[data-nav-toggle]'); await sleep(350);
+    const hrefs = await m.eval(`[...document.querySelectorAll('#navbar .sheet__nav--account a')].map(a => new URL(a.href).pathname).join()`);
+    ok(`mobile menu (${lang}): Sign in and Create an account links`, hrefs === `/${lang}/login,/${lang}/register`, hrefs);
+    await m.close?.();
+  }
+}
   if (advisories.size) { console.log('\nAdvisory (not failing):'); [...advisories].slice(0, 25).forEach((a) => console.log('  - ' + a)); if (advisories.size > 25) console.log(`  … ${advisories.size - 25} more`); }
 } finally {
   await chrome.close();

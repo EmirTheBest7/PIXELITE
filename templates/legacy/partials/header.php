@@ -30,6 +30,7 @@ $nav = [
 <?php foreach ($nav as [$href, $label]): ?>
           <li class="header__el"><a href="<?= e(str_starts_with($href, '#') ? url('') . $href : url($href)) ?>" class="header__link"><?= e(t($label)) ?></a></li>
 <?php endforeach ?>
+          <li class="header__el"><a href="<?= e(url('login')) ?>" rel="nofollow" class="header__link"><?= e(t('nav.login')) ?></a></li>
           <li class="header__el header__el--version"><a href="<?= e(url_other_design($meta['path'])) ?>" rel="nofollow" class="header__link header__link--version" data-design-switch><?= e(t(\Pixelite\Design::current() === 'legacy' ? 'nav.new_design' : 'nav.legacy')) ?></a></li>
           <li class="header__el header__el--blue"><a href="<?= e(url('order')) ?>" class="btn btn--white"><?= e(t('nav.start')) ?></a></li>
           <li class="header__el header__el--theme"><?php require __DIR__ . '/theme-switch.php' ?></li>

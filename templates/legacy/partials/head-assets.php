@@ -7,4 +7,8 @@
   <link rel="icon" href="<?= e(asset('icons/favicon.svg')) ?>" type="image/svg+xml">
   <link rel="apple-touch-icon" href="<?= e(asset('icons/apple-touch-icon.png')) ?>">
   <link rel="stylesheet" href="<?= e(asset('vendor/bootstrap.min.css')) ?>">
+  <link rel="preload" href="/assets/fonts/onest/onest-latin.woff2" as="font" type="font/woff2" crossorigin>
+<?php if (in_array(\Pixelite\I18n::locale(), ['ru', 'uk'], true)): ?>
+  <link rel="preload" href="/assets/fonts/onest/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<?php endif ?>
   <link rel="stylesheet" href="<?= e(asset('style.css')) ?>">

@@ -3,10 +3,16 @@
    Design language adapted from the supplied template in new/ (index.html + styles.css):
    system sans, medium weights with tight tracking, floating white pill navbar, pill buttons with
    text-roll + arrow disc, light-grey hero with a fluted-glass shader, #F5F5F5 section cards, charcoal CTA bands,
-   #1B45FF as the only accent. Everything is self-hosted: no web fonts, no third-party requests (CSP default-src 'self').
+   #1B45FF as the only accent. Everything is self-hosted (Onest included): no third-party requests (CSP default-src 'self').
    Sections: 1 tokens · 2 base · 3 layout · 4 buttons · 5 header/nav · 6 hero + notebook · 7 sections & cards
              8 pricing · 9 steps/faq/forms · 10 gallery · 11 prose/legal · 12 footer · 13 consent · 14 admin · 15 switch
    ===================================================================== */
+
+/* Onest (SIL OFL 1.1, fonts/onest/OFL.txt): self-hosted variable font, weights 100-900; Cyrillic for ru/uk, Latin + Latin Extended for en/cs. */
+@font-face{font-family:"Onest";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/onest/onest-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Onest";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/onest/onest-cyrillic.woff2") format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/onest/onest-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Onest";font-style:normal;font-weight:100 900;font-display:swap;src:url("fonts/onest/onest-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
 /* ---------- 1. tokens (semantic; a theme is just a set of values) ---------- */
 :root{
@@ -24,7 +30,7 @@
   --lp-line:#e4e4e7; --lp-ink:#18181b; --lp-card:#f5f5f5; --lp-base:linear-gradient(#e7e7ea,#cfcfd4); --lp-base-border:#b9b9c0;
   --lp-glow:rgba(27,69,255,.28);
   --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:9999px;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font:"Onest",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --ease-roll:cubic-bezier(.25,.1,.25,1); --ease-sheet:cubic-bezier(.32,.72,0,1);
   --gut:20px; --max:1440px; --header-h:68px;
   color-scheme:light;
@@ -151,11 +157,11 @@ main:focus{outline:none}
 .pill__link{display:block;white-space:nowrap;font-size:14px;color:var(--text);text-decoration:none;padding:8px 11px;border-radius:var(--r-pill);transition:background-color .2s,color .2s}
 .pill__link:hover{background:var(--bg-soft)}
 .pill__link[aria-current]{background:var(--bg-soft);font-weight:600}
-.pill__cta{display:none}
+.pill__cta,.pill__login{display:none}
 .pill__menu{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--r-pill);background:var(--ink);color:var(--on-ink);padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;min-height:40px}
 @media (min-width:1360px){
   .pill__links{display:flex}
-  .pill__cta{display:inline-flex}
+  .pill__cta,.pill__login{display:inline-flex}
   .pill__menu{display:none}
   .pill .theme-cycle{display:inline-grid}
 }
@@ -163,8 +169,19 @@ main:focus{outline:none}
 .lang__link{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-decoration:none;padding:9px 12px;border-radius:var(--r-pill);color:var(--text-2);min-width:36px;text-align:center}
 .lang__link:hover{color:var(--text)}
 .lang__link.is-active{background:var(--ink);color:var(--on-ink)}
-.pill .lang{display:none}
-@media (min-width:640px){.pill .lang{display:inline-flex}}
+.lang__flag{font-size:15px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.lang__link{display:flex;align-items:center;justify-content:center;gap:6px}
+.lang-dd{position:relative;display:none}
+@media (min-width:640px){.lang-dd{display:block}}
+.lang-dd__btn{display:inline-flex;align-items:center;gap:7px;list-style:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--text);padding:9px 12px;border:1px solid var(--line-2);border-radius:var(--r-pill);user-select:none}
+.lang-dd__btn::-webkit-details-marker{display:none}
+.lang-dd__btn:hover{background:var(--bg-soft)}
+.lang-dd[open] .lang-dd__btn svg{transform:rotate(180deg)}
+.lang-dd__menu{position:absolute;right:0;top:calc(100% + 8px);min-width:178px;z-index:60;display:flex;flex-direction:column;gap:2px;padding:6px;background:var(--surface,#fff);border:1px solid var(--line-2);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.18)}
+.lang-dd__menu .lang__link{justify-content:flex-start;gap:10px;font-size:14px;font-weight:500;letter-spacing:0;text-align:left;padding:9px 12px;min-width:0;border-radius:10px}
+.lang-dd__menu .lang__link:hover{background:var(--bg-soft)}
+.lang-dd__menu .lang__link.is-active{background:var(--ink);color:var(--on-ink)}
+.footer__link--version{opacity:.75}
 .theme-cycle{display:none;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:var(--text);cursor:pointer}
 .theme-cycle:hover{background:var(--bg-soft)}
 .theme-cycle__icon{display:none}

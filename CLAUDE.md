@@ -13,7 +13,7 @@ Brand: **blue, black, white**. The original landing page is the visual source of
 ## Stack
 - PHP 8.3 (Apache in Docker), SQLite (PDO), hand-written router. No Composer.
 - Frontend: server-rendered PHP templates, Bootstrap 3 **grid/reset only** (vendored: `public/assets/vendor/bootstrap.min.css`) + `style.css`, a few small vanilla-JS files with no dependencies (`script.js` nav + language cookie + form guard, `theme-init.js`/`theme.js`, `consent.js`). jQuery/Bootstrap JS were removed.
-- Fonts (Lato 300/400/700, includes Czech diacritics), images and CSS are **self-hosted** (no CDN, no hot-linking → no third-party requests, GDPR-friendlier, strict CSP).
+- Fonts (**Onest**, SIL OFL, variable weight 100–900, subsets cyrillic / cyrillic-ext / latin / latin-ext in `public/assets/fonts/onest/` + `OFL.txt`; used by both designs and the admin; replaces Lato, which had no Cyrillic), images and CSS are **self-hosted** (no CDN, no hot-linking → no third-party requests, GDPR-friendlier, strict CSP).
 
 ## Layout
 ```
@@ -43,7 +43,7 @@ scripts/            build-endora.php (artifact), verify-endora-artifact.php (pre
 ## Two designs, one application (new = default, legacy = /legacy)
 The approved redesign is now the production design. The previous one is kept, fully working, under **`/legacy/{lang}/…`** (same controllers, validators, database, auth and authorization – only the templates differ).
 - `src/Design.php` decides the variant per request; `View` loads `templates/<file>.php` (new) or `templates/legacy/<file>.php`; `url()` adds the `/legacy` prefix while the legacy design renders, so every link, form action and redirect stays inside the chosen design. Assets: new = `public/assets/site.css` + `site.js` + `site-theme.js`; legacy = `style.css` + `script.js` + `theme.js`.
-- **Switch:** a discreet menu item – "Legacy website" / "Původní web" / "Прежняя версия сайта" / "Попередня версія сайту" in the new header (desktop menu and mobile menu), "New design" / "Nový design" / "Новый дизайн" / "Новий дизайн" in the legacy header. It keeps language and page (`url_other_design()`), is `rel="nofollow"`, never redirects automatically (no loops).
+- **Switch (moved to the footer; the header only has the language dropdown, Sign in and Start a project):** a discreet link – "Legacy website" / "Původní web" / "Прежняя версия сайта" / "Попередня версія сайту" in the new header (desktop menu and mobile menu), "New design" / "Nový design" / "Новый дизайн" / "Новий дизайн" in the legacy header. It keeps language and page (`url_other_design()`), is `rel="nofollow"`, never redirects automatically (no loops).
 - **SEO:** legacy pages are `noindex,follow`, canonical + hreflang + sitemap always name the default-design URLs, so nothing is indexed twice. `/legacy/admin`, `/legacy/p/…`, sitemap/robots etc. are not routed: staff and utility routes exist once, in the default design. `/legacy` redirects to `/legacy/<best language>/`.
 - **Rollback lever:** `DESIGN_DEFAULT=legacy` in `.env` makes legacy the default (at `/en/…`) and the new design the alternate (`/new/en/…`) with no deploy; unset/invalid = `new`.
 - **Tests:** `tests/run.php` renders the LEGACY templates at the normal URLs (its ~800 markup assertions were written for them; `TEST_DESIGN=new` is not meaningful for those), `tests/design.php` proves the new default, the switch, canonical/noindex, admin and re-runs `tests/features.php` on the new templates; the original real-browser suite (`tests/browser/run.mjs`) is run against a container with `DESIGN_DEFAULT=legacy`; `tests/browser/new-design.mjs` and `tests/browser/platform.mjs` cover the new design and the staff/customer/project flows.
@@ -60,7 +60,7 @@ The approved redesign is now the production design. The previous one is kept, fu
 | `--c-muted` / light | `#8198ae` / `#aec0d2` | secondary text |
 | `--c-border` / soft | `#c9d9e9` / `#ededed` | outlines |
 | `--c-error` | `#c43131` | **added** for form errors only |
-- Font Lato; h-sizes set per component (hero 30px, section title 26px, sub 18px, body 14–16px).
+- Font Onest (was Lato); h-sizes set per component (hero 30px, section title 26px, sub 18px, body 14–16px).
 - Radius `6px` (cards/inputs), `20px` (pill buttons). Shadow `0 4px 8px rgba(0,0,0,.2)`. Transition `.4s`.
 - Container = Bootstrap 3 (750/970/1170). Breakpoints in use: 1024 (header collapses, fixed white bar), 991, 767, 480.
 - Components: `.btn` (+`--revert`, `--white`, `--purple/violet/blue`, `--width` fixed 120px, `--auto` fits label), `.price-box` cards, `.form__field/.form__select/.form__textarea`, `.article-pre` cards, `.sect--violet` band, `.footer`.

@@ -33,6 +33,7 @@
         <a class="footer__link" href="<?= e(url('cookies')) ?>"><?= e(t('footer.cookies')) ?></a>
         <a class="footer__link" href="<?= e(url('terms')) ?>"><?= e(t('footer.terms')) ?></a>
         <a class="footer__link" href="<?= e(url('cookies')) ?>#settings" data-cookie-settings><?= e(t('footer.cookie_settings')) ?></a>
+        <a class="footer__link footer__link--version" href="<?= e(url_other_design($meta['path'])) ?>" rel="nofollow" data-design-switch><?= e(t('nav.legacy')) ?></a>
       </nav>
     </div>
     <div class="footer__bottom">

@@ -1,0 +1,2 @@
+/* Hides the wrappers that endora-banner.js marks as the hosting provider's injected banner (used by the template demo documents, which do not load site.css). */
+[data-pixelite-endora-banner-hidden]{display:none !important}

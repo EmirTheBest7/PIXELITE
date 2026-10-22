@@ -161,6 +161,13 @@
     Object.keys(links).forEach(function (id) { var el = doc.getElementById(id); if (el) { io.observe(el); } });
   }
 
+  /* ---- language dropdown (native <details>): close on outside click, Escape and after choosing ---- */
+  var dd = doc.querySelector('[data-lang-dd]');
+  if (dd) {
+    doc.addEventListener('click', function (e) { if (dd.open && !dd.contains(e.target)) { dd.open = false; } });
+    doc.addEventListener('keydown', function (e) { if (e.key === 'Escape' && dd.open) { dd.open = false; dd.querySelector('summary').focus(); } });
+  }
+
   /* ---- keep the concept switch above the cookie banner while it is visible ---- */
   var banner = doc.getElementById('cookie-banner');
   if (banner) {
