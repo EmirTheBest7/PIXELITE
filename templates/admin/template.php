@@ -1,10 +1,11 @@
 <?php /** @var string $slug @var string $title @var array $e @var ?array $prompt @var int $orders @var string $csrf @var string $flash @var list<string> $errors */
 ?>
-<p><a href="/admin/templates">← All design prompts</a></p>
+<?php require_once __DIR__ . '/../partials/ui.php'; ?>
+<a class="admin__back" href="/admin/templates">← All design prompts</a>
 <?php if ($flash !== ''): ?><div class="form__alert" role="status"><?= e($flash) ?></div><?php endif ?>
 <?php foreach ($errors as $err): ?><div class="form__alert" role="alert"><?= e($err) ?></div><?php endforeach ?>
 <div class="admin__card">
-  <h1 class="row__title admin__title"><?= e($title) ?></h1>
+  <h1 class="admin__title"><?= e($title) ?></h1>
   <dl class="admin__dl">
     <dt>Slug</dt><dd><code><?= e($slug) ?></code> · <a href="/en/templates/<?= e($slug) ?>">public page</a></dd>
     <dt>Category</dt><dd><?= e($e['category']) ?></dd>
@@ -24,7 +25,7 @@
   </dl>
 <?php if ($prompt !== null && ($prompt['version'] ?? 0) > 0 && !$errors): ?>
   <h2 class="admin__h2">Prompt text</h2>
-  <p><button class="btn btn--auto" type="button" data-copy-target="prompt-text" hidden>Copy prompt</button> <span class="admin__copied" data-copy-status role="status"></span></p>
+  <p><?= ui_button('Copy prompt', 'sm accent plain', ['data-copy-target' => 'prompt-text', 'hidden' => true]) ?> <span class="admin__copied" data-copy-status role="status"></span></p>
   <pre class="admin__prompt" id="prompt-text"><?= e($prompt['body']) ?></pre>
 <?php endif ?>
   <h2 class="admin__h2"><?= $prompt === null ? 'Add the prompt' : 'Edit the prompt' ?></h2>
@@ -36,6 +37,6 @@
     <input class="form__field form__text" id="p-origin" type="text" name="origin" maxlength="200" value="<?= e($prompt['origin'] ?? 'Authored by Pixelite') ?>">
     <label for="p-notes">Technical notes</label>
     <textarea class="form__field form__textarea" id="p-notes" name="notes" maxlength="<?= \Pixelite\TemplatePrompts::MAX_NOTES ?>"><?= e($prompt['notes'] ?? '') ?></textarea>
-    <button class="btn btn--auto" type="submit">Save prompt</button>
+    <?= ui_button('Save prompt', 'accent', ['type' => 'submit']) ?>
   </form>
 </div>

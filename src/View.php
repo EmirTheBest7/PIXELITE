@@ -20,7 +20,7 @@ final class View
         extract($data, EXTR_SKIP);
         ob_start();
         try {
-            require Paths::root("templates/$template.php");
+            require Paths::root(Design::templatePath($template));
             return (string) ob_get_contents();
         } finally {
             ob_end_clean();

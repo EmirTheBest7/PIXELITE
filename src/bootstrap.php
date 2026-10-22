@@ -33,15 +33,28 @@ function buildRouter(): Router
     $seo = new SeoController();
     $templates = new TemplatesController();
     $adminTemplates = new AdminTemplatesController();
+    $account = new \Pixelite\Controllers\AccountController();
+    $careers = new \Pixelite\Controllers\AdminCareersController();
+    $projects = new \Pixelite\Controllers\AdminProjectsController();
+    $customers = new \Pixelite\Controllers\AdminCustomersController();
 
     $router->add('GET', '/{lang}', fn() => $page->home());
     $router->add('GET', '/{lang}/pricing', fn() => $page->pricing());
     $router->add('GET', '/{lang}/process', fn() => $page->process());
-    $router->add('GET', '/{lang}/contact', fn() => $page->contact());
+    $router->add('GET', '/{lang}/contact', fn(Request $r) => $page->contact($r));
     $router->add('GET', '/{lang}/privacy', fn() => $page->privacy());
-    $router->add('GET', '/{lang}/cookies', fn() => $page->cookies());
+    $router->add('GET', '/{lang}/cookies', fn(Request $r) => $page->cookies($r));
     $router->add('GET', '/{lang}/terms', fn() => $page->terms());
+    $router->add('GET', '/{lang}/careers', fn() => $page->careers());
+    $router->add('GET', '/{lang}/team', fn() => $page->team());
     $router->add('GET', '/{lang}/portfolio', fn() => $page->portfolio());
+    $router->add('GET', '/{lang}/login', fn(Request $r) => $account->loginForm($r));
+    $router->add('POST', '/{lang}/login', fn(Request $r) => $account->login($r));
+    $router->add('GET', '/{lang}/register', fn(Request $r) => $account->registerForm($r));
+    $router->add('POST', '/{lang}/register', fn(Request $r) => $account->register($r));
+    $router->add('POST', '/{lang}/logout', fn(Request $r) => $account->logout($r));
+    $router->add('GET', '/{lang}/account', fn(Request $r) => $account->account($r));
+    $router->add('POST', '/{lang}/account', fn(Request $r) => $account->updateProfile($r));
     $router->add('GET', '/{lang}/templates', fn(Request $r) => $templates->index($r));
     $router->add('GET', '/{lang}/templates/{slug}', fn(Request $r, array $p) => $templates->show($r, $p));
     $router->add('GET', '/{lang}/templates/{slug}/demo', fn(Request $r, array $p) => $templates->demo($r, $p));
@@ -60,6 +73,29 @@ function buildRouter(): Router
     $router->add('POST', '/admin/templates/import', fn(Request $r) => $adminTemplates->import($r));
     $router->add('GET', '/admin/templates/{slug}', fn(Request $r, array $p) => $adminTemplates->show($r, $p));
     $router->add('POST', '/admin/templates/{slug}', fn(Request $r, array $p) => $adminTemplates->save($r, $p));
+    $router->add('POST', '/admin/orders/{id}/link', fn(Request $r, array $p) => $customers->linkOrder($r, $p));
+    $router->add('GET', '/admin/customers', fn(Request $r) => $customers->index($r));
+    $router->add('GET', '/admin/customers/{id}', fn(Request $r, array $p) => $customers->show($r, $p));
+    $router->add('POST', '/admin/customers/{id}/status', fn(Request $r, array $p) => $customers->status($r, $p));
+    $router->add('GET', '/admin/careers', fn(Request $r) => $careers->index($r));
+    $router->add('GET', '/admin/careers/new', fn(Request $r) => $careers->create($r));
+    $router->add('POST', '/admin/careers', fn(Request $r) => $careers->store($r));
+    $router->add('GET', '/admin/careers/{id}', fn(Request $r, array $p) => $careers->edit($r, $p));
+    $router->add('POST', '/admin/careers/{id}', fn(Request $r, array $p) => $careers->update($r, $p));
+    $router->add('POST', '/admin/careers/{id}/publish', fn(Request $r, array $p) => $careers->publish($r, $p));
+    $router->add('POST', '/admin/careers/{id}/unpublish', fn(Request $r, array $p) => $careers->unpublish($r, $p));
+    $router->add('GET', '/admin/careers/{id}/delete', fn(Request $r, array $p) => $careers->confirmDelete($r, $p));
+    $router->add('POST', '/admin/careers/{id}/delete', fn(Request $r, array $p) => $careers->delete($r, $p));
+    $router->add('GET', '/admin/projects', fn(Request $r) => $projects->index($r));
+    $router->add('GET', '/admin/projects/new', fn(Request $r) => $projects->create($r));
+    $router->add('POST', '/admin/projects', fn(Request $r) => $projects->store($r));
+    $router->add('GET', '/admin/projects/{id}', fn(Request $r, array $p) => $projects->show($r, $p));
+    $router->add('POST', '/admin/projects/{id}', fn(Request $r, array $p) => $projects->update($r, $p));
+    $router->add('POST', '/admin/projects/{id}/upload', fn(Request $r, array $p) => $projects->upload($r, $p));
+    $router->add('POST', '/admin/projects/{id}/access', fn(Request $r, array $p) => $projects->access($r, $p));
+    $router->add('POST', '/admin/projects/{id}/token', fn(Request $r, array $p) => $projects->regenerate($r, $p));
+    $router->add('GET', '/admin/projects/{id}/delete', fn(Request $r, array $p) => $projects->confirmDelete($r, $p));
+    $router->add('POST', '/admin/projects/{id}/delete', fn(Request $r, array $p) => $projects->delete($r, $p));
     $router->add('GET', '/admin/orders/{id}', fn(Request $r, array $p) => $admin->show($r, $p));
     $router->add('POST', '/admin/orders/{id}/retry', fn(Request $r, array $p) => $admin->retry($r, $p));
 
@@ -69,7 +105,7 @@ function buildRouter(): Router
         if (!in_array($pick, I18n::LOCALES, true)) {
             $pick = bestLocale($r->header('Accept-Language'));
         }
-        return new Response(302, '', ['Location' => "/$pick/", 'Vary' => 'Cookie, Accept-Language']);
+        return new Response(302, '', ['Location' => url('', $pick), 'Vary' => 'Cookie, Accept-Language']);
     });
     return $router;
 }
@@ -94,7 +130,7 @@ function bestLocale(string $header): string
 
 function notFound(Request $r): Response
 {
-    I18n::set(preg_match('#^/(en|cs)(/|$)#', $r->path, $m) ? $m[1] : I18n::default());
+    I18n::set(preg_match('#^/(' . implode('|', I18n::LOCALES) . ')(/|$)#', $r->path, $m) ? $m[1] : I18n::default());
     return Response::html(View::render('errors/404', [
         'meta' => ['page' => '404', 'path' => '', 'title' => (string) t('meta.404.title'), 'description' => '', 'robots' => 'noindex,nofollow'],
         'locale' => I18n::locale(),
@@ -132,10 +168,15 @@ function canonicalRedirect(Request $r): ?Response
     }
     $path = (string) parse_url($uri, PHP_URL_PATH);
     $query = (string) parse_url($uri, PHP_URL_QUERY);
+    $pre = '';   // /legacy or /new keeps its prefix
+    if (preg_match('#^/(?:new|legacy)(?=/|$)#', $path, $pm)) {
+        $pre = $pm[0];
+        $path = substr($path, strlen($pre)) ?: '/';
+    }
     $target = $path;
-    if (preg_match('#^/(?:en|cs)$#', $path)) {
+    if (preg_match('#^/(?:' . implode('|', I18n::LOCALES) . ')$#', $path)) {
         $target = $path . '/';
-    } elseif (preg_match('#^/(?:en|cs)/.+/$#', $path)) {
+    } elseif (preg_match('#^/(?:' . implode('|', I18n::LOCALES) . ')/.+/$#', $path)) {
         $target = rtrim($path, '/');
     }
     $origin = rtrim(Env::get('APP_URL', 'https://pixelite.cz'), '/');
@@ -145,12 +186,29 @@ function canonicalRedirect(Request $r): ?Response
         return null;
     }
     $base = $wrongHost ? $origin : '';
-    return new Response(301, '', ['Location' => $base . $target . ($query !== '' ? '?' . $query : '')]);
+    return new Response(301, '', ['Location' => $base . $pre . $target . ($query !== '' ? '?' . $query : '')]);
 }
 
 function handle(Request $r): Response
 {
     I18n::set(I18n::default());
+    // Client preview host: a separate origin that serves ONLY /p/<token>/… (no router, no session, no cookies). On the main host /p/… does not exist.
+    if (Preview::isPreviewHost($r)) {
+        return Preview::handle($r);
+    }
+    if (str_starts_with($r->path, '/p/')) {
+        return notFound($r);
+    }
+    // The other design lives under its own prefix (/legacy/… or /new/…) and only for public pages; staff and utility routes exist once, in the default design.
+    Design::set(Design::default());
+    if (preg_match('#^/(new|legacy)(?=/|$)#', $r->path, $pm) && $pm[1] === Design::alternate()) {
+        $rest = substr($r->path, strlen($pm[0])) ?: '/';
+        if ($rest !== '/' && !preg_match('#^/(?:' . implode('|', I18n::LOCALES) . ')(?:/|$)#', $rest)) {
+            return notFound($r);
+        }
+        Design::set($pm[1]);
+        $r = $r->withPath($rest);
+    }
     if (($redirect = canonicalRedirect($r)) !== null) {
         securityHeaders($redirect, $r);
         return $redirect;

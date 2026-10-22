@@ -8,7 +8,7 @@ final class Router
     /** @var list<array{string,string,callable}> */
     private array $routes = [];
 
-    /** Pattern tokens: {lang} (en|cs), {id} (digits) and {slug} (lowercase letters, digits, hyphens). */
+    /** Pattern tokens: {lang} (every supported language), {id} (digits) and {slug} (lowercase letters, digits, hyphens). */
     public function add(string $method, string $pattern, callable $handler): void
     {
         $regex = strtr(preg_quote($pattern, '#'), [

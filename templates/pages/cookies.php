@@ -1,45 +1,44 @@
 <?php
+require_once __DIR__ . '/../partials/ui.php';
 $cfg = consent_config();
 $byGroup = ['necessary' => [], 'preferences' => []];
 foreach ($cfg['storage'] as $item) { $byGroup[$item['group']][] = $item; }
+$ph = ['label' => (string) t('footer.cookies'), 'title' => (string) t('cookies.title'), 'sub' => (string) t('cookies.subtitle')];
+require __DIR__ . '/../partials/page-hero.php';
+$tocItems = [['necessary', (string) t('cookies.necessary')], ['preferences', (string) t('cookies.preferences')], ['optional', (string) t('cookies.optional')], ['settings', (string) t('consent.dialog_title')]];
 ?>
-<div class="sect sect--padding-top sect--padding-bottom">
-  <div class="container">
-    <div class="row">
-      <h1 class="row__title"><?= e(t('cookies.title')) ?></h1>
-      <h2 class="row__sub"><?= e(t('cookies.subtitle')) ?></h2>
-    </div>
-    <div class="row row--margin">
-      <div class="col-md-10 col-md-offset-1">
-        <div class="prose">
-          <p><?= e(t('cookies.intro')) ?></p>
+<section class="section" aria-label="<?= e(t('cookies.title')) ?>">
+  <div class="wrap">
+    <div class="legal">
+      <?php require __DIR__ . '/../partials/toc.php' ?>
+      <div class="prose">
+        <p><?= e(t('cookies.intro')) ?></p>
 <?php foreach (['necessary', 'preferences'] as $group): ?>
-          <h3><?= e(t("cookies.$group")) ?></h3>
-          <p><?= e(t("cookies.{$group}_note")) ?></p>
-          <table class="cookie-table">
-            <thead><tr>
-              <th scope="col"><?= e(t('cookies.col_name')) ?></th><th scope="col"><?= e(t('cookies.col_purpose')) ?></th>
-              <th scope="col"><?= e(t('cookies.col_duration')) ?></th><th scope="col"><?= e(t('cookies.col_type')) ?></th>
-            </tr></thead>
-            <tbody>
+        <h3 id="<?= $group ?>"><?= e(t("cookies.$group")) ?></h3>
+        <p><?= e(t("cookies.{$group}_note")) ?></p>
+        <table class="cookie-table">
+          <thead><tr>
+            <th scope="col"><?= e(t('cookies.col_name')) ?></th><th scope="col"><?= e(t('cookies.col_purpose')) ?></th>
+            <th scope="col"><?= e(t('cookies.col_duration')) ?></th><th scope="col"><?= e(t('cookies.col_type')) ?></th>
+          </tr></thead>
+          <tbody>
 <?php foreach ($byGroup[$group] as $item): ?>
-              <tr>
-                <th scope="row" data-label="<?= e(t('cookies.col_name')) ?>"><code><?= e($item['name']) ?></code></th>
-                <td data-label="<?= e(t('cookies.col_purpose')) ?>"><?= e(t("cookies.items.{$item['id']}.purpose")) ?></td>
-                <td data-label="<?= e(t('cookies.col_duration')) ?>"><?= e(t("cookies.items.{$item['id']}.duration")) ?></td>
-                <td data-label="<?= e(t('cookies.col_type')) ?>"><?= e(t($item['type'] === 'cookie' ? 'cookies.type_cookie' : 'cookies.type_storage')) ?></td>
-              </tr>
+            <tr>
+              <th scope="row" data-label="<?= e(t('cookies.col_name')) ?>"><code><?= e($item['id'] === 'session' ? ($sessionCookie ?? $item['name']) : $item['name']) ?></code></th>
+              <td data-label="<?= e(t('cookies.col_purpose')) ?>"><?= e(t("cookies.items.{$item['id']}.purpose")) ?></td>
+              <td data-label="<?= e(t('cookies.col_duration')) ?>"><?= e(t("cookies.items.{$item['id']}.duration")) ?></td>
+              <td data-label="<?= e(t('cookies.col_type')) ?>"><?= e(t($item['type'] === 'cookie' ? 'cookies.type_cookie' : 'cookies.type_storage')) ?></td>
+            </tr>
 <?php endforeach ?>
-            </tbody>
-          </table>
+          </tbody>
+        </table>
 <?php endforeach ?>
-          <h3><?= e(t('cookies.optional')) ?></h3>
-          <p><?= e(t('cookies.optional_none')) ?></p>
-          <h3 id="settings"><?= e(t('consent.dialog_title')) ?></h3>
-          <p><?= e(t('cookies.manage')) ?></p>
-          <p><button type="button" class="btn btn--strong btn--auto" data-cookie-settings><?= e(t('cookies.settings_button')) ?></button></p>
-        </div>
+        <h3 id="optional"><?= e(t('cookies.optional')) ?></h3>
+        <p><?= e(t('cookies.optional_none')) ?></p>
+        <h3 id="settings"><?= e(t('consent.dialog_title')) ?></h3>
+        <p><?= e(t('cookies.manage')) ?></p>
+        <p><?= ui_button((string) t('cookies.settings_button'), 'accent', ['data-cookie-settings' => true]) ?></p>
       </div>
     </div>
   </div>
-</div>
+</section>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asterform — Creative Strategy & Design Studio</title>
+  <meta name="description" content="Asterform is an independent creative strategy and design studio. Strategy in motion.">
+  <meta property="og:title" content="Asterform — Creative Strategy & Design Studio">
+  <meta property="og:description" content="Asterform is an independent creative strategy and design studio. Strategy in motion.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="/assets/templates/asterform/asterform.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP FLOATING NAVIGATION
+       ======================================================================== -->
+  <header class="site-header">
+    <nav class="navbar liquid-glass" aria-label="Primary Navigation">
+      <!-- Brand lockup -->
+      <a href="#hero" class="brand-link" aria-label="Asterform Studio Home">
+        <span class="brand-symbol" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="14" cy="14" rx="11" ry="5.5" stroke="#6E91FF" stroke-width="1.2" transform="rotate(-28 14 14)" stroke-dasharray="2 2"/>
+            <path d="M14 3.5L16.2 11.8L24.5 14L16.2 16.2L14 24.5L11.8 16.2L3.5 14L11.8 11.8L14 3.5Z" fill="#FFFFFF"/>
+            <circle cx="21" cy="9" r="1.75" fill="#6E91FF"/>
+          </svg>
+        </span>
+        <span class="brand-name">Asterform</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <ul class="nav-links-desktop">
+        <li><a href="#about" class="nav-link">Studio</a></li>
+        <li><a href="#featured-film" class="nav-link">Approach</a></li>
+        <li><a href="#services" class="nav-link">Services</a></li>
+      </ul>
+
+      <!-- Desktop Nav Actions -->
+      <div class="nav-actions-desktop">
+        <a href="#newsletterEmail" class="nav-text-action" data-action="join-list">Join the list</a>
+        <a href="#contact" class="nav-pill-btn liquid-glass">Let's talk</a>
+      </div>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button type="button" class="menu-toggle liquid-glass" id="menuToggle" aria-expanded="false" aria-controls="mobileNavPanel" aria-label="Toggle navigation menu">
+        Menu
+      </button>
+    </nav>
+
+    <!-- Mobile Navigation Floating Panel -->
+    <div class="mobile-nav-panel liquid-glass-strong" id="mobileNavPanel" role="region" aria-label="Mobile Navigation Menu">
+      <ul class="mobile-nav-links">
+        <li><a href="#about" class="mobile-nav-link">Studio</a></li>
+        <li><a href="#featured-film" class="mobile-nav-link">Approach</a></li>
+        <li><a href="#philosophy" class="mobile-nav-link">Philosophy</a></li>
+        <li><a href="#services" class="mobile-nav-link">Services</a></li>
+      </ul>
+      <div class="mobile-nav-actions">
+        <a href="#newsletterEmail" class="nav-pill-btn liquid-glass" data-action="join-list">Join the list</a>
+        <a href="#contact" class="nav-pill-btn liquid-glass">Let's talk</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ======================================================================
+         SECTION ONE: FULLSCREEN HERO
+         ====================================================================== -->
+    <section class="hero-section" id="hero" aria-label="Hero">
+      <!-- Fullscreen Background Video & Animated Fallback -->
+      <div class="hero-video-container" aria-hidden="true">
+        <div class="hero-fallback-bg"></div>
+        <video id="heroVideo" class="hero-video" muted playsinline preload="metadata"></video>
+        <div class="hero-scrim"></div>
+      </div>
+
+      <!-- Foreground Content -->
+      <div class="hero-content hero-fade-in">
+        <span class="hero-kicker">INDEPENDENT CREATIVE STUDIO</span>
+
+        <h1 class="hero-title">
+          Know the <span class="emphasis">feeling.</span><br>
+          Give it <span class="emphasis">form.</span>
+        </h1>
+
+        <!-- Newsletter Subscription Form -->
+        <div class="hero-form-wrapper">
+          <form id="newsletterForm" class="hero-newsletter-form liquid-glass" novalidate>
+            <label for="newsletterEmail" class="sr-only">Your email address</label>
+            <input
+              type="email"
+              id="newsletterEmail"
+              name="email"
+              class="newsletter-input"
+              placeholder="Your email address"
+              required
+              autocomplete="email"
+              spellcheck="false"
+            >
+            <button type="submit" class="newsletter-submit-btn" aria-label="Subscribe to studio newsletter">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </form>
+          <div id="formFeedback" class="form-feedback" aria-live="polite"></div>
+        </div>
+
+        <p class="hero-supporting-text">
+          Thoughtful notes on strategy, identity, and the small details that make creative work matter.
+        </p>
+
+        <button type="button" class="hero-philosophy-btn liquid-glass" data-action="explore-philosophy">
+          Explore our philosophy
+        </button>
+      </div>
+
+      <!-- Social Controls Row -->
+      <div class="hero-footer-socials" aria-label="Studio Social Channels">
+        <a id="socialInstagram" class="social-circle-btn liquid-glass" href="#" aria-label="Follow Asterform on Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
+
+        <a id="socialX" class="social-circle-btn liquid-glass" href="#" aria-label="Follow Asterform on X">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4l16 16M4 20L20 4"></path>
+          </svg>
+        </a>
+
+        <a id="socialWebsite" class="social-circle-btn liquid-glass" href="#about" aria-label="Studio Global Presence">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION TWO: ABOUT THE STUDIO
+         ====================================================================== -->
+    <section class="about-section" id="about" aria-label="About the Studio">
+      <div class="about-glow" aria-hidden="true"></div>
+      <div class="container">
+        <span class="section-label reveal">ABOUT THE STUDIO</span>
+
+        <h2 class="about-heading reveal stagger-delay-1">
+          <span class="line">Curiosity opens <span class="emphasis-muted">doors.</span></span>
+          <span class="line">Craft gives ideas <span class="emphasis-muted">meaning.</span></span>
+        </h2>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION THREE: FEATURED FILM
+         ====================================================================== -->
+    <section class="featured-film-section" id="featured-film" aria-label="Featured Film">
+      <div class="container-narrow">
+        <div class="featured-video-card reveal">
+          <video id="featuredVideo" class="featured-video" muted autoplay loop playsinline preload="metadata" aria-label="Asterform Studio Showreel"></video>
+          <div class="featured-video-scrim" aria-hidden="true"></div>
+
+          <!-- Overlay Content -->
+          <div class="featured-overlay-content">
+            <div class="featured-glass-card liquid-glass">
+              <span class="featured-card-label">OUR APPROACH</span>
+              <p class="featured-card-body">
+                The best work starts with better questions. We connect insight, imagination, and intention to create work that feels clear, considered, and impossible to ignore.
+              </p>
+            </div>
+
+            <button type="button" class="featured-cta-pill liquid-glass" data-action="explore-philosophy">
+              Discover our approach
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION FOUR: PHILOSOPHY
+         ====================================================================== -->
+    <section class="philosophy-section" id="philosophy" aria-label="Philosophy">
+      <div class="container-narrow">
+        <h2 class="philosophy-heading reveal">
+          Clarity <span class="symbol">×</span> <span class="emphasis-muted">Imagination</span>
+        </h2>
+
+        <div class="philosophy-grid">
+          <!-- Left Column: Video -->
+          <div class="philosophy-media-wrapper reveal-left">
+            <video id="philosophyVideo" class="philosophy-video" muted autoplay loop playsinline preload="metadata" aria-label="Asterform Philosophy Reel"></video>
+          </div>
+
+          <!-- Right Column: Editorial Copy -->
+          <div class="philosophy-copy-column reveal-right">
+            <div class="philosophy-block">
+              <span class="philosophy-block-label">START WITH WHY</span>
+              <p class="philosophy-block-paragraph">
+                Meaningful creative work begins by understanding what matters. We bring strategy, cultural awareness, and thoughtful questions together to find the direction that makes a project distinct.
+              </p>
+            </div>
+
+            <hr class="philosophy-divider" aria-hidden="true">
+
+            <div class="philosophy-block">
+              <span class="philosophy-block-label">MAKE IT MATTER</span>
+              <p class="philosophy-block-paragraph">
+                From the first concept to the smallest finishing detail, we turn clear thinking into engaging experiences. The goal is work that earns attention and stays with people beyond the first impression.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION FIVE: SERVICES
+         ====================================================================== -->
+    <section class="services-section" id="services" aria-label="Services & Capabilities">
+      <div class="services-glow" aria-hidden="true"></div>
+
+      <div class="container-narrow">
+        <div class="services-header-row reveal">
+          <h2 class="services-title">What we bring</h2>
+          <span class="services-label">SELECTED CAPABILITIES</span>
+        </div>
+
+        <div class="services-grid">
+          <!-- Service Card 1: Strategy -->
+          <article class="service-card liquid-glass reveal">
+            <div class="service-media-area">
+              <video id="strategyVideo" class="service-video" muted autoplay loop playsinline preload="metadata" aria-label="Strategy reel"></video>
+              <div class="service-media-gradient" aria-hidden="true"></div>
+            </div>
+
+            <div class="service-content-area">
+              <div class="service-header-line">
+                <span class="service-kicker">STRATEGY</span>
+                <button type="button" class="service-arrow-btn liquid-glass" id="openStrategyDialogBtn" aria-label="Explore Strategy details">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <h3 class="service-title">Insight &amp; Direction</h3>
+              <p class="service-desc">
+                We uncover the signals behind behavior, culture, and opportunity to establish a clear direction for ambitious creative work.
+              </p>
+            </div>
+          </article>
+
+          <!-- Service Card 2: Design -->
+          <article class="service-card liquid-glass reveal stagger-delay-1">
+            <div class="service-media-area">
+              <video id="designVideo" class="service-video" muted autoplay loop playsinline preload="metadata" aria-label="Design reel"></video>
+              <div class="service-media-gradient" aria-hidden="true"></div>
+            </div>
+
+            <div class="service-content-area">
+              <div class="service-header-line">
+                <span class="service-kicker">DESIGN</span>
+                <button type="button" class="service-arrow-btn liquid-glass" id="openDesignDialogBtn" aria-label="Explore Design details">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <h3 class="service-title">Identity &amp; Experience</h3>
+              <p class="service-desc">
+                We shape distinctive identities and intuitive digital experiences, bringing every interaction together with clarity, character, and care.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       ACCESSIBLE SERVICE DETAIL DIALOGS
+       ======================================================================== -->
+
+  <!-- Strategy Dialog -->
+  <dialog id="strategyDialog" class="service-dialog" aria-labelledby="strategyDialogTitle" aria-modal="true">
+    <div class="dialog-inner-card liquid-glass-strong">
+      <div class="dialog-header">
+        <div>
+          <span class="dialog-kicker">CAPABILITY OVERVIEW</span>
+          <h3 id="strategyDialogTitle" class="dialog-title">Strategy, Insight &amp; Direction</h3>
+        </div>
+        <button type="button" class="dialog-close-btn" aria-label="Close Strategy dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="dialog-description">
+        We bridge market observation and creative opportunity. Our strategic frameworks identify high-leverage points of distinction, helping brand leaders make definitive choices before investing in execution.
+      </p>
+
+      <ul class="dialog-capabilities-list">
+        <li class="dialog-capability-item">Brand Positioning &amp; Narrative</li>
+        <li class="dialog-capability-item">Competitive &amp; Cultural Analysis</li>
+        <li class="dialog-capability-item">Creative Direction &amp; Messaging</li>
+        <li class="dialog-capability-item">Audience &amp; Behavioral Research</li>
+      </ul>
+
+      <div class="dialog-actions">
+        <a href="mailto:hello@asterform.example?subject=Strategy%20Inquiry%20%E2%80%94%20Asterform" class="dialog-primary-cta">
+          Initiate inquiry
+        </a>
+        <button type="button" class="dialog-secondary-btn">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Design Dialog -->
+  <dialog id="designDialog" class="service-dialog" aria-labelledby="designDialogTitle" aria-modal="true">
+    <div class="dialog-inner-card liquid-glass-strong">
+      <div class="dialog-header">
+        <div>
+          <span class="dialog-kicker">CAPABILITY OVERVIEW</span>
+          <h3 id="designDialogTitle" class="dialog-title">Design, Identity &amp; Experience</h3>
+        </div>
+        <button type="button" class="dialog-close-btn" aria-label="Close Design dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="dialog-description">
+        We translate strategic conviction into tactile, digital, and spatial form. From foundational identity systems and typography to high-fidelity web experiences, our craftsmanship is measured in nuance and lasting relevance.
+      </p>
+
+      <ul class="dialog-capabilities-list">
+        <li class="dialog-capability-item">Visual Identity Systems &amp; Guidelines</li>
+        <li class="dialog-capability-item">Digital Product &amp; Web Experience</li>
+        <li class="dialog-capability-item">Art Direction &amp; Motion Design</li>
+        <li class="dialog-capability-item">Design Systems &amp; Prototyping</li>
+      </ul>
+
+      <div class="dialog-actions">
+        <a href="mailto:hello@asterform.example?subject=Design%20Inquiry%20%E2%80%94%20Asterform" class="dialog-primary-cta">
+          Initiate inquiry
+        </a>
+        <button type="button" class="dialog-secondary-btn">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================
+       SITE FOOTER & CONTACT DESTINATION
+       ======================================================================== -->
+  <footer class="site-footer" id="contact">
+    <div class="container">
+      <div class="footer-top-row">
+        <!-- Brand lockup -->
+        <div class="footer-brand-lockup">
+          <div class="footer-brand-title">
+            <span class="brand-symbol" aria-hidden="true">
+              <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="14" cy="14" rx="11" ry="5.5" stroke="#6E91FF" stroke-width="1.2" transform="rotate(-28 14 14)" stroke-dasharray="2 2"/>
+                <path d="M14 3.5L16.2 11.8L24.5 14L16.2 16.2L14 24.5L11.8 16.2L3.5 14L11.8 11.8L14 3.5Z" fill="#FFFFFF"/>
+                <circle cx="21" cy="9" r="1.75" fill="#6E91FF"/>
+              </svg>
+            </span>
+            <span class="brand-name">Asterform</span>
+          </div>
+          <p class="footer-tagline">
+            Strategy in motion. An independent creative studio shaping clarity, identity, and modern digital form.
+          </p>
+          <a href="mailto:hello@asterform.example" class="footer-email-link">
+            <span>hello@asterform.example</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7"></line>
+              <polyline points="7 7 17 7 17 17"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Navigation Columns -->
+        <div class="footer-nav-columns">
+          <div>
+            <h4 class="footer-column-title">STUDIO</h4>
+            <ul class="footer-links-list">
+              <li><a href="#about" class="footer-link">About</a></li>
+              <li><a href="#featured-film" class="footer-link">Approach</a></li>
+              <li><a href="#philosophy" class="footer-link">Philosophy</a></li>
+              <li><a href="#services" class="footer-link">Selected Capabilities</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="footer-column-title">CONNECT</h4>
+            <ul class="footer-links-list">
+              <li><a href="#" class="footer-link">Instagram</a></li>
+              <li><a href="#" class="footer-link">X (Twitter)</a></li>
+              <li><a href="mailto:hello@asterform.example" class="footer-link">Inquiries</a></li>
+              <li><a href="#newsletterEmail" class="footer-link" data-action="join-list">Newsletter</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="footer-bottom-row">
+        <span>&copy; 2026 Asterform Studio. All rights reserved.</span>
+        <button type="button" class="back-to-top-btn" id="backToTopBtn">
+          <span>Back to top</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Vanilla JavaScript -->
+  <script src="/assets/templates/asterform/asterform.js"></script>
+</body>
+</html>

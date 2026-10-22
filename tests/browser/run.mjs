@@ -25,11 +25,12 @@ const DEVICES = [
   { id: 'desktop-1440', w: 1440, h: 900, dpr: 1, mobile: false, quick: true },
   { id: 'desktop-1920', w: 1920, h: 1080, dpr: 1, mobile: false },
 ].filter((d) => !QUICK || d.quick);
-const LANGS = ['en', 'cs'];
+const LANGS = ['en', 'cs', 'ru', 'uk'];
 const THEMES = ['light', 'dark'];
 const PAGES = [
   { key: 'home', path: '', h1: 1 }, { key: 'pricing', path: 'pricing' }, { key: 'process', path: 'process' }, { key: 'order', path: 'order' }, { key: 'contact', path: 'contact' },
   { key: 'privacy', path: 'privacy' }, { key: 'cookies', path: 'cookies' }, { key: 'terms', path: 'terms' },
+  { key: 'team', path: 'team' }, { key: 'careers', path: 'careers' }, { key: 'login', path: 'login', robots: 'noindex' }, { key: 'register', path: 'register', robots: 'noindex' },
   { key: 'portfolio', path: 'portfolio', robots: 'noindex' }, { key: '404', path: 'zzz-not-found', status: 404, robots: 'noindex' },
 ];
 const CONSENT = encodeURIComponent(JSON.stringify({ v: 1, c: {}, t: Math.floor(Date.now() / 1000) }));
@@ -160,9 +161,9 @@ async function matrix(browser) {
       ok(`${t} theme applied (${theme})`, theme === 'dark' ? /rgb\(1[0-9], 1[0-9], \d+\)|rgb\(\d, \d+, \d+\)/.test(a.bg) : a.bg === 'rgb(255, 255, 255)', a.bg);
       if (!p.admin && p.key !== '404') {
         ok(`${t} meta description`, !!a.head.desc && a.head.desc.length > 20);
-        ok(`${t} canonical absolute`, /^https?:\/\/[^/]+\/(en|cs)\//.test(a.head.canon || ''), a.head.canon);
+        ok(`${t} canonical absolute`, /^https?:\/\/[^/]+\/(en|cs|ru|uk)\//.test(a.head.canon || ''), a.head.canon);
         ok(`${t} og tags`, !!a.head.ogTitle && !!a.head.ogImg);
-        ok(`${t} hreflang pair + x-default`, a.head.hreflang === 3, `${a.head.hreflang}`);
+        ok(`${t} hreflang pair + x-default`, a.head.hreflang === LANGS.length + 1, `${a.head.hreflang}`);
       }
       ok(`${t} robots`, p.robots ? (a.head.robots || '').includes(p.robots) : (a.head.robots || '').startsWith('index'), a.head.robots);
       ok(`${t} favicon + touch icon links`, a.head.icons.length === 3, a.head.icons.join(','));
@@ -460,6 +461,12 @@ const PRICING = {
   cs: { names: ['Web ze šablony', 'Základní web', 'Individuální web'], from: 'Od', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'Kč', ids: ['template', 'basic', 'custom'],
         credits: [`od 30${NB}000${NB}Kč`, `až 100${NB}USD`, 'nikoli o slevu v hotovosti'], consult: 'Nezávazná konzultace',
         budgets: [`Do 10${NB}000${NB}Kč`, `10${NB}000–30${NB}000${NB}Kč`, `30${NB}000–65${NB}000${NB}Kč`, `65${NB}000–100${NB}000${NB}Kč`, `100${NB}000${NB}Kč a více`, 'Zatím nevím'] },
+  ru: { names: ['Сайт на шаблоне', 'Базовый сайт', 'Индивидуальный сайт'], from: 'От', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'CZK', ids: ['template', 'basic', 'custom'],
+        credits: [`от 30${NB}000${NB}CZK`, 'до 100 $', 'не денежная скидка'], consult: 'Необязывающая консультация',
+        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Более 100${NB}000 CZK`, 'Пока не уверен(а)'] },
+  uk: { names: ['Сайт на шаблоні', 'Базовий сайт', 'Індивідуальний сайт'], from: 'Від', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'CZK', ids: ['template', 'basic', 'custom'],
+        credits: [`від 30${NB}000${NB}CZK`, 'до 100 $', 'не грошова знижка'], consult: 'Консультація без зобов’язань',
+        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Понад 100${NB}000 CZK`, 'Ще не впевнений(а)'] },
 };
 async function pricingScenarios(browser) {
   for (const d of DEVICES) for (const lang of LANGS) for (const theme of THEMES) {
@@ -637,7 +644,8 @@ async function httpChecks() {
   }
   const sm = await (await get('/sitemap.xml')).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
-  ok('sitemap lists the 8 core pages + the design gallery + each catalog design (Lumora), x 2 languages', locs.length === 20 && locs.some((l) => l.endsWith('/en/templates/lumora')) && !locs.some((l) => l.includes('/demo')), String(locs.length));
+  const designSlugs = ['lumora', 'asterform', 'stillwave', 'vantage', 'emberveil'];
+  ok('sitemap lists the 8 core pages + the design gallery + each catalog design (Lumora, Asterform, Stillwave, Vantage, Emberveil), x 2 languages', locs.length === 4 * (11 + designSlugs.length) && designSlugs.every((d) => ['en', 'cs', 'ru', 'uk'].every((l) => locs.includes(`/${l}/templates/${d}`))) && !locs.some((l) => l.includes('/demo')), String(locs.length));
   ok('sitemap excludes portfolio/admin/sent/404', !locs.some((l) => /portfolio|admin|sent|zzz/.test(l)));
   ok('sitemap includes cookies and terms', locs.includes('/en/cookies') && locs.includes('/cs/terms'));
   const rb = await (await get('/robots.txt')).text(); ok('robots.txt blocks /admin and points to sitemap', /Disallow: \/admin/.test(rb) && /Sitemap:/.test(rb));

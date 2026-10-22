@@ -1,0 +1,1121 @@
+/* ==========================================================================
+   Stillwave — Cinematic AI Visual Studio Landing Page
+   Native CSS3 Stylesheet (No external dependencies or frameworks)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design Tokens & CSS Custom Properties
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand palette */
+  --bg-main: #050609;
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --text-muted: rgba(255, 255, 255, 0.46);
+  --surface-dark: #11141B;
+
+  /* Pixelite exact brand blue */
+  --color-accent: #2E66FF;
+  --color-accent-hover: #4578FF;
+  --color-accent-active: #1D52DF;
+  --color-accent-glow: rgba(46, 102, 255, 0.45);
+  --color-accent-subtle: rgba(46, 102, 255, 0.15);
+  --color-accent-border: rgba(46, 102, 255, 0.35);
+
+  /* Glass surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.15);
+  --glass-strong-bg: rgba(17, 20, 27, 0.65);
+  --glass-strong-border: rgba(255, 255, 255, 0.14);
+
+  /* Atmospheric lighting variations (adjusted via Visual Style selector) */
+  --atmosphere-center-x: 28%;
+  --atmosphere-center-y: 42%;
+  --atmosphere-glow-color: rgba(46, 102, 255, 0.22);
+  --atmosphere-secondary-color: rgba(18, 55, 160, 0.18);
+  --atmosphere-radius: 55vw;
+  --atmosphere-vignette: rgba(5, 6, 9, 0.88);
+
+  /* Typography */
+  --font-interface: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", Times, serif;
+
+  /* Transitions */
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-hover: 200ms;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Base Styles
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-interface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.5;
+}
+
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Liquid-Glass Classes (Section 9)
+   -------------------------------------------------------------------------- */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight),
+              0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fallback when backdrop-filter is unsupported */
+@supports not ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .liquid-glass {
+    background: rgba(17, 20, 27, 0.88);
+  }
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.liquid-glass-strong {
+  background: var(--glass-strong-bg);
+  backdrop-filter: blur(34px);
+  -webkit-backdrop-filter: blur(34px);
+  border: 1px solid var(--glass-strong-border);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+              0 24px 48px -12px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+@supports not ((backdrop-filter: blur(34px)) or (-webkit-backdrop-filter: blur(34px))) {
+  .liquid-glass-strong {
+    background: rgba(17, 20, 27, 0.94);
+  }
+}
+
+.liquid-glass-strong::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   4. Background Media Layer & Atmospheric Lighting (Section 4)
+   -------------------------------------------------------------------------- */
+.hero-viewport {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* Parallax Media Container scaled to 1.08 */
+.media-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0) scale(1.08);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.background-video,
+.boomerang-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.boomerang-canvas {
+  opacity: 0;
+  transition: opacity 800ms ease;
+}
+
+.boomerang-canvas.is-active {
+  opacity: 1;
+}
+
+/* CSS Fallback when video fails or while waiting */
+.media-fallback {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 35% 45%, #0d1e44 0%, #080d1a 45%, #050609 90%);
+  opacity: 0;
+  transition: opacity 1000ms ease;
+  pointer-events: none;
+}
+
+.media-fallback.is-visible {
+  opacity: 1;
+}
+
+.media-fallback-aurora {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse at 40% 50%, rgba(46, 102, 255, 0.28) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 30%, rgba(29, 82, 223, 0.2) 0%, transparent 50%);
+  filter: blur(70px);
+  animation: fallbackBreathe 14s ease-in-out infinite alternate;
+}
+
+@keyframes fallbackBreathe {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.7; }
+  50% { transform: scale(1.08) translate(2%, -3%); opacity: 1; }
+  100% { transform: scale(0.96) translate(-2%, 2%); opacity: 0.75; }
+}
+
+/* Atmospheric Lighting Overlay & Vignette */
+.atmospheric-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    /* Restrained blue glow behind/around editorial heading */
+    radial-gradient(circle at var(--atmosphere-center-x) var(--atmosphere-center-y),
+                    var(--atmosphere-glow-color) 0%,
+                    var(--atmosphere-secondary-color) 35%,
+                    transparent var(--atmosphere-radius)),
+    /* Dark vignette keeping footage dominant */
+    radial-gradient(ellipse at 50% 50%,
+                    rgba(5, 6, 9, 0.2) 20%,
+                    rgba(5, 6, 9, 0.65) 70%,
+                    var(--atmosphere-vignette) 100%),
+    /* Bottom soft darkening for text legibility */
+    linear-gradient(180deg, rgba(5, 6, 9, 0.4) 0%, transparent 25%, transparent 60%, rgba(5, 6, 9, 0.88) 100%);
+  transition: background 800ms var(--ease-cinematic);
+}
+
+/* --------------------------------------------------------------------------
+   5. Floating Navigation (Section 5)
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  pointer-events: none; /* Let clicks pass through empty sides */
+}
+
+.nav-pill {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 1080px;
+  height: 56px;
+  border-radius: 9999px;
+  padding: 0 10px 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: transform 300ms var(--ease-cinematic), box-shadow 300ms var(--ease-cinematic);
+}
+
+/* Brand mark */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-size: 15px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.brand-waveform {
+  width: 26px;
+  height: 26px;
+  color: var(--color-accent);
+}
+
+.brand-text {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Desktop navigation links */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  list-style: none;
+}
+
+.nav-link {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: color var(--duration-hover) ease, opacity var(--duration-hover) ease;
+  position: relative;
+  padding: 6px 2px;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+/* Right actions */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.nav-signin {
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color var(--duration-hover) ease;
+  padding: 8px 10px;
+}
+
+.nav-signin:hover {
+  color: var(--text-primary);
+}
+
+/* Primary "Try it free" Button */
+.btn-accent {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 18px var(--color-accent-glow);
+  transition: transform 200ms var(--ease-cinematic),
+              background-color 200ms ease,
+              box-shadow 200ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.btn-accent:hover {
+  background-color: var(--color-accent-hover);
+  transform: scale(1.03);
+  box-shadow: 0 6px 24px rgba(46, 102, 255, 0.6);
+}
+
+.btn-accent:active {
+  background-color: var(--color-accent-active);
+  transform: scale(0.97);
+}
+
+/* Mobile Menu Button */
+.mobile-toggle-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color var(--duration-hover) ease;
+}
+
+.mobile-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mobile-icon-bars,
+.mobile-icon-close {
+  width: 20px;
+  height: 20px;
+}
+
+.mobile-icon-close {
+  display: none;
+}
+
+.mobile-toggle-btn[aria-expanded="true"] .mobile-icon-bars {
+  display: none;
+}
+
+.mobile-toggle-btn[aria-expanded="true"] .mobile-icon-close {
+  display: block;
+}
+
+/* Mobile Navigation Dropdown */
+.mobile-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 20px;
+  right: 20px;
+  border-radius: 24px;
+  padding: 24px;
+  flex-direction: column;
+  gap: 16px;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 220ms ease, transform 220ms var(--ease-cinematic);
+}
+
+.mobile-panel.is-open {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-panel-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-panel-link {
+  display: block;
+  font-size: 16px;
+  padding: 8px 12px;
+  color: var(--text-secondary);
+  border-radius: 12px;
+  transition: color var(--duration-hover) ease, background-color var(--duration-hover) ease;
+}
+
+.mobile-panel-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-panel-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.mobile-panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-panel-actions .nav-signin {
+  text-align: center;
+  padding: 10px;
+}
+
+.mobile-panel-actions .btn-accent {
+  width: 100%;
+  padding: 13px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Main Content Area & Hero Headline (Section 6)
+   -------------------------------------------------------------------------- */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  padding-top: 140px;
+  padding-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* Editorial Headline Container with ~7vw horizontal offset */
+.headline-section {
+  padding: 0 7vw;
+  max-width: 1600px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: heroEntrance 900ms var(--ease-cinematic) 100ms forwards;
+}
+
+@keyframes heroEntrance {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Eyebrow Label */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 18px;
+}
+
+.eyebrow-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
+}
+
+/* Oversized Editorial Heading */
+.hero-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(54px, 11.8vw, 190px);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.45);
+  margin: 0;
+  max-width: 14ch;
+  position: relative;
+}
+
+/* Small blue accent line / restrained visual detail near title */
+.title-accent-line {
+  margin-top: 26px;
+  width: 52px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, rgba(46, 102, 255, 0) 100%);
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   7. Bottom Content Row (Section 7)
+   -------------------------------------------------------------------------- */
+.bottom-content-row {
+  padding: 0 7vw 48px 7vw;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+  align-items: end;
+  gap: 32px;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: heroEntrance 900ms var(--ease-cinematic) 350ms forwards;
+}
+
+/* Left & Right Descriptive Text Blocks */
+.bottom-col-left,
+.bottom-col-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-col-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.bottom-description {
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--text-secondary);
+  max-width: 310px;
+}
+
+/* Center CTA Cluster */
+.bottom-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.cta-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Primary CTA: "Create a visual" */
+.btn-primary-cta {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 13px 26px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 6px 24px var(--color-accent-glow);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 220ms var(--ease-cinematic),
+              background-color 220ms ease,
+              box-shadow 220ms ease;
+}
+
+.btn-primary-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-primary-cta:hover {
+  background-color: var(--color-accent-hover);
+  transform: scale(1.03);
+  box-shadow: 0 8px 30px rgba(46, 102, 255, 0.65);
+}
+
+.btn-primary-cta:active {
+  background-color: var(--color-accent-active);
+  transform: scale(0.97);
+}
+
+.btn-primary-cta svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Secondary CTA: "Explore styles" */
+.btn-secondary-cta {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 13px 24px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 260ms var(--ease-cinematic),
+              background-color 260ms ease,
+              border-color 260ms ease,
+              box-shadow 260ms ease;
+}
+
+.btn-secondary-cta:hover {
+  transform: scale(1.025);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+              0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.btn-secondary-cta:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary-cta svg {
+  width: 15px;
+  height: 15px;
+  opacity: 0.8;
+  transition: transform 200ms ease;
+}
+
+.btn-secondary-cta:hover svg {
+  transform: rotate(45deg);
+}
+
+/* --------------------------------------------------------------------------
+   8. Visual-Style Selector Floating Panel (Section 8)
+   -------------------------------------------------------------------------- */
+.style-selector-panel {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  width: 320px;
+  padding: 16px;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 220ms ease, transform 220ms var(--ease-cinematic), visibility 220ms;
+  z-index: 60;
+}
+
+.style-selector-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.style-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.style-panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.style-panel-close {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.style-panel-close:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.style-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.style-option-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  transition: background-color var(--duration-hover) ease,
+              border-color var(--duration-hover) ease,
+              color var(--duration-hover) ease;
+  text-align: left;
+}
+
+.style-option-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.style-option-btn.is-active {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.style-option-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  transition: background-color var(--duration-hover) ease,
+              border-color var(--duration-hover) ease;
+}
+
+.style-option-btn.is-active .style-option-indicator {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+/* --------------------------------------------------------------------------
+   9. Accessible Creation-Prompt Dialog (Section 8)
+   -------------------------------------------------------------------------- */
+.prompt-dialog {
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 580px;
+  width: calc(100% - 32px);
+  margin: auto;
+  border-radius: 24px;
+  color: var(--text-primary);
+  z-index: 100;
+}
+
+.prompt-dialog::backdrop {
+  background: rgba(5, 6, 9, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dialog-inner {
+  padding: 32px;
+  border-radius: 24px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dialog-title {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.dialog-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.dialog-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background-color var(--duration-hover) ease, color var(--duration-hover) ease;
+  flex-shrink: 0;
+}
+
+.dialog-close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dialog-textarea-wrapper {
+  position: relative;
+}
+
+.dialog-textarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(5, 6, 9, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  resize: vertical;
+  transition: border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
+}
+
+.dialog-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dialog-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.prompt-char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Local Preview Card (Rendered on submit) */
+.dialog-preview-result {
+  display: none;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(46, 102, 255, 0.07);
+  border: 1px solid var(--color-accent-border);
+}
+
+.dialog-preview-result.is-active {
+  display: block;
+}
+
+.preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.preview-user-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: rgba(5, 6, 9, 0.5);
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+.preview-disclaimer {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   10. Creator Attribution Credit (Pixelite Lab)
+   -------------------------------------------------------------------------- */
+.creator-attribution {
+  position: absolute;
+  bottom: 14px;
+  left: 7vw;
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  user-select: none;
+}
+
+.creator-attribution a {
+  color: var(--text-secondary);
+  transition: color var(--duration-hover) ease;
+}
+
+.creator-attribution a:hover {
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   11. Responsive Breakpoints (Section 10)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .headline-section {
+    padding: 0 6vw;
+  }
+  .bottom-content-row {
+    padding: 0 6vw 40px 6vw;
+    gap: 24px;
+  }
+  .bottom-description {
+    font-size: 13px;
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 860px) {
+  .nav-menu,
+  .nav-actions {
+    display: none;
+  }
+  .mobile-toggle-btn {
+    display: flex;
+  }
+  .nav-pill {
+    padding: 0 8px 0 16px;
+  }
+
+  .bottom-content-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 24px;
+    padding: 0 6vw 36px 6vw;
+  }
+
+  .bottom-col-left,
+  .bottom-col-right {
+    align-items: center;
+    text-align: center;
+  }
+
+  .bottom-col-center {
+    order: -1; /* Buttons appear first in stacked bottom row */
+  }
+
+  .style-selector-panel {
+    width: 290px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-content {
+    padding-top: 110px;
+  }
+  .headline-section {
+    padding: 0 20px;
+  }
+  .hero-title {
+    font-size: clamp(48px, 15vw, 92px);
+    line-height: 0.95;
+    max-width: 100%;
+  }
+  .bottom-content-row {
+    padding: 0 20px 24px 20px;
+    gap: 20px;
+  }
+  .cta-group {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+  }
+  .btn-primary-cta,
+  .btn-secondary-cta {
+    width: 100%;
+    justify-content: center;
+  }
+  .creator-attribution {
+    display: none; /* Hide on small mobile to avoid collision */
+  }
+}
+
+/* Landscape / Short-height screens */
+@media (max-height: 620px) and (orientation: landscape) {
+  .hero-content {
+    padding-top: 86px;
+    padding-bottom: 20px;
+  }
+  .hero-title {
+    font-size: clamp(38px, 9vw, 76px);
+  }
+  .bottom-content-row {
+    padding-bottom: 18px;
+    gap: 16px;
+  }
+  .title-accent-line {
+    margin-top: 12px;
+  }
+  .bottom-description {
+    display: none; /* Keep buttons clean without overlap on tight heights */
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. Accessibility & Prefers-Reduced-Motion (Section 11)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .media-container {
+    transform: scale(1.04) !important;
+  }
+  .media-fallback-aurora {
+    animation: none !important;
+  }
+}

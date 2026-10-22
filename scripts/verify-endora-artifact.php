@@ -276,7 +276,8 @@ if ($http) {
     }
     check('every asset URL the homepage actually emits answers 200 (' . count(array_unique($m[1])) . ' URLs)', $bad === [] && count($m[1]) > 5, implode(', ', $bad));
     [, , $h] = $get('/assets/style.css');
-    check('asset cache-busting works in the public_html layout (?v= present)', (bool) preg_match('#/assets/style\.css\?v=\d+#', (string) $get('/en/')[1]));
+    check('asset cache-busting works in the public_html layout (?v= present) for the default (new) design', (bool) preg_match('#/assets/site\.css\?v=\d+#', (string) $get('/en/')[1]));
+    check('the legacy design is served at /legacy/ with its own stylesheet, noindex and a canonical pointing at the default design', (function () use ($get) { $b = (string) $get('/legacy/en/')[1]; return (bool) preg_match('#/assets/style\.css\?v=\d+#', $b) && str_contains($b, 'content="noindex,follow"') && (bool) preg_match('#rel="canonical" href="[^"]*/en/"#', $b); })());
     foreach (['/src/bootstrap.php', '/templates/layout.php', '/lang/en.php', '/config/consent.php', '/storage/leads.sqlite', '/storage/.salt', '/.env', '/.env.example', '/CLAUDE.md', '/tests/run.php', '/bin/hash-password.php', '/Dockerfile', '/../src/bootstrap.php', '/assets/../../src/bootstrap.php', '/public/index.php', '/.ftp-deploy-sync-state.json'] as $p) {
         [$s, $b] = $get($p);
         check("GET $p is not served (got $s)", in_array($s, [403, 404], true) && !str_contains($b, '<?php') && !str_contains($b, 'namespace Pixelite'));

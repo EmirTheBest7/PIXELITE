@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Pixelite\Controllers;
 
 use Pixelite\Paths;
+use Pixelite\Request;
 use Pixelite\Response;
+use Pixelite\TemplateCatalog;
 
 final class PageController extends BaseController
 {
@@ -23,14 +25,26 @@ final class PageController extends BaseController
         return $this->page('process', 'process');
     }
 
-    public function contact(): Response
+    /** ?template=<slug> (from a design page) is validated against the catalog; the view only ever sees trusted catalog data, never the raw request value. */
+    public function contact(Request $r): Response
     {
-        return $this->page('contact', 'contact');
+        $entry = TemplateCatalog::find($r->query('template'));
+        return $this->page('contact', 'contact', ['design' => $entry !== null ? TemplateCatalog::localized($entry) : null]);
     }
 
-    public function cookies(): Response
+    public function careers(): Response
     {
-        return $this->page('cookies', 'cookies');
+        return $this->page('careers', 'careers', ['vacancies' => \Pixelite\Careers::all(true)]);
+    }
+
+    public function team(): Response
+    {
+        return $this->page('team', 'team', ['members' => require Paths::root('config/team.php')]);
+    }
+
+    public function cookies(Request $r): Response
+    {
+        return $this->page('cookies', 'cookies', ['sessionCookie' => \Pixelite\Session::cookieName($r)]);
     }
 
     public function terms(): Response

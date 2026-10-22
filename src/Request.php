@@ -11,19 +11,33 @@ final class Request
         private array $post = [],
         private array $query = [],
         private array $server = [],
+        private array $files = [],
     ) {}
 
     public static function fromGlobals(): self
     {
         $path = rawurldecode((string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH));
         $path = '/' . trim(preg_replace('#/+#', '/', $path), '/');
-        return new self(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'), $path, $_POST, $_GET, $_SERVER);
+        return new self(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET'), $path, $_POST, $_GET, $_SERVER, $_FILES);
+    }
+
+    /** A copy of this request with another (already normalised) path – used to strip the /legacy or /new prefix before routing. */
+    public function withPath(string $path): self
+    {
+        return new self($this->method, $path, $this->post, $this->query, $this->server, $this->files);
     }
 
     public function post(string $key): string
     {
         $v = $this->post[$key] ?? '';
         return is_string($v) ? $v : '';
+    }
+
+    /** Raw $_FILES entry (or null). Callers must validate every field; nothing here is trusted. */
+    public function file(string $key): ?array
+    {
+        $f = $this->files[$key] ?? null;
+        return is_array($f) ? $f : null;
     }
 
     public function query(string $key): string
@@ -41,6 +55,13 @@ final class Request
     public function host(): string
     {
         return strtolower(preg_replace('/:\d+$/', '', $this->header('Host')));
+    }
+
+    /** Value of a submitted array field (e.g. ids[]), only string entries. @return list<string> */
+    public function postList(string $key): array
+    {
+        $v = $this->post[$key] ?? [];
+        return is_array($v) ? array_values(array_filter($v, 'is_string')) : [];
     }
 
     public function header(string $name): string

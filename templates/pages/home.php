@@ -1,118 +1,130 @@
-<div class="sect sect--padding-top">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="site">
-          <h1 class="site__title"><?= e(t('hero.title')) ?></h1>
-          <h2 class="site__subtitle"><?= e(t('hero.subtitle')) ?></h2>
-          <div class="site__box-link">
-            <a class="btn btn--auto" href="<?= e(url('order')) ?>"><?= e(t('hero.cta')) ?></a>
-            <a class="btn btn--revert btn--auto" href="#services"><?= e(t('hero.secondary')) ?></a>
-          </div>
-          <div class="hero-laptop" aria-hidden="true">
-            <div class="laptop">
-              <div class="lp-lid">
-                <div class="lp-front">
-                  <div class="lp-screen">
-                    <div class="lp-bar"><i></i><i></i><i></i><span class="lp-url"></span></div>
-                    <div class="lp-page">
-                      <div class="lp-nav"><b class="lp-logo"></b><span></span><span></span><span></span><em class="lp-pill"></em></div>
-                      <div class="lp-copy"><span class="lp-h1"></span><span class="lp-h2"></span><span class="lp-btns"><em class="lp-pill lp-pill--lg"></em><em class="lp-pill lp-pill--ghost"></em></span></div>
-                      <div class="lp-cards">
-                        <div class="lp-card lp-card--purple"><i></i><span></span><span></span></div>
-                        <div class="lp-card lp-card--violet"><i></i><span></span><span></span></div>
-                        <div class="lp-card lp-card--blue"><i></i><span></span><span></span></div>
-                      </div>
-                    </div>
-                  </div>
+<?php require_once __DIR__ . '/../partials/ui.php';
+$featured = array_slice(\Pixelite\TemplateCatalog::search([])['items'] ?? [], 0, 3); ?>
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <canvas id="hero-canvas" class="hero__canvas" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero__grid">
+      <div class="hero__copy">
+        <h1 class="hero__title" id="hero-title"><?= e(t('hero.title')) ?></h1>
+        <p class="hero__sub"><?= e(t('hero.subtitle')) ?></p>
+        <div class="hero__cta">
+          <?= ui_link(url('order'), (string) t('hero.cta'), 'accent') ?>
+          <?= ui_link('#services', (string) t('hero.secondary'), 'ghost') ?>
+        </div>
+      </div>
+      <div class="hero__stage">
+        <div class="hero-laptop" aria-hidden="true">
+          <div class="laptop"><div class="lp-tilt">
+            <div class="lp-shadow"></div>
+            <div class="lp-lid"><div class="lp-front"><span class="lp-cam"></span>
+              <div class="lp-screen"><div class="lp-page">
+                <div class="lp-nav"><b class="lp-logo"></b><span></span><span></span><span></span><em class="lp-btn"></em></div>
+                <div class="lp-copy"><span class="lp-h"></span><span class="lp-h"></span><span class="lp-p"></span>
+                  <span class="lp-btns"><em class="lp-pill"></em><em class="lp-pill lp-pill--ghost"></em></span></div>
+                <div class="lp-cards">
+                  <div class="lp-card"><i></i><span></span><span></span></div>
+                  <div class="lp-card"><i></i><span></span><span></span></div>
+                  <div class="lp-card"><i></i><span></span><span></span></div>
                 </div>
-              </div>
-              <div class="lp-base"></div>
-            </div>
-          </div>
+              </div></div>
+            </div></div>
+            <div class="lp-base"></div>
+          </div></div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<section id="services" class="sect sect--padding-bottom" aria-labelledby="services-title">
-  <div class="container">
-    <div class="row row--center">
-      <h2 class="row__title" id="services-title"><?= e(t('services.title')) ?></h2>
-      <h3 class="row__sub"><?= e(t('services.subtitle')) ?></h3>
+<section id="services" class="section" aria-labelledby="services-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <?= ui_eyebrow('01', (string) t('nav.services')) ?>
+      <h2 class="h-lg" id="services-title"><?= e(t('services.title')) ?></h2>
+      <p class="lede"><?= e(t('services.subtitle')) ?></p>
     </div>
     <?php require __DIR__ . '/../partials/package-cards.php' ?>
-
     <?php require __DIR__ . '/../partials/credits.php' ?>
+    <p class="more"><?= ui_link(url('pricing'), (string) t('home_more.compare'), 'ghost') ?></p>
+  </div>
+</section>
+<?php if ($featured): ?>
 
-    <p class="more-link"><a class="btn btn--revert btn--auto" href="<?= e(url('pricing')) ?>"><?= e(t('home_more.compare')) ?></a></p>
+<section id="designs" class="section section--soft" aria-labelledby="designs-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <?= ui_eyebrow('02', (string) t('nav.templates')) ?>
+      <h2 class="h-lg" id="designs-title"><?= e(t('templates.hero_title')) ?></h2>
+      <p class="lede"><?= e(t('templates.hero_sub')) ?></p>
+    </div>
+    <div class="tgrid">
+<?php foreach ($featured as $t): require __DIR__ . '/../partials/template-card.php'; endforeach ?>
+    </div>
+    <p class="more"><?= ui_link(url('templates'), (string) t('nav.templates'), 'ghost') ?></p>
+  </div>
+</section>
+<?php endif ?>
+
+<section id="consultation" class="section" aria-labelledby="consult-title">
+  <div class="wrap">
+    <div class="consult">
+      <div>
+        <h2 class="h-lg" id="consult-title"><?= e(t('consultation.title')) ?></h2>
+        <p class="lede"><?= e(t('consultation.text')) ?></p>
+      </div>
+      <?= ui_link(url('order'), (string) t('consultation.cta'), 'accent') ?>
+    </div>
   </div>
 </section>
 
-<section id="consultation" class="sect sect--no-padding consult" aria-labelledby="consult-title">
-  <div class="container">
-    <div class="row row--center">
-      <h2 class="row__title" id="consult-title"><?= e(t('consultation.title')) ?></h2>
+<section id="how" class="section section--soft" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <?= ui_eyebrow('03', (string) t('nav.process')) ?>
+      <h2 class="h-lg" id="how-title"><?= e(t('home_more.process_title')) ?></h2>
+      <p class="lede"><?= e(t('home_more.process_sub')) ?></p>
     </div>
-    <p class="consult__text"><?= e(t('consultation.text')) ?></p>
-    <p class="consult__cta"><a class="btn btn--strong btn--auto" href="<?= e(url('order')) ?>"><?= e(t('consultation.cta')) ?></a></p>
+    <?php $stepsCompact = true; require __DIR__ . '/../partials/steps.php' ?>
+    <p class="more"><?= ui_link(url('process'), (string) t('home_more.process_cta'), 'ghost') ?></p>
   </div>
 </section>
 
-<section id="how" class="sect sect--no-padding sect--padding-bottom" aria-labelledby="how-title">
-  <div class="container">
-    <div class="row row--center">
-      <h2 class="row__title" id="how-title"><?= e(t('home_more.process_title')) ?></h2>
-      <h3 class="row__sub"><?= e(t('home_more.process_sub')) ?></h3>
-    </div>
-    <div class="steps-wrap">
-      <?php $stepsCompact = true; require __DIR__ . '/../partials/steps.php' ?>
-    </div>
-    <p class="more-link"><a class="btn btn--revert btn--auto" href="<?= e(url('process')) ?>"><?= e(t('home_more.process_cta')) ?></a></p>
-  </div>
-</section>
-
-<section id="faq" class="sect sect--no-padding sect--padding-bottom" aria-labelledby="faq-title">
-  <div class="container">
-    <div class="row row--center">
-      <h2 class="row__title" id="faq-title"><?= e(t('faq.home_title')) ?></h2>
+<section id="faq" class="section" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="h-lg" id="faq-title"><?= e(t('faq.home_title')) ?></h2>
     </div>
     <?php $faqIds = ['price', 'binding', 'help']; require __DIR__ . '/../partials/faq.php' ?>
-    <p class="more-link"><a class="btn btn--revert btn--auto" href="<?= e(url('pricing')) ?>#faq"><?= e(t('faq.more')) ?></a></p>
+    <p class="more"><?= ui_link(url('pricing') . '#faq', (string) t('faq.more'), 'ghost') ?></p>
   </div>
 </section>
 
-<section class="sect sect--padding-bottom" aria-labelledby="contact-title">
-  <div class="container">
-    <div class="row">
-      <h2 class="row__title" id="contact-title"><?= e(t('contact.title')) ?></h2>
-      <h3 class="row__sub"><?= e(t('contact.subtitle')) ?></h3>
+<section class="section section--soft" aria-labelledby="contact-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <?= ui_eyebrow('04', (string) t('nav.contact')) ?>
+      <h2 class="h-lg" id="contact-title"><?= e(t('contact.title')) ?></h2>
+      <p class="lede"><?= e(t('contact.subtitle')) ?></p>
     </div>
-    <div class="row row--margin">
-      <div class="col-md-1"></div>
-      <div class="col-md-4"><?php require __DIR__ . '/../partials/contact-details.php' ?></div>
-      <div class="col-md-6">
-        <div class="cta-card">
-          <h3 class="cta-card__title"><?= e(t('contact.cta_title')) ?></h3>
-          <p class="cta-card__text"><?= e(t('contact.cta_text')) ?></p>
-          <a class="btn btn--auto" href="<?= e(url('order')) ?>"><?= e(t('contact.cta_button')) ?></a>
-        </div>
+    <div class="contact-grid">
+      <?php require __DIR__ . '/../partials/contact-details.php' ?>
+      <div class="cta-card">
+        <h3 class="h-md"><?= e(t('contact.cta_title')) ?></h3>
+        <p class="cta-card__text"><?= e(t('contact.cta_text')) ?></p>
+        <?= ui_link(url('order'), (string) t('contact.cta_button'), 'accent') ?>
       </div>
-      <div class="col-md-1"></div>
     </div>
   </div>
 </section>
 
-<section class="sect sect--violet">
-  <img src="<?= e(asset('img/band.png')) ?>" class="career-img" alt="">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h2 class="career_title"><?= e(t('band.title')) ?></h2>
-        <h3 class="career_sub"><?= e(t('band.subtitle')) ?></h3>
-        <a href="<?= e(url('order')) ?>" class="btn btn--white btn--auto"><?= e(t('band.button')) ?></a>
+<section class="section" aria-labelledby="band-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 class="band__title" id="band-title"><?= e(t('band.title')) ?></h2>
+        <p class="band__sub"><?= e(t('band.subtitle')) ?></p>
       </div>
+      <div class="band__actions"><?= ui_link(url('order'), (string) t('band.button'), 'light') ?></div>
     </div>
   </div>
 </section>

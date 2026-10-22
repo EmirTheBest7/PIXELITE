@@ -1416,3 +1416,73 @@ dialog.consent-dialog:not([open]){display:none}   /* browsers without <dialog> s
 .tpreview__frame{display:block;border:0;width:100%;height:100%;background:#fff}
 .tpreview__stage.is-scaled .tpreview__frame{position:absolute;left:50%;top:0;transform-origin:0 0;border-radius:0}
 @media (prefers-reduced-motion:reduce){.tpreview__frame{scroll-behavior:auto}}
+
+
+/* =====================================================================
+   Accounts, careers, team, project admin – built only from the existing tokens and components
+   ===================================================================== */
+.form__alert--ok{border-left-color:#2e8b57}
+.auth-form{margin-top:10px}
+.auth-field{margin-bottom:18px}
+.auth-field__label{display:block;margin:0 0 6px;font-weight:700;font-size:14px;color:var(--text)}
+.auth-field__hint{margin:6px 0 0;color:var(--text-soft);font-size:13px;line-height:19px}
+.auth-form__note{margin:18px 0 0;color:var(--text-soft);font-size:13px;line-height:19px}
+.auth-form__switch{margin:22px 0 0;color:var(--text)}
+.auth-alt{margin-top:26px;text-align:center}
+.auth-alt__or{position:relative;margin:0 0 16px;color:var(--text-soft);font-size:13px}
+.auth-alt__or:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--border)}
+.auth-alt__or span{position:relative;background:var(--bg);padding:0 12px}
+.auth-alt__btn[disabled]{opacity:.65;cursor:not-allowed;box-shadow:none}
+.auth-alt__note{margin:10px 0 0;color:var(--text-soft);font-size:13px}
+.acct-card{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:25px 30px 30px;margin:0 0 25px}
+.acct-card__title{font-size:20px;margin:0 0 18px}
+.acct-card__empty{margin:0;color:var(--text-soft);line-height:22px}
+.acct-list{list-style:none;margin:0;padding:0}
+.acct-list li{padding:14px 0;border-top:1px solid var(--border-soft);display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
+.acct-list li:first-child{border-top:0;padding-top:0}
+.acct-list__meta{color:var(--text-soft);font-size:14px}
+.acct-logout{margin:10px 0 0}
+.contact-design{margin:0 0 15px;color:var(--text)}
+.tdetail__ask{margin:12px 0 0;font-size:14px}
+.careers-none{text-align:left}
+.careers-none__mail{margin:18px 0 0}
+.careers-open__title{font-size:24px;margin:0 0 6px}
+.careers-open__text{color:var(--text-soft);margin:0 0 24px}
+.vacancy{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:28px 30px;margin:0 0 24px}
+.vacancy__title{font-size:22px;margin:0 0 6px}
+.vacancy__meta{margin:0 0 14px;color:var(--text-soft);font-size:13px}
+.vacancy__text{margin:0 0 12px;line-height:24px;font-weight:300}
+.vacancy__more{margin:10px 0 0;color:var(--text-soft)}
+.team-filter{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 0 30px}
+.team-filter__btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--r-pill);padding:8px 18px;font:inherit;font-size:14px;cursor:pointer}
+.team-filter__btn[aria-pressed="true"]{background:var(--c-blue);border-color:var(--c-blue);color:#fff}
+.team-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,320px));gap:28px;justify-content:center}
+.team-card[hidden]{display:none}
+.team-card article{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);overflow:hidden;transition:transform var(--ease),box-shadow var(--ease);height:100%}
+.team-card article:hover,.team-card article:focus-visible{transform:translateY(-4px);box-shadow:var(--shadow-card-hover)}
+.team-card__photo{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.team-card__photo--mono{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--c-violet),var(--c-blue));color:#fff;font-size:64px;font-weight:700;letter-spacing:2px}
+.team-card__body{padding:20px 22px 24px}
+.team-card__name{font-size:22px;margin:0 0 4px}
+.team-card__role{margin:0;color:var(--text-soft)}
+.team-card__bio{margin:12px 0 0;line-height:22px;font-weight:300}
+.team-more{margin:34px 0 0;text-align:center;color:var(--text-soft)}
+@media (prefers-reduced-motion:reduce){.team-card article{transition:none}.team-card article:hover{transform:none}}
+.lang__link{padding-left:8px;padding-right:8px}
+/* admin: new sections reuse .admin__card / .admin__table / .admin__status */
+.admin__nav{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center}
+.admin__nav a[aria-current="page"]{font-weight:700;text-decoration:underline}
+.admin__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.admin__lang{border-top:1px solid var(--border-soft);padding-top:14px;margin-top:14px}
+.admin__lang h3{font-size:15px;margin:0 0 8px}
+.admin__lang label{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+.admin__actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 0}
+.admin__actions form{margin:0}
+.admin__warn{background:var(--surface);border-left:4px solid var(--c-error);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:14px 18px;margin:0 0 20px;line-height:22px}
+.admin__url{display:block;word-break:break-all;padding:10px 12px;background:var(--code-bg);color:var(--code-fg);border-radius:var(--r-card);font-size:13px;margin:6px 0 12px}
+.admin__files{max-height:260px;overflow:auto;font-size:13px;margin:8px 0 0;padding-left:18px}
+.team-filter,.team-grid{margin-top:45px}.team-filter + .team-grid{margin-top:0}
+
+/* design switch (legacy interface): a discreet menu item */
+.header__link--version{font-size:13px;opacity:.75}
+.header__link--version:hover{opacity:1}

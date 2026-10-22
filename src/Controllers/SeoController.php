@@ -10,7 +10,7 @@ use Pixelite\Response;
 final class SeoController
 {
     /** Pages that belong in the sitemap. Portfolio and order/sent are intentionally excluded. */
-    private const INDEXABLE = ['', 'pricing', 'process', 'order', 'contact', 'privacy', 'cookies', 'terms'];
+    private const INDEXABLE = ['', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms'];
 
     public function robots(): Response
     {

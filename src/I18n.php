@@ -5,7 +5,13 @@ namespace Pixelite;
 
 final class I18n
 {
-    public const LOCALES = ['en', 'cs'];
+    public const LOCALES = ['en', 'cs', 'ru', 'uk'];
+
+    /** Open Graph locale for each supported language. */
+    public const OG_LOCALES = ['en' => 'en_US', 'cs' => 'cs_CZ', 'ru' => 'ru_RU', 'uk' => 'uk_UA'];
+
+    /** Native names (language switcher tooltips). */
+    public const NAMES = ['en' => 'English', 'cs' => 'Čeština', 'ru' => 'Русский', 'uk' => 'Українська'];
 
     private static string $locale = 'en';
     /** @var array<string,array> */

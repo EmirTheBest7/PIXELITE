@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Pixelite\Controllers;
 
 use Pixelite\Csrf;
+use Pixelite\CustomerAuth;
 use Pixelite\Env;
 use Pixelite\I18n;
 use Pixelite\Logger;
@@ -42,6 +43,9 @@ final class OrderController extends BaseController
             $old['template'] = $tpl;
             $old['project_type'] ??= 'website';
             $old['package'] ??= 'template';   // a gallery design is built as the Template-website package; the visitor can still change it
+        }
+        if (($c = CustomerAuth::current()) !== null) {   // a signed-in customer does not retype their details
+            $old += ['name' => $c['name'], 'email' => $c['email'], 'phone' => $c['phone'], 'company' => $c['company']];
         }
         return $this->form($old, [], '');
     }
@@ -90,7 +94,8 @@ final class OrderController extends BaseController
                 $resp->headers['Retry-After'] = (string) $window;
                 return $resp;
             }
-            $id = $this->service->submit($clean, I18n::locale());
+            $customer = CustomerAuth::current();   // the order belongs to the account only because the customer was signed in while ordering
+            $id = $this->service->submit($clean, I18n::locale(), $customer !== null ? (int) $customer['id'] : null);
         } catch (\Throwable $ex) {
             Logger::error('order persistence failed', ['error' => get_class($ex) . ': ' . $ex->getMessage()]);
             return $this->form($old, [], 'server', 500);

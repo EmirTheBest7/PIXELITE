@@ -1,22 +1,21 @@
 <?php /** @var array $filters @var array $result */
+require_once __DIR__ . '/../partials/ui.php';
 $cats = \Pixelite\TemplateCatalog::categories(); $styles = \Pixelite\TemplateCatalog::styles();
 $qs = fn(array $over): string => http_build_query(array_filter(array_merge($filters, $over, ['page' => $over['page'] ?? null]), static fn($v, $k) => $v !== '' && $v !== null && !($k === 'sort' && $v === 'featured') && !($k === 'page' && (int) $v <= 1), ARRAY_FILTER_USE_BOTH));
 $pageUrl = fn(int $p): string => url('templates') . (($s = $qs(['page' => $p])) !== '' ? '?' . $s : '');
 ?>
-<div class="sect sect--padding-top">
-  <div class="container">
-    <div class="row">
-      <h1 class="row__title"><?= e(t('templates.hero_title')) ?></h1>
-      <h2 class="row__sub"><?= e(t('templates.hero_sub')) ?></h2>
-    </div>
+<?php $ph = ['label' => (string) t('nav.templates'), 'title' => (string) t('templates.hero_title'), 'sub' => (string) t('templates.hero_sub')];
+require __DIR__ . '/../partials/page-hero.php' ?>
+<section class="section" aria-label="<?= e(t('nav.templates')) ?>">
+  <div class="wrap">
     <ol class="tsteps" aria-label="<?= e(t('nav.process')) ?>">
 <?php foreach (t('templates.how') as $i => $step): ?>
-      <li><span class="tsteps__n" aria-hidden="true"><?= $i + 1 ?></span> <?= e($step) ?></li>
+      <li><span class="tsteps__n" aria-hidden="true"><?= $i + 1 ?></span> <span><?= e($step) ?></span></li>
 <?php endforeach ?>
     </ol>
     <form class="tfilters" method="get" action="<?= e(url('templates')) ?>" role="search" aria-label="<?= e(t('templates.search_label')) ?>">
-      <div class="tfilters__search">
-        <label class="sr-only" for="t-q"><?= e(t('templates.search_label')) ?></label>
+      <div class="tfilters__field">
+        <label for="t-q"><?= e(t('templates.search_label')) ?></label>
         <input class="form__field form__text" id="t-q" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="<?= e(t('templates.search_ph')) ?>" maxlength="100" autocomplete="off">
       </div>
 <?php if (count($cats) > 1): ?>
@@ -51,7 +50,7 @@ $pageUrl = fn(int $p): string => url('templates') . (($s = $qs(['page' => $p])) 
       </div>
 <?php endif ?>
       <div class="tfilters__actions">
-        <button class="btn btn--auto" type="submit"><?= e(t('templates.filters_apply')) ?></button>
+        <?= ui_button((string) t('templates.filters_apply'), 'accent', ['type' => 'submit']) ?>
 <?php if ($result['filtered']): ?>
         <a class="tfilters__reset" href="<?= e(url('templates')) ?>"><?= e(t('templates.reset')) ?></a>
 <?php endif ?>
@@ -60,9 +59,9 @@ $pageUrl = fn(int $p): string => url('templates') . (($s = $qs(['page' => $p])) 
     <p class="tresults" role="status" aria-live="polite"><?= e($result['total'] === 1 ? t('templates.results_one') : t('templates.results_many', ['n' => $result['total']])) ?></p>
 <?php if (!$result['items']): ?>
     <div class="tempty">
-      <h3 class="tempty__title"><?= e(t('templates.empty_title')) ?></h3>
+      <h2 class="h-md"><?= e(t('templates.empty_title')) ?></h2>
       <p><?= e(t('templates.empty_text')) ?></p>
-      <a class="btn btn--auto" href="<?= e(url('templates')) ?>"><?= e(t('templates.reset')) ?></a>
+      <?= ui_link(url('templates'), (string) t('templates.reset'), 'accent') ?>
     </div>
 <?php else: ?>
     <div class="tgrid">
@@ -70,20 +69,23 @@ $pageUrl = fn(int $p): string => url('templates') . (($s = $qs(['page' => $p])) 
     </div>
 <?php if ($result['pages'] > 1): ?>
     <nav class="tpager" aria-label="<?= e(t('templates.pagination')) ?>">
-<?php if ($result['page'] > 1): ?><a class="btn btn--revert btn--auto" rel="prev" href="<?= e($pageUrl($result['page'] - 1)) ?>"><?= e(t('templates.prev')) ?></a><?php endif ?>
+<?php if ($result['page'] > 1): ?><?= ui_link($pageUrl($result['page'] - 1), (string) t('templates.prev'), 'sm ghost', ['rel' => 'prev']) ?><?php endif ?>
       <span><?= e(t('templates.page_of', ['p' => $result['page'], 'n' => $result['pages']])) ?></span>
-<?php if ($result['page'] < $result['pages']): ?><a class="btn btn--revert btn--auto" rel="next" href="<?= e($pageUrl($result['page'] + 1)) ?>"><?= e(t('templates.next')) ?></a><?php endif ?>
+<?php if ($result['page'] < $result['pages']): ?><?= ui_link($pageUrl($result['page'] + 1), (string) t('templates.next'), 'sm ghost', ['rel' => 'next']) ?><?php endif ?>
     </nav>
 <?php endif ?>
 <?php endif ?>
   </div>
-</div>
-<div class="sect sect--violet">
-  <div class="container">
-    <div class="row">
-      <h2 class="career_title"><?= e(t('templates.gallery_cta_title')) ?></h2>
-      <h3 class="career_sub"><?= e(t('templates.gallery_cta_text')) ?></h3>
-      <a class="btn btn--white btn--auto" href="<?= e(url('order')) ?>"><?= e(t('templates.gallery_cta_btn')) ?></a>
+</section>
+
+<section class="section section--tight-top" aria-labelledby="gcta-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 class="band__title" id="gcta-title"><?= e(t('templates.gallery_cta_title')) ?></h2>
+        <p class="band__sub"><?= e(t('templates.gallery_cta_text')) ?></p>
+      </div>
+      <div class="band__actions"><?= ui_link(url('order'), (string) t('templates.gallery_cta_btn'), 'light') ?></div>
     </div>
   </div>
-</div>
+</section>

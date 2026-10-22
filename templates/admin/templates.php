@@ -1,7 +1,8 @@
 <?php /** @var array $rows @var string $q @var string $status @var string $category @var string $csrf @var int $missing @var int $total @var string $flash */ ?>
-<div class="row"><h1 class="row__title">Design prompts</h1></div>
+<?php require_once __DIR__ . '/../partials/ui.php'; ?>
+<h1 class="admin__title">Design prompts</h1>
 <?php if ($flash !== ''): ?><div class="form__alert" role="status"><?= e($flash) ?></div><?php endif ?>
-<div class="admin__card row--margin">
+<div class="admin__card">
   <p><strong><?= $total - $missing ?></strong> of <?= $total ?> designs have a prompt<?= $missing ? ' · <strong>' . $missing . ' missing</strong>' : '' ?>.
     Prompts are written by Pixelite and are visible only here.</p>
   <form method="get" action="/admin/templates" class="admin__filters">
@@ -20,13 +21,13 @@
       <option value="<?= e($c) ?>"<?= $category === $c ? ' selected' : '' ?>><?= e($c) ?></option>
 <?php endforeach ?>
     </select>
-    <button class="btn btn--auto" type="submit">Filter</button>
+    <?= ui_button('Filter', 'sm accent plain', ['type' => 'submit']) ?>
   </form>
 <?php if (!$rows): ?>
   <p class="admin__empty">No designs match.</p>
 <?php else: ?>
-  <div class="table-responsive">
-    <table class="table admin__table">
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Design prompts">
+    <table class="admin__table">
       <thead><tr><th>Design</th><th>Category</th><th>Prompt</th><th>Origin</th><th>Components</th></tr></thead>
       <tbody>
 <?php foreach ($rows as $row): $e = $row['e']; $p = $row['p']; ?>
@@ -43,13 +44,13 @@
   </div>
 <?php endif ?>
 </div>
-<div class="admin__card row--margin">
+<div class="admin__card">
   <h2 class="admin__h2">Import a prompt package</h2>
   <p>Upload the private JSON package (<code>{"prompts":[{"slug","body","origin","notes","version"}]}</code>) kept in the git-ignored <code>private/template-prompts/</code> folder. Everything is validated first; if any entry is invalid nothing is imported. Max 1 MB.</p>
   <form method="post" action="/admin/templates/import" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
     <label for="a-file">JSON file</label>
     <input id="a-file" type="file" name="package" accept="application/json,.json" required>
-    <button class="btn btn--auto" type="submit">Import</button>
+    <?= ui_button('Import', 'sm accent plain', ['type' => 'submit']) ?>
   </form>
 </div>

@@ -31,4 +31,66 @@ return [
         ],
         'prompt_ref' => 'lumora',   // key into the admin-only template_prompts table
     ],
+    [
+        'slug' => 'asterform',
+        'category' => 'studio',
+        'style' => 'dark',
+        'featured' => false,
+        'tags' => ['one-page', 'animated', 'video-hero', 'scroll-reveal'],
+        'media' => ['dir' => 'templates/asterform', 'poster' => ['640' => 'poster-640.jpg', '1280' => 'poster-1280.jpg'], 'video' => 'preview.webm'],
+        'demo' => 'asterform',
+        'stack' => ['HTML', 'CSS', 'JavaScript'],
+        'origin' => [
+            'author' => 'Pixelite',
+            'third_party' => [
+                ['name' => 'Instrument Serif', 'license' => 'SIL OFL 1.1', 'url' => 'https://github.com/Instrument/instrument-serif', 'notice' => '/assets/templates/asterform/fonts/OFL-Instrument-Serif.txt'],
+            ],
+        ],
+        'prompt_ref' => 'asterform',
+    ],
+    [
+        'slug' => 'stillwave',
+        'category' => 'saas',
+        'style' => 'dark',
+        'featured' => false,
+        'tags' => ['one-page', 'animated', 'video-hero', 'prompt-dialog'],
+        'media' => ['dir' => 'templates/stillwave', 'poster' => ['640' => 'poster-640.jpg', '1280' => 'poster-1280.jpg'], 'video' => 'preview.webm'],
+        'demo' => 'stillwave',
+        'stack' => ['HTML', 'CSS', 'JavaScript'],
+        'origin' => [
+            'author' => 'Pixelite',
+        ],
+        'prompt_ref' => 'stillwave',
+    ],
+    [
+        'slug' => 'vantage',
+        'category' => 'saas',
+        'style' => 'dark',
+        'featured' => false,
+        'tags' => ['one-page', 'animated', 'video-hero'],
+        'media' => ['dir' => 'templates/vantage', 'poster' => ['640' => 'poster-640.jpg', '1280' => 'poster-1280.jpg'], 'video' => 'preview.webm'],
+        'demo' => 'vantage',
+        'stack' => ['HTML', 'CSS', 'JavaScript'],
+        'origin' => [
+            'author' => 'Pixelite',
+        ],
+        'prompt_ref' => 'vantage',
+    ],
+    [
+        'slug' => 'emberveil',
+        'category' => 'studio',
+        'style' => 'light',
+        'featured' => false,
+        'tags' => ['one-page', 'animated', 'cursor-effect'],
+        'media' => ['dir' => 'templates/emberveil', 'poster' => ['640' => 'poster-640.jpg', '1280' => 'poster-1280.jpg'], 'video' => 'preview.webm'],
+        'demo' => 'emberveil',
+        'stack' => ['HTML', 'CSS', 'JavaScript'],
+        'origin' => [
+            'author' => 'Pixelite',
+            'third_party' => [
+                ['name' => 'Inter', 'license' => 'SIL OFL 1.1', 'url' => 'https://github.com/rsms/inter', 'notice' => '/assets/templates/emberveil/fonts/OFL-Inter.txt'],
+            ],
+        ],
+        'prompt_ref' => 'emberveil',
+    ],
 ];

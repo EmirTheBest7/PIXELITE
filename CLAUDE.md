@@ -25,11 +25,12 @@ src/               namespace Pixelite\ (autoloaded by src/bootstrap.php)
   TemplateCatalog, TemplatePrompts   ← design gallery (public metadata) and the admin-only prompt table
   OrderValidator, OrderService, PricingSnapshot, OrderRepository, TelegramNotifier   ← order pipeline
   Company (legal identity from .env), Auth, Csrf, Session, RateLimiter, Database, I18n, Env, Logger, View, Router, Request, Response
-templates/         demos/ (live demo documents of catalog designs), layout.php, partials/ (package-cards, credits, faq, steps, header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
-lang/en.php cs.php all copy. Identical key sets (tests enforce it)
+templates/         NEW design (the default): layout.php, partials/ (ui helpers, header with the Legacy menu item, footer, consent …), pages/, admin/, errors/; demos/ (live demo documents of catalog designs, shared by both designs); legacy/ = the previous design (same view contract), served under /legacy (package-cards, credits, faq, steps, header, footer, contact-details, consent, theme-switch, theme-cycle, head-assets), pages/, admin/, errors/
+lang/en.php cs.php ru.php uk.php all copy. Identical key sets (tests enforce it)
 config/portfolio.php  portfolio data (placeholders, clearly marked)
 config/templates.php  design catalog (public metadata only; prompts never here)
 config/consent.php    cookie/consent registry (storage inventory + optional services: empty)
+config/team.php       people on /team (name + role only; add an entry to add a member)
 private/           git-ignored local package of admin-only prompts (repo is public; never deployed)
 storage/           git-ignored runtime data: leads.sqlite, logs/app.log, .salt
 tests/run.php      dependency-free PHP test runner (+ fake_telegram.php)
@@ -39,7 +40,17 @@ scripts/            build-endora.php (artifact), verify-endora-artifact.php (pre
 .github/workflows/  deploy.yml (CI → Endora FTP), endora-inspect.yml (read-only host inspection)
 ```
 
-## Design system (from the original landing page; tokens are `:root` vars in style.css)
+## Two designs, one application (new = default, legacy = /legacy)
+The approved redesign is now the production design. The previous one is kept, fully working, under **`/legacy/{lang}/…`** (same controllers, validators, database, auth and authorization – only the templates differ).
+- `src/Design.php` decides the variant per request; `View` loads `templates/<file>.php` (new) or `templates/legacy/<file>.php`; `url()` adds the `/legacy` prefix while the legacy design renders, so every link, form action and redirect stays inside the chosen design. Assets: new = `public/assets/site.css` + `site.js` + `site-theme.js`; legacy = `style.css` + `script.js` + `theme.js`.
+- **Switch:** a discreet menu item – "Legacy website" / "Původní web" / "Прежняя версия сайта" / "Попередня версія сайту" in the new header (desktop menu and mobile menu), "New design" / "Nový design" / "Новый дизайн" / "Новий дизайн" in the legacy header. It keeps language and page (`url_other_design()`), is `rel="nofollow"`, never redirects automatically (no loops).
+- **SEO:** legacy pages are `noindex,follow`, canonical + hreflang + sitemap always name the default-design URLs, so nothing is indexed twice. `/legacy/admin`, `/legacy/p/…`, sitemap/robots etc. are not routed: staff and utility routes exist once, in the default design. `/legacy` redirects to `/legacy/<best language>/`.
+- **Rollback lever:** `DESIGN_DEFAULT=legacy` in `.env` makes legacy the default (at `/en/…`) and the new design the alternate (`/new/en/…`) with no deploy; unset/invalid = `new`.
+- **Tests:** `tests/run.php` renders the LEGACY templates at the normal URLs (its ~800 markup assertions were written for them; `TEST_DESIGN=new` is not meaningful for those), `tests/design.php` proves the new default, the switch, canonical/noindex, admin and re-runs `tests/features.php` on the new templates; the original real-browser suite (`tests/browser/run.mjs`) is run against a container with `DESIGN_DEFAULT=legacy`; `tests/browser/new-design.mjs` and `tests/browser/platform.mjs` cover the new design and the staff/customer/project flows.
+- `new/` (concept source) is superseded by the integrated design and kept untracked as reference only.
+- The desktop pill navigation appears from 1360 px (Russian/Ukrainian labels need the room); below that the bottom-sheet menu is used.
+
+## Design system (legacy tokens, kept for the /legacy design; tokens are `:root` vars in style.css)
 | Token | Value | Use |
 |---|---|---|
 | `--c-blue` / hover | `#3a9fff` / `#63b2fc` | primary buttons, links, footer logo |
@@ -80,11 +91,16 @@ Every public route exists per language: `/en/…` and `/cs/…`. Bare `/` → 30
 | `GET /{lang}/templates` `?q=&category=&style=&sort=&page=` | design gallery (search/filters/sort/pagination; filtered views are noindex with the plain gallery as canonical) |
 | `GET /{lang}/templates/{slug}` | design page: live preview (iframe, Desktop/Phone), features, price line from the Template package, order CTA |
 | `GET /{lang}/templates/{slug}/demo` | the design itself, own CSP, `frame-ancestors 'self'`, noindex; not in the sitemap |
+| `GET /{lang}/team` · `GET /{lang}/careers` | Meet the team (Emir Aliev – Founder / Team member; no invented bio, monogram instead of a photo) · Careers (published vacancies from the DB; "not hiring" + the configured `CONTACT_EMAIL` mailto when none) |
+| `GET/POST /{lang}/login` · `/register` · `POST /logout` · `GET/POST /{lang}/account` | customer accounts (see "Customer accounts"); all noindex, never cached; "Continue with Dreamers" is a **disabled placeholder** |
+| `GET /{lang}/contact?template=<slug>` | the contact page shows "Chosen design: <catalog title>" only for a valid slug; the CTA passes it on to the order form |
+| `GET /p/<token>/…` | client project preview – served **only on the separate preview host** (`PREVIEW_ORIGIN`), 404 on the main host |
 | `GET /{lang}/portfolio` | **hidden**: reachable, noindex, not linked, not in sitemap |
 | `GET /robots.txt`, `/sitemap.xml` | sitemap has hreflang alternates; excludes portfolio/admin/sent |
 | `GET /admin/login`, `POST /admin/login` | staff login (English only) |
 | `GET /admin/templates` · `GET/POST /admin/templates/{slug}` · `POST /admin/templates/import` | admin-only prompt library (list/filter, view + copy, edit with versions, JSON import) |
-| `GET /admin` · `GET /admin/orders/{id}` · `POST /admin/orders/{id}/retry` · `POST /admin/logout` | protected |
+| `GET /admin` · `GET /admin/orders/{id}` · `POST /admin/orders/{id}/retry` · `POST /admin/orders/{id}/link` · `POST /admin/logout` | protected |
+| `/admin/careers…` · `/admin/projects…` · `/admin/customers…` | protected (staff session + CSRF on every change): vacancies (create/edit/publish/unpublish/delete with confirmation), client projects (create/edit/upload ZIP or files/preview link on-off/regenerate/delete), customer records (disable/enable, link orders deliberately) |
 Not built on purpose: `/about` (waits for real founder/company content), separate Services pages (services live on the landing). Terms exist but only state facts about how the site works; commercial terms are owner placeholders.
 To publish the portfolio later: add real projects to `config/portfolio.php`, remove `noindex` (`PageController::portfolio`), add it to nav/footer + `SeoController::INDEXABLE`.
 
@@ -102,7 +118,7 @@ To publish the portfolio later: add real projects to `config/portfolio.php`, rem
 `src/Company.php` reads `COMPANY_NAME`, `COMPANY_ICO`, `COMPANY_ADDRESS` (+ optional `COMPANY_DIC`, `COMPANY_REGISTER`) and reuses the existing `CONTACT_EMAIL` / `CONTACT_PHONE` / `CONTACT_LOCATION`. The footer on **every** public page and the privacy/terms text render these values exactly as configured (IČO untouched, everything escaped). A missing value shows a dashed, italic **"[to be completed]"** placeholder – never an invented value. Nothing is hard-coded and no secret is involved (these are public business facts).
 
 ## Cookies and consent
-- Storage that exists: `pixelite` (session cookie, only on the order form / staff login, CSRF), `pixelite_consent` (the choice, 6 months), `pixelite_lang` (cookie, 1 year, only after clicking the language switch), `pixelite_theme` (localStorage, only after choosing a theme). Registry: `config/consent.php`; texts: `lang/*.php` (`consent.*`, `cookies.*`).
+- Storage that exists: `pixelite` / `__Host-pixelite` over HTTPS (session cookie, only on the order form, account pages and staff login: CSRF + customer sign-in), `pixelite_consent` (the choice, 6 months), `pixelite_lang` (cookie, 1 year, only after clicking the language switch), `pixelite_theme` (localStorage, only after choosing a theme). Registry: `config/consent.php`; texts: `lang/*.php` (`consent.*`, `cookies.*`).
 - **No optional cookies/services exist** (no analytics, marketing, third-party content) and none were invented; `optional` is an empty registry. The banner says so honestly.
 - UI: non-modal bottom banner (hidden until `consent.js` sees no valid choice) with **Accept all / Reject non-essential** (identical `.btn` weight) and **Cookie settings** (secondary). Settings = native `<dialog>` (focus trap, Esc, focus returns). Footer "Cookie settings" is a link to `/cookies#settings`: with JS it opens the dialog, without JS it lands on the cookie policy page (which explains the storage and how to delete it in the browser).
 - Gate for future services: list the service under its category in `config/consent.php`, add `<script type="text/plain" data-consent="analytics" data-src="…">` and allow its host in the CSP (`src/bootstrap.php`). `consent.js` runs it only after consent; unknown/new categories default OFF; bump `version` to re-ask everyone. Withdrawn consent needs a reload for already-loaded scripts. **Adding a service means bumping `version`** (otherwise existing visitors are never asked) and only external scripts via `data-src` can be gated (inline code is blocked by the CSP).
@@ -125,14 +141,14 @@ One URL per page: `canonicalRedirect()` (`src/bootstrap.php`) 301s `www.` → ap
 
 ## Design gallery and prompts
 Customers pick a design and order a customised website (Template-website package price, from the pricing data). Full guide: `docs/templates/README.md`.
-- Catalog = `config/templates.php` (public metadata) + `lang/*` (`templates.items.<slug>`). The only entry is **Lumora** (Pixelite's own template); demo document `templates/demos/lumora.html`, assets `public/assets/templates/lumora/` (Lenis MIT and Onest OFL notices shipped next to them). No third-party template collection is used.
+- Catalog = `config/templates.php` (public metadata) + `lang/*` (`templates.items.<slug>`). Entries: **Lumora**, **Asterform**, **Stillwave**, **Vantage**, **Emberveil** (Pixelite templates; no third-party template collection). Each has a demo document `templates/demos/<slug>.html` and assets `public/assets/templates/<slug>/` (vendored components' notices shipped next to them: Lenis MIT, Onest / Instrument Serif / Inter OFL). Asterform, Stillwave and Vantage use silent, re-encoded `video/*.mp4` self-hosted in place of the original hot-linked media; **the rights to the sample videos (Asterform ×5, Stillwave, Vantage) and Emberveil's hero artwork/logo are unconfirmed** – see `docs/templates/README.md`. Categories `studio`/`saas`, styles `light`/`dark`, so the gallery shows its category/style/sort filters.
 - The demo route sets its own CSP (same-origin, no inline blocks, `style-src-attr 'unsafe-inline'` for animation-delay attributes) and `frame-ancestors 'self'`; everything else keeps `frame-ancestors 'none'`.
 - Orders store `template` + server-derived `template_name` (migrated in place; old rows keep `""`); shown in admin and Telegram.
 - Prompts/dev notes: SQLite `template_prompts` only (admin-only, CSRF, validated import, versions). The package file lives in git-ignored `private/` and is never deployed; production is populated through the admin import.
 - `scripts/capture-template-previews.mjs` (host-only) records posters/preview from the live demo and gates console errors, overflow and third-party requests.
 
 ## Localization
-URL prefix decides the language (`/en/…`, `/cs/…`), so the choice persists through every link, and hreflang/canonical/`<html lang>`/meta are per language. The header switch keeps you on the same page; clicking it also sets cookie `pixelite_lang` (only used to choose where bare `/` goes). Default = `APP_LOCALE` (`en`). Add copy to **both** `lang/en.php` and `lang/cs.php`; `php tests/run.php` fails if keys differ. Missing keys fall back to English and are logged. Telegram messages are always English.
+Four languages: **en, cs, ru, uk** (`I18n::LOCALES`). The staff area stays English. URL prefix decides the language (`/en/…`, `/cs/…`, `/ru/…`, `/uk/…`), so the choice persists through every link, and hreflang/canonical/`<html lang>`/meta are per language. The header switch keeps you on the same page; clicking it also sets cookie `pixelite_lang` (only used to choose where bare `/` goes). Default = `APP_LOCALE` (`en`). Add copy to **both** `lang/en.php` and `lang/cs.php`; `php tests/run.php` fails if keys differ. Missing keys fall back to English and are logged. Telegram messages are always English. Russian/Ukrainian prices keep a non-breaking space (`2 999`) and currency `CZK`; the ADR link in /terms points to the English page of the Czech Trade Inspection. The concept-only strings (switch label, TOC label) live in templates, not in lang/.
 
 ## Order system
 Form fields: name, company, email, phone, project type, package (optional), budget, timeframe, description, consent (+ hidden honeypot `hp_site`). Option values live in `src/OrderOptions.php`, labels in `lang/*.php` (`order.options.*`). Budgets are CZK ranges (see Pricing).
@@ -144,6 +160,15 @@ Pipeline: `OrderController` → `OrderValidator` → `OrderService` → `OrderRe
 
 ## Authentication (decision)
 No customer accounts. Only a **single staff account** for `/admin` (orders list/detail, retry Telegram). Credentials come from env: `ADMIN_EMAIL` + `ADMIN_PASSWORD_HASH` (bcrypt via `bin/hash-password.php`; **single-quote it in .env**). `password_verify`, session id regenerated on login, 2 h idle timeout (12 h absolute), CSRF on all POSTs, login rate-limited (10 attempts / 15 min / IP, atomic; cleared on successful login), generic error message, `Cache-Control: no-store`, `noindex`. No registration, no reset flow (change the env hash instead). Login is disabled until both vars are set.
+
+## Customer accounts, careers, projects (added after the first release)
+- **Accounts** (`customers` table, `Customers`, `CustomerAuth`, `AccountController`): e-mail + password (`password_hash`, 10–72 bytes), registration needs the privacy acknowledgement, honeypot + 2 s fill time, rate limits (login: 10/15 min per connection AND 8/15 min per e-mail; registration 6/h). Registration and "e-mail already used" give the **same** response (no enumeration; no auto-login). Login rotates the session id and drops the CSRF token; customer session = 2 h idle / 12 h absolute; `?next=` only accepts `/<lang>/account`. A disabled account loses access immediately. **No password reset and no e-mail verification** (no verified mail infrastructure) – the pages say so. The staff login (`Auth`, env credentials) is separate; both use the same hardened session cookie (`__Host-pixelite` over HTTPS so a sibling subdomain cannot shadow it; `pixelite` over plain http).
+- **Orders ↔ customers:** `orders.customer_id` is set only when the customer was signed in while ordering, or when staff link an order (`/admin/orders/{id}/link`). Never matched by e-mail. The account page lists only that customer's own orders/projects; there is no route that takes a customer/order/project id.
+- **Chosen design** field on the order form exists only for a valid `?template=` (or a tampered POST value so it can be corrected).
+- **Careers** (`careers` table, titles/descriptions JSON per locale, English required): only `status = published` is ever public.
+- **Projects** (`projects` table; files in `storage/projects/<uid>/site/` – `<uid>` is a random 16-hex id, tokens are 43-char base64url from 256 random bits stored with the project; `PROJECTS_DIR` overrides the folder). Upload: ZIP (read by the dependency-free `ZipReader`, never extracted to disk, symlinks/encryption/ZIP64/traversal/oversize/CRC mismatch refused, whole archive or nothing) or single files; whitelist of static extensions, 10 MB/file, 50 MB/project, 1000 files; files stored 0644; nothing is ever included or executed by PHP.
+- **Previews run arbitrary client HTML/JS, so they are served from a DIFFERENT HOST** (`PREVIEW_ORIGIN`, e.g. `https://pixelite-preview.cz`; same-registrable-domain subdomains work but are flagged as weaker because they can set parent-domain cookies). On that host the app serves only `/p/<token>/…` (no router, no session, no cookies); CSP `default-src 'self'` (inline allowed, no external hosts, `connect-src 'self'`, no framing, `form-action 'none'`, no workers), `Referrer-Policy: no-referrer` (the token is in the URL), `no-store`, nosniff, COOP/CORP same-origin. Without `PREVIEW_ORIGIN` previews are **off** (the admin explains why). The link is a bearer credential: on/off switch, regenerate (old link dies at once), delete (files removed). Admin pages never embed a preview.
+- Existing `endora-banner.js` (hides the hosting provider's injected banner) predates this work and is **not** extended; the banner itself is injected by Endora's free plan, not by our templates.
 
 ## Security implemented
 CSRF tokens on all forms · server-side validation with whitelists and length limits · prepared statements only · output escaped with `e()` (JSON-LD uses `JSON_HEX_TAG`) · honeypot + minimum fill time · SQLite rate limiting · CSP (`default-src 'self'`, no inline script/style), nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, HSTS when HTTPS · sessions only started on order/admin pages (plain visitors get no cookie), HttpOnly + SameSite=Lax + Secure on HTTPS · exceptions logged, users see a generic 500 · only `public/` is web-exposed (`.env`, `src/`, `storage/` are outside the docroot) · `X-Forwarded-For` ignored unless `TRUST_PROXY=true`.

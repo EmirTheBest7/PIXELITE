@@ -15,7 +15,7 @@ final class OrderService
     ) {}
 
     /** @param array<string,string> $clean validated input. @return int new order id (0 = duplicate, ignored). @throws \Throwable only when the order could not be stored */
-    public function submit(array $clean, string $locale): int
+    public function submit(array $clean, string $locale, ?int $customerId = null): int
     {
         if ($this->repo->hasRecentDuplicate($clean['email'], $clean['description'])) {
             Logger::info('duplicate submit ignored');
@@ -23,7 +23,7 @@ final class OrderService
         }
         $clean += ['template_name' => TemplateCatalog::englishTitle($clean['template'] ?? '')];   // server-derived; the browser only ever sends the slug
         $clean = PricingSnapshot::capture($clean['package'] ?? '', $locale) + $clean;   // server-side; any client-sent snapshot fields are never read
-        $id = $this->repo->create($clean, $locale); // throws => caller shows "not saved" (true: nothing was stored)
+        $id = $this->repo->create($clean, $locale, $customerId); // throws => caller shows "not saved" (true: nothing was stored)
         try {
             $this->notify($id);
         } catch (\Throwable $e) {

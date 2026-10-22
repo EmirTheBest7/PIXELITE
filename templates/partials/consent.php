@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/ui.php';
 /** Cookie banner (non-modal, bottom) and settings dialog. Hidden until consent.js decides they are needed. */
 $cfg = consent_config();
 $categories = array_keys(array_filter($cfg['optional'], fn($services) => $services !== []));   // only categories that really have a service
@@ -11,9 +12,9 @@ $categories = array_keys(array_filter($cfg['optional'], fn($services) => $servic
       <p><?= e(t('consent.banner_text')) ?> <a href="<?= e(url('cookies')) ?>"><?= e(t('consent.policy')) ?></a></p>
     </div>
     <div class="consent-banner__actions">
-      <button type="button" class="btn btn--strong btn--auto" data-consent-accept><?= e(t('consent.accept')) ?></button>
-      <button type="button" class="btn btn--strong btn--auto" data-consent-reject><?= e(t('consent.reject')) ?></button>
-      <button type="button" class="btn btn--revert btn--auto" data-consent-settings data-cookie-settings><?= e(t('consent.settings')) ?></button>
+      <?= ui_button((string) t('consent.accept'), 'sm plain', ['data-consent-accept' => true]) ?>
+      <?= ui_button((string) t('consent.reject'), 'sm plain', ['data-consent-reject' => true]) ?>
+      <?= ui_button((string) t('consent.settings'), 'sm plain ghost', ['data-consent-settings' => true, 'data-cookie-settings' => true]) ?>
     </div>
   </div>
 </section>
@@ -45,12 +46,12 @@ $categories = array_keys(array_filter($cfg['optional'], fn($services) => $servic
   </div>
   <p class="consent-dialog__more"><a href="<?= e(url('cookies')) ?>"><?= e(t('consent.policy')) ?></a></p>
   <div class="consent-dialog__actions">
-    <button type="button" class="btn btn--strong btn--auto" data-consent-accept><?= e(t('consent.accept')) ?></button>
-    <button type="button" class="btn btn--strong btn--auto" data-consent-reject><?= e(t('consent.reject')) ?></button>
+    <?= ui_button((string) t('consent.accept'), 'sm plain', ['data-consent-accept' => true]) ?>
+    <?= ui_button((string) t('consent.reject'), 'sm plain', ['data-consent-reject' => true]) ?>
 <?php if ($categories): ?>
-    <button type="button" class="btn btn--revert btn--auto" data-consent-save><?= e(t('consent.save')) ?></button>
+    <?= ui_button((string) t('consent.save'), 'sm plain ghost', ['data-consent-save' => true]) ?>
 <?php else: ?>
-    <button type="button" class="btn btn--revert btn--auto" data-consent-close><?= e(t('consent.close')) ?></button>
+    <?= ui_button((string) t('consent.close'), 'sm plain ghost', ['data-consent-close' => true]) ?>
 <?php endif ?>
   </div>
 </dialog>

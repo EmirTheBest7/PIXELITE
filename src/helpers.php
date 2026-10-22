@@ -20,7 +20,20 @@ function t(string $key, array $repl = []): mixed
 function url(string $path = '', ?string $locale = null): string
 {
     $path = trim($path, '/');
-    return '/' . ($locale ?? I18n::locale()) . '/' . $path;
+    return \Pixelite\Design::prefix() . '/' . ($locale ?? I18n::locale()) . '/' . $path;   // the legacy/new prefix is part of the URL only while the non-default design is rendered
+}
+
+/** Same page in the DEFAULT design (canonical URLs, hreflang, sitemap), whichever design is being rendered. */
+function url_canonical(string $path = '', ?string $locale = null): string
+{
+    return '/' . ($locale ?? I18n::locale()) . '/' . trim($path, '/');
+}
+
+/** The same page in the OTHER design (the "Legacy website" / "New design" menu item), keeping the language. */
+function url_other_design(string $path = ''): string
+{
+    $other = \Pixelite\Design::current() === 'legacy' ? 'new' : 'legacy';
+    return \Pixelite\Design::prefix($other) . '/' . I18n::locale() . '/' . trim($path, '/');
 }
 
 function absolute_url(string $path): string

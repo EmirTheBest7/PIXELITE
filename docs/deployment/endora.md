@@ -89,3 +89,15 @@ daily FTP backups on paid plans.
   `FTP_SECURITY=loose` (encrypted, but not authenticated against active man-in-the-middle) or plain `ftp` (cleartext). Port 222
   (SFTP, host-key authenticated) is the proper channel but needs a different upload tool; ask Endora which host name matches
   the certificate if you want strict FTPS.
+
+## Client previews, uploads and accounts on Endora (added with the CRM/project features)
+
+What was **verified from this repository** (not assumed): PHP 8.5 FPM with `pdo_sqlite`, `mbstring`, `openssl`, `curl`, `intl`; the login directory next to `public_html/` is writable and not web-served (so `storage/projects/` is private); `.htaccess` rules work. The ZIP reader is plain PHP on purpose – `ZipArchive` was **not** confirmed on the host.
+
+**Not verifiable without the owner's MyEndora account** (so the feature degrades safely instead of guessing):
+1. **A separate preview host.** Client previews run arbitrary HTML/JS and must not share Pixelite's origin. Endora's panel must allow a second domain or subdomain pointing at the **same** `public_html/` (domain alias / addon domain). Until `PREVIEW_ORIGIN` is set (and differs from `APP_URL`'s host) previews stay **off** and the admin says so. A separate registrable domain (for example `pixelite-preview.cz`) is preferred; `preview.pixelite.cz` works but the admin shows a "weaker isolation" note (a page on it could set cookies for `pixelite.cz`; the session cookie is `__Host-` protected over HTTPS). Never set a cookie `Domain`.
+2. **Upload limits.** `upload_max_filesize` / `post_max_size` come from the host's PHP settings (the Docker image uses 2 MB / 8 MB; the admin shows the effective values). The application limits are 10 MB per file and 50 MB per project. Raise the PHP limits in MyEndora → PHP nastavení if larger sites must be uploaded; free plan: 10 s execution, 64 MB memory.
+3. **E-mail.** No mail transport was verified, so password reset, e-mail verification and customer e-mails are **not** implemented (the order notification still goes through Telegram).
+4. **Advertising.** The "Na FreeHostingu … Endora" panel is injected into every HTML response by the host (live check of https://pixelite.cz/en/ on 2026-10-21 found `endora-panel` markup that exists nowhere in this repository's templates). The application cannot and should not remove it; a paid Endora plan ("bez reklamy") does. `public/assets/endora-banner.js` (older, hides the wrapper in the browser) is unchanged and not extended.
+
+Setup when the preview host exists: add `PREVIEW_ORIGIN=https://<preview host>` to `.env`, point the host at `public_html/`, open `/admin/projects`, create a project, upload a ZIP, switch the link on. Verify with `curl -I https://<preview host>/en/` (must be 404) and that `https://pixelite.cz/p/<token>/` is 404.

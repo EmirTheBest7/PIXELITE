@@ -1,0 +1,40 @@
+<?php
+/** @var array $meta @var string $locale */
+$nav = [
+    ['', 'nav.home'],
+    ['#services', 'nav.services'],
+    ['templates', 'nav.templates'],
+    ['pricing', 'nav.pricing'],
+    ['process', 'nav.process'],
+    ['contact', 'nav.contact'],
+];
+?>
+<header class="header">
+  <div class="container header__container">
+    <a class="header__logo" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><?= logo_mark('header__img') ?> <span class="header__title">PIXELITE<span class="header__light">.cz</span></span></a>
+    <button type="button" class="navbar-toggle collapsed" data-nav-toggle aria-expanded="false" aria-controls="navbar">
+      <span class="sr-only"><?= e(t('a11y.toggle')) ?></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <div class="lang" role="group" aria-label="<?= e(t('a11y.language')) ?>">
+<?php foreach (\Pixelite\I18n::LOCALES as $loc): ?>
+      <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc)) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" title="<?= e(\Pixelite\I18n::NAMES[$loc]) ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
+<?php endforeach ?>
+    </div>
+    <div class="header__theme"><?php require __DIR__ . '/theme-cycle.php' ?></div>
+    <div class="header__menu">
+      <nav id="navbar" class="header__nav collapse" aria-label="<?= e(t('a11y.nav_main')) ?>">
+        <ul class="header__elenco">
+<?php foreach ($nav as [$href, $label]): ?>
+          <li class="header__el"><a href="<?= e(str_starts_with($href, '#') ? url('') . $href : url($href)) ?>" class="header__link"><?= e(t($label)) ?></a></li>
+<?php endforeach ?>
+          <li class="header__el header__el--version"><a href="<?= e(url_other_design($meta['path'])) ?>" rel="nofollow" class="header__link header__link--version" data-design-switch><?= e(t(\Pixelite\Design::current() === 'legacy' ? 'nav.new_design' : 'nav.legacy')) ?></a></li>
+          <li class="header__el header__el--blue"><a href="<?= e(url('order')) ?>" class="btn btn--white"><?= e(t('nav.start')) ?></a></li>
+          <li class="header__el header__el--theme"><?php require __DIR__ . '/theme-switch.php' ?></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>

@@ -4,6 +4,6 @@
   <div class="credits__body">
     <p class="credits__badge"><?= e(t('credits.badge')) ?></p>
     <p class="credits__text"><?= e(t('credits.text')) ?></p>
-    <p class="credits__note"><?= e(t('credits.note')) ?> <a href="<?= e(url('terms') . '#dreamers') ?>"><?= e(t('credits.link')) ?></a></p>
+    <p class="credits__note"><?= e(t('credits.note')) ?> <a class="link" href="<?= e(url('terms') . '#dreamers') ?>"><?= e(t('credits.link')) ?></a></p>
   </div>
 </div>

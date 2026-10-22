@@ -1,10 +1,10 @@
-<div class="row"><h1 class="row__title">Orders</h1></div>
-<div class="admin__card row--margin">
+<h1 class="admin__title">Orders</h1>
+<div class="admin__card">
 <?php if (!$orders): ?>
   <p class="admin__empty">No orders yet.</p>
 <?php else: ?>
-  <div class="table-responsive">
-    <table class="table admin__table">
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Orders">
+    <table class="admin__table">
       <thead><tr><th>#</th><th>Created (UTC)</th><th>Name</th><th>Email</th><th>Project</th><th>Package</th><th>Design</th><th>Budget</th><th>Lang</th><th>Telegram</th></tr></thead>
       <tbody>
 <?php foreach ($orders as $o): ?>

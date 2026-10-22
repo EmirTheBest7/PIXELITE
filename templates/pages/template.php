@@ -1,14 +1,13 @@
 <?php /** @var array $t localised catalog entry @var list<array> $related */
-$m = $t['media']; $orderUrl = url('order') . '?template=' . $t['slug']; ?>
-<div class="sect sect--padding-top">
-  <div class="container">
+require_once __DIR__ . '/../partials/ui.php';
+$m = $t['media']; $orderUrl = url('order') . '?template=' . $t['slug'];
+$ph = ['label' => (string) t('nav.templates'), 'title' => $t['title'], 'sub' => $t['desc']];
+require __DIR__ . '/../partials/page-hero.php' ?>
+<section class="section section--tight-top" aria-label="<?= e($t['title']) ?>">
+  <div class="wrap">
     <nav class="tcrumbs" aria-label="<?= e(t('a11y.breadcrumb')) ?>">
       <a href="<?= e(url('templates')) ?>">← <?= e(t('templates.back')) ?></a>
     </nav>
-    <div class="row">
-      <h1 class="row__title tdetail__title"><?= e($t['title']) ?></h1>
-      <h2 class="row__sub"><?= e($t['desc']) ?></h2>
-    </div>
     <div class="tdetail">
       <div class="tdetail__preview" data-detail-preview>
 <?php $demoUrl = url('templates/' . $t['slug'] . '/demo'); ?>
@@ -40,7 +39,8 @@ $m = $t['media']; $orderUrl = url('order') . '?template=' . $t['slug']; ?>
 <?php endforeach ?>
         </ul>
         <?php require __DIR__ . '/../partials/template-price.php' ?>
-        <a class="btn btn--auto tdetail__cta" href="<?= e($orderUrl) ?>"><?= e(t('templates.cta')) ?></a>
+        <?= ui_link($orderUrl, (string) t('templates.cta'), 'accent .tdetail__cta') ?>
+        <p class="tdetail__ask"><a href="<?= e(url('contact') . '?template=' . $t['slug']) ?>"><?= e(t('templates.ask')) ?></a></p>
       </aside>
     </div>
     <div class="tsource">
@@ -54,10 +54,10 @@ $m = $t['media']; $orderUrl = url('order') . '?template=' . $t['slug']; ?>
 <?php endif ?>
     </div>
 <?php if ($related): ?>
-    <div class="row"><h2 class="row__title tdetail__related"><?= e(t('templates.related')) ?></h2></div>
+    <h2 class="h-lg tdetail__related"><?= e(t('templates.related')) ?></h2>
     <div class="tgrid">
 <?php foreach ($related as $t): require __DIR__ . '/../partials/template-card.php'; endforeach ?>
     </div>
 <?php endif ?>
   </div>
-</div>
+</section>

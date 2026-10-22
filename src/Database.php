@@ -78,6 +78,54 @@ final class Database
             notes TEXT NOT NULL DEFAULT "",
             updated_at TEXT NOT NULL
         )');
+        // ---- customer accounts (basic CRM) ----
+        $pdo->exec('CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            password_hash TEXT NOT NULL,
+            name TEXT NOT NULL,
+            company TEXT NOT NULL DEFAULT "",
+            phone TEXT NOT NULL DEFAULT "",
+            locale TEXT NOT NULL DEFAULT "en",
+            status TEXT NOT NULL DEFAULT "active",
+            created_at TEXT NOT NULL,
+            consent_at TEXT NOT NULL,
+            last_login_at TEXT
+        )');
+        // An order belongs to a customer only when the customer was signed in while ordering, or when an administrator links it on purpose. Never by matching e-mail addresses.
+        if (!in_array('customer_id', $cols, true)) {
+            $pdo->exec('ALTER TABLE orders ADD COLUMN customer_id INTEGER');
+        }
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders (customer_id)');
+        // ---- careers: vacancies maintained in the admin; titles/descriptions are JSON objects keyed by locale ----
+        $pdo->exec('CREATE TABLE IF NOT EXISTS careers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            status TEXT NOT NULL DEFAULT "draft",
+            titles TEXT NOT NULL,
+            descriptions TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            published_at TEXT
+        )');
+        // ---- client projects with a shareable browser preview. Files live in storage/projects/<uid>/site/ (never in the web root). ----
+        $pdo->exec('CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT "draft",
+            access_enabled INTEGER NOT NULL DEFAULT 0,
+            token TEXT NOT NULL UNIQUE,
+            token_rotated_at TEXT NOT NULL,
+            notes TEXT NOT NULL DEFAULT "",
+            order_id INTEGER,
+            customer_id INTEGER,
+            entry TEXT NOT NULL DEFAULT "index.html",
+            file_count INTEGER NOT NULL DEFAULT 0,
+            total_bytes INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS idx_projects_customer ON projects (customer_id)');
         $pdo->exec('CREATE TABLE IF NOT EXISTS rate_limits (
             bucket TEXT NOT NULL,
             hit_at INTEGER NOT NULL

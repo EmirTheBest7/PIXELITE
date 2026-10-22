@@ -1,11 +1,11 @@
-<div class="sect sect--padding-top sect--padding-bottom">
-  <div class="container">
-    <div class="row">
-      <h1 class="row__title"><?= e(t('errors.404_title')) ?></h1>
-      <h2 class="row__sub"><?= e(t('errors.404_text')) ?></h2>
-    </div>
-    <div class="row row--margin text-center">
-      <a class="btn btn--auto" href="<?= e(url('')) ?>"><?= e(t('errors.home')) ?></a>
+<?php require_once __DIR__ . '/../partials/ui.php'; ?>
+<section class="phero">
+  <div class="wrap">
+    <div class="sent">
+      <p class="eyebrow__label">404</p>
+      <h1 class="phero__title"><?= e(t('errors.404_title')) ?></h1>
+      <p class="phero__sub"><?= e(t('errors.404_text')) ?></p>
+      <?= ui_link(url(''), (string) t('errors.home'), 'accent') ?>
     </div>
   </div>
-</div>
+</section>

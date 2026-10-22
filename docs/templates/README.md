@@ -55,3 +55,20 @@ inline CSS/JS moved verbatim to `lumora.css`/`lumora.js`; Google Fonts → self-
 vendored Lenis 1.3.23 (MIT, `vendor/lenis.js`); the two hero images hotlinked from `api.getlayers.ai` → `img/`. Rendered
 pixel-identical to the original at 1440×900 and 390×844 (first viewport and after scrolling through all reveals).
 **Open point:** confirm you hold the rights to the two hero photographs (they came from getlayers.ai asset storage).
+
+## Asterform, Stillwave, Vantage, Emberveil
+Integrated from a supplied package of four ready-made sites (HTML/CSS/JS, originally with Vite scaffolding that is not shipped):
+
+| Slug | What it is | Notable parts | Self-hosted extras |
+|---|---|---|---|
+| `asterform` | dark editorial studio, one page | full-screen video hero, scroll reveals, 2 service dialogs, newsletter form (client-side only) | 5 videos, Instrument Serif (OFL) |
+| `stillwave` | cinematic product page (visual-creation tool) | full-viewport video, style panel, prompt dialog (no backend) | 1 video |
+| `vantage` | dark data-product landing page | video background, collapsible nav, watch-demo card | 1 video, thumbnail |
+| `emberveil` | playful portfolio hero | tile-wipe intro, word reveal, pointer spotlight reveal (canvas mask) | Inter (OFL), 2 hero PNGs, logo |
+
+Adaptations (and nothing else): inline `<style>`/`<script>` blocks moved verbatim to files, Google Fonts → self-hosted woff2, remote videos/images →
+local copies (videos re-encoded to 960–1280 px H.264 without audio, ~0.3–0.9 MB each), `noindex` meta added, sample e-mail addresses moved to the reserved
+`.example` TLD and external social links to `#`. Emberveil's pointer loop now stops when the spotlight has caught up and also listens to `pointermove` (touch/pen).
+**Open licence points (not cleared):** the original videos were hot-linked from a third-party AI-asset host (`cloudfront.net/…/hf_*.mp4`), and Emberveil's two hero
+images and logo from `figma.site` / `framerusercontent.com`. Confirm the rights before showing them to customers as deliverables, or replace them.
+Private implementation prompts for these four live in the git-ignored `private/template-prompts/prompts.json` (import them through the admin).

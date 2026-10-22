@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../partials/ui.php'; $adminPath = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,18 +10,24 @@
 </head>
 <body class="admin">
 <header class="admin__bar">
-  <div class="container">
-    <a class="header__logo" href="/admin"><?= logo_mark('header__img') ?> <span class="header__title">PIXELITE<span class="header__light">.cz</span> <span class="header__light">admin</span></span></a>
+  <div class="wrap">
+    <a class="admin__brand" href="/admin"><img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="32" height="32"><span>PIXELITE<i>.cz admin</i></span></a>
 <?php if (!empty($_SESSION['admin_at'])): ?>
-    <nav class="admin__nav" aria-label="Admin"><a href="/admin">Orders</a> <a href="/admin/templates">Design prompts</a></nav>
-    <form method="post" action="/admin/logout" class="admin__logout"><input type="hidden" name="_csrf" value="<?= e(\Pixelite\Csrf::token()) ?>"><button class="btn btn--revert btn--auto" type="submit">Sign out</button></form>
+    <nav class="admin__nav" aria-label="Admin">
+      <a href="/admin"<?= $adminPath === '/admin' || str_starts_with($adminPath, '/admin/orders') ? ' aria-current="page"' : '' ?>>Orders</a>
+      <a href="/admin/customers"<?= str_starts_with($adminPath, '/admin/customers') ? ' aria-current="page"' : '' ?>>Customers</a>
+      <a href="/admin/projects"<?= str_starts_with($adminPath, '/admin/projects') ? ' aria-current="page"' : '' ?>>Projects</a>
+      <a href="/admin/careers"<?= str_starts_with($adminPath, '/admin/careers') ? ' aria-current="page"' : '' ?>>Careers</a>
+      <a href="/admin/templates"<?= str_starts_with($adminPath, '/admin/templates') ? ' aria-current="page"' : '' ?>>Design prompts</a>
+    </nav>
+    <form method="post" action="/admin/logout" class="admin__logout"><input type="hidden" name="_csrf" value="<?= e(\Pixelite\Csrf::token()) ?>"><?= ui_button('Sign out', 'sm ghost plain', ['type' => 'submit']) ?></form>
 <?php endif ?>
   </div>
 </header>
-<main class="container admin__main">
+<main class="wrap admin__main">
 <?= $content ?>
 </main>
-<script src="<?= e(asset('theme.js')) ?>" defer></script>
+<script src="<?= e(asset('site-theme.js')) ?>" defer></script>
 <script src="<?= e(asset('admin.js')) ?>" defer></script>
 </body>
 </html>

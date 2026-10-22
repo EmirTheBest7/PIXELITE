@@ -6,15 +6,15 @@ namespace Pixelite;
 final class OrderRepository
 {
     /** @param array<string,string> $o validated order */
-    public function create(array $o, string $locale): int
+    public function create(array $o, string $locale, ?int $customerId = null): int
     {
         $now = gmdate('c');
         $pdo = Database::pdo();
         $pdo->prepare('INSERT INTO orders
-            (created_at, locale, name, company, email, phone, project_type, package, package_name, package_price, price_vat_mode, template, template_name, budget, timeframe, description, consent_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+            (created_at, locale, name, company, email, phone, project_type, package, package_name, package_price, price_vat_mode, template, template_name, budget, timeframe, description, consent_at, customer_id)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
             ->execute([$now, $locale, $o['name'], $o['company'], $o['email'], $o['phone'],
-                $o['project_type'], $o['package'] ?? '', $o['package_name'] ?? '', $o['package_price'] ?? '', $o['price_vat_mode'] ?? '', $o['template'] ?? '', $o['template_name'] ?? '', $o['budget'], $o['timeframe'], $o['description'], $now]);
+                $o['project_type'], $o['package'] ?? '', $o['package_name'] ?? '', $o['package_price'] ?? '', $o['price_vat_mode'] ?? '', $o['template'] ?? '', $o['template_name'] ?? '', $o['budget'], $o['timeframe'], $o['description'], $now, $customerId]);
         return (int) $pdo->lastInsertId();
     }
 

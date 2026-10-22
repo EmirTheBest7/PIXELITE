@@ -1,39 +1,33 @@
-<section class="sect sect--padding-top sect--padding-bottom" aria-labelledby="process-title">
-  <div class="container">
-    <div class="row row--center">
-      <h1 class="row__title" id="process-title"><?= e(t('process.title')) ?></h1>
-      <h2 class="row__sub"><?= e(t('process.subtitle')) ?></h2>
-    </div>
-    <div class="steps-wrap">
-      <?php require __DIR__ . '/../partials/steps.php' ?>
-    </div>
+<?php require_once __DIR__ . '/../partials/ui.php';
+$ph = ['label' => (string) t('nav.process'), 'title' => (string) t('process.title'), 'sub' => (string) t('process.subtitle')];
+require __DIR__ . '/../partials/page-hero.php' ?>
+<section class="section" aria-label="<?= e(t('nav.process')) ?>">
+  <div class="wrap">
+    <?php require __DIR__ . '/../partials/steps.php' ?>
   </div>
 </section>
 
-<section class="sect sect--no-padding sect--padding-bottom" aria-labelledby="notes-title">
-  <div class="container">
-    <div class="row row--center">
-      <h2 class="row__title" id="notes-title"><?= e(t('process.notes_title')) ?></h2>
-    </div>
+<section class="section section--soft" aria-labelledby="notes-title">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h-lg" id="notes-title"><?= e(t('process.notes_title')) ?></h2></div>
     <ul class="factors">
 <?php foreach (t('process.notes') as $n): ?>
       <li><?= e($n) ?></li>
 <?php endforeach ?>
     </ul>
     <p class="page-intro"><span class="placeholder"><?= e(t('process.placeholder')) ?></span></p>
-    <p class="consult__cta"><a class="btn btn--revert btn--auto" href="<?= e(url('pricing')) ?>"><?= e(t('process.cta_secondary')) ?></a></p>
+    <p class="more"><?= ui_link(url('pricing'), (string) t('process.cta_secondary'), 'ghost') ?></p>
   </div>
 </section>
 
-<section class="sect sect--violet">
-  <img src="<?= e(asset('img/band.png')) ?>" class="career-img" alt="">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <h2 class="career_title"><?= e(t('process.cta_title')) ?></h2>
-        <h3 class="career_sub"><?= e(t('process.cta_text')) ?></h3>
-        <a href="<?= e(url('order')) ?>" class="btn btn--white btn--auto"><?= e(t('process.cta_button')) ?></a>
+<section class="section" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2 class="band__title" id="cta-title"><?= e(t('process.cta_title')) ?></h2>
+        <p class="band__sub"><?= e(t('process.cta_text')) ?></p>
       </div>
+      <div class="band__actions"><?= ui_link(url('order'), (string) t('process.cta_button'), 'light') ?></div>
     </div>
   </div>
 </section>

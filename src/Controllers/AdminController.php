@@ -82,7 +82,9 @@ final class AdminController
         if ($order === null) {
             return Response::html(View::render('admin/notfound', [], 'admin/layout'), 404);
         }
-        return $this->view('admin/order', ['o' => $order, 'csrf' => Csrf::token()]);
+        $flash = (string) ($_SESSION['admin_flash'] ?? '');
+        unset($_SESSION['admin_flash']);
+        return $this->view('admin/order', ['o' => $order, 'csrf' => Csrf::token(), 'flash' => $flash]);
     }
 
     public function retry(Request $r, array $p): Response

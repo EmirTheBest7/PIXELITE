@@ -21,6 +21,9 @@ Env::set('LEADS_DATABASE_PATH', "$tmp/test.sqlite");
 Env::set('TELEGRAM_BOT_TOKEN', '');
 Env::set('TELEGRAM_CHAT_ID', '');
 Env::set('APP_URL', 'https://pixelite.cz');
+// This file's markup assertions were written for the LEGACY presentation (templates/legacy/), so it renders that one at the normal URLs.
+// The NEW design (the production default) has its own suite: tests/design.php. TEST_DESIGN=new runs this file against the new design (markup assertions then fail by design).
+Env::set('DESIGN_DEFAULT', getenv('TEST_DESIGN') ?: 'legacy');
 Database::reset();
 
 $valid = [
@@ -30,13 +33,17 @@ $valid = [
 ];
 
 echo "i18n\n";
-$en = I18n::flatten(I18n::load('en')); $cs = I18n::flatten(I18n::load('cs'));
-check('EN and CS have identical keys', array_keys($en) === array_keys($cs),
-    'diff: ' . implode(',', array_merge(array_keys(array_diff_key($en, $cs)), array_keys(array_diff_key($cs, $en)))));
-check('no empty translations', !array_filter($en + $cs, fn($v) => $v === ''));
+$en = I18n::flatten(I18n::load('en'));
+foreach (I18n::LOCALES as $loc) {
+    $lx = I18n::flatten(I18n::load($loc));
+    check("EN and " . strtoupper($loc) . " have identical keys", array_keys($en) === array_keys($lx),
+        'diff: ' . implode(',', array_merge(array_keys(array_diff_key($en, $lx)), array_keys(array_diff_key($lx, $en)))));
+    check("no empty translations ($loc)", !array_filter($lx, fn($v) => $v === ''));
+}
+$cs = I18n::flatten(I18n::load('cs'));
 foreach (['project_type' => OrderOptions::PROJECT_TYPES, 'budget' => OrderOptions::BUDGETS, 'timeframe' => OrderOptions::TIMEFRAMES] as $f => $vals) {
     $ok = true;
-    foreach (['en', 'cs'] as $l) { foreach ($vals as $v) { $ok = $ok && isset(I18n::load($l)['order']['options'][$f][$v]); } }
+    foreach (I18n::LOCALES as $l) { foreach ($vals as $v) { $ok = $ok && isset(I18n::load($l)['order']['options'][$f][$v]); } }
     check("labels exist for every $f option", $ok);
 }
 $need = ['name_required', 'too_long', 'email_required', 'email_invalid', 'phone_invalid', 'choose', 'description_short', 'consent_required'];
@@ -210,7 +217,7 @@ echo "responses\n";
 $_SESSION = [];
 $r = Pixelite\handle($mk('GET', '/en/'));
 check('home: CSP + nosniff + frame headers', isset($r->headers['Content-Security-Policy'], $r->headers['X-Frame-Options']) && $r->headers['X-Content-Type-Options'] === 'nosniff');
-check('home: lang, canonical, hreflang pair', str_contains($r->body, '<html lang="en">') && str_contains($r->body, 'rel="canonical" href="https://pixelite.cz/en/"') && substr_count($r->body, 'rel="alternate" hreflang="') === 3);
+check('home: lang, canonical, hreflang pair', str_contains($r->body, '<html lang="en">') && str_contains($r->body, 'rel="canonical" href="https://pixelite.cz/en/"') && substr_count($r->body, 'rel="alternate" hreflang="') === count(I18n::LOCALES) + 1);   // one per language + x-default
 check('home links to order, not to portfolio', str_contains($r->body, 'href="/en/order"') && !str_contains($r->body, 'portfolio'));
 $r = Pixelite\handle($mk('GET', '/cs/'));
 check('cs home: Czech html lang + copy', str_contains($r->body, '<html lang="cs">') && str_contains($r->body, 'Zahájit projekt'));
@@ -261,7 +268,7 @@ check('no third-party hosts loaded by public pages', !preg_match('#(src|href)="h
 $tm = $page('/en/terms');
 check('terms: request form is described as non-binding, no payment', str_contains($tm, 'non-binding') && str_contains($tm, 'no payment is taken'));
 check('terms: ADR body + current URL, consumer placeholders for owner', str_contains($tm, 'https://coi.gov.cz/en/information-about-adr/') && str_contains($page('/cs/terms'), 'https://coi.gov.cz/informace-o-adr/') && str_contains($tm, 'to be completed by the owner'));
-check('no obsolete EU ODR platform reference anywhere', (function () { foreach (['lang/en.php', 'lang/cs.php', 'templates', 'src', 'config', 'public/assets'] as $x) { $r = shell_exec('grep -rliE "ec\.europa\.eu/consumers/odr|online dispute resolution|\bODR\b" ' . escapeshellarg(Pixelite\Paths::root($x)) . ' 2>/dev/null'); if (trim((string) $r) !== '') { return false; } } return true; })());
+check('no obsolete EU ODR platform reference anywhere', (function () { foreach (['lang/en.php', 'lang/cs.php', 'templates', 'src', 'config', 'public/assets'] as $x) { $r = shell_exec('grep -rIliE "ec\.europa\.eu/consumers/odr|online dispute resolution|\bODR\b" ' . escapeshellarg(Pixelite\Paths::root($x)) . ' 2>/dev/null'); if (trim((string) $r) !== '') { return false; } } return true; })());
 $sm = $page('/sitemap.xml');
 check('sitemap includes cookies and terms in both languages', str_contains($sm, '/en/cookies') && str_contains($sm, '/cs/terms') && !preg_match('#/(en|cs)/portfolio<#', $sm));
 check('order form asks for acknowledgement, not consent', (function () use ($page) { $o = $page('/en/order'); return str_contains($o, 'I have read how my personal data will be used') && !preg_match('/I agree to the processing/i', $o); })());
@@ -298,7 +305,8 @@ check('Dreamers conditions live in /terms as an owner placeholder with its own a
 check('"Nezávazná konzultace" is spelled correctly, in its own section below the cards (cs) / Non-binding consultation (en)', str_contains($cs, 'Nezávazná konzultace') && !str_contains($cs, 'Nezávazný konzultace') && str_contains($cs, 'Krátce nám popište, co potřebujete. Společně vybereme vhodné řešení a projdeme možnosti před zahájením projektu.') && str_contains($en, 'Non-binding consultation') && strpos($cs, 'id="consultation"') > strrpos($cs, 'price-box__wrap') && strpos($cs, 'id="consultation"') > strpos($cs, 'class="credits"'));
 check('consultation claims no price/free service (non-binding only)', !preg_match('/zdarma|free of charge|for free|free consultation/i', $en . $cs));
 check('no price or credit-threshold number is hard-coded anywhere outside lang/ (templates, src, config, bin, css, js)', (function () { $hits = []; foreach (['templates', 'src', 'config', 'bin', 'public/assets'] as $dir) { $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(Pixelite\Paths::root($dir), FilesystemIterator::SKIP_DOTS)); foreach ($it as $f) { $path = $f->getPathname(); if (!preg_match('/\.(php|css|js)$/', $path) || str_contains($path, '/vendor/')) continue; if (preg_match('/(?<![\d#.\-])(?:2[ ,.\x{00A0}]?999|32[ ,.\x{00A0}]?900|64[ ,.\x{00A0}]?900|30[ ,.\x{00A0}]?000)(?![\d])/u', (string) file_get_contents($path), $m)) $hits[] = basename($path) . ':' . $m[0]; } } return $hits === [] || (fwrite(STDERR, implode(',', $hits) . "\n") && false); })());
-check('no price text is hard-coded in templates (all pricing comes from lang files)', trim((string) shell_exec('grep -rnE "Kč|CZK|[0-9]{1,3}[ ,\x{00A0}][0-9]{3}" ' . escapeshellarg(Pixelite\Paths::root('templates')) . ' 2>/dev/null')) === '');
+check('no price text is hard-coded in templates (all pricing comes from lang files)', trim((string) shell_exec('grep -rnE --exclude-dir=demos "Kč|CZK|[0-9]{1,3}[ ,\x{00A0}][0-9]{3}" ' . escapeshellarg(Pixelite\Paths::root('templates')) . ' 2>/dev/null')) === '');
+check('demo documents (sample content) carry no Pixelite price text', trim((string) shell_exec('grep -rnIE "Kč|CZK" ' . escapeshellarg(Pixelite\Paths::root('templates/demos')) . ' 2>/dev/null')) === '');
 check('package ids are stable and identical in both languages', array_column(I18n::load('en')['services']['items'], 'id') === ['template', 'basic', 'custom'] && array_column(I18n::load('cs')['services']['items'], 'id') === ['template', 'basic', 'custom']);
 check('budget whitelist is the six CZK ranges; packages are a separate whitelist, not project types', OrderOptions::BUDGETS === ['under10k', '10k-30k', '30k-65k', '65k-100k', '100k-plus', 'unsure'] && OrderOptions::PACKAGES === ['template', 'basic', 'custom'] && !array_intersect(OrderOptions::PACKAGES, OrderOptions::PROJECT_TYPES));
 check('budget labels are CZK/Kč in both languages, never euros', (function () { foreach (['en' => 'CZK', 'cs' => 'Kč'] as $l => $cur) { foreach (OrderOptions::BUDGETS as $b) { $t = I18n::load($l)['order']['options']['budget'][$b]; if ($b !== 'unsure' && !str_contains($t, $cur)) return false; if (str_contains($t, '€')) return false; } } return true; })());
@@ -528,9 +536,9 @@ check('index.php is layout-agnostic (requires ../src/bootstrap.php relative to i
 check('.htaccess denies dotfiles and data extensions, no listing, rewrites to the front controller', (function () { $h = (string) file_get_contents(Pixelite\Paths::root('public/.htaccess')); return str_contains($h, 'Options -Indexes') && str_contains($h, 'Require all denied') && str_contains($h, 'Deny from all') && str_contains($h, 'RewriteRule ^ index.php [L]'); })());
 
 echo "seo regression\n";
-$seoPaths = ['', 'templates', 'pricing', 'process', 'order', 'contact', 'privacy', 'cookies', 'terms'];
+$seoPaths = ['', 'templates', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms'];
 $titles = []; $descs = [];
-foreach (['en', 'cs'] as $lang) {
+foreach (I18n::LOCALES as $lang) {
     foreach ($seoPaths as $pg) {
         $h = $page("/$lang/$pg");
         preg_match('#<title>(.*?)</title>#s', $h, $tm); preg_match('#name="description" content="(.*?)"#', $h, $dm);
@@ -559,7 +567,7 @@ foreach (['en', 'cs'] as $lang) {
 $rob = $page('/robots.txt');
 check('robots.txt: blocks /admin only, references the absolute sitemap', str_contains($rob, 'Disallow: /admin') && str_contains($rob, 'Sitemap: https://pixelite.cz/sitemap.xml') && !str_contains($rob, 'Disallow: /en') && !str_contains($rob, 'Disallow: /cs'));
 $sm = $page('/sitemap.xml');
-check('sitemap: valid XML, core pages + gallery + every catalog design in both languages, no sent/admin/order-success', ($x = simplexml_load_string($sm)) !== false && substr_count($sm, '<loc>') === 2 * (count($seoPaths) + count(Pixelite\TemplateCatalog::all())) && !str_contains($sm, '/sent') && !str_contains($sm, 'admin'));
+check('sitemap: valid XML, core pages + gallery + every catalog design in both languages, no sent/admin/order-success', ($x = simplexml_load_string($sm)) !== false && substr_count($sm, '<loc>') === count(I18n::LOCALES) * (count($seoPaths) + count(Pixelite\TemplateCatalog::all())) && !str_contains($sm, '/sent') && !str_contains($sm, 'admin'));
 // canonical URL redirects (only in a real HTTP request, i.e. when REQUEST_URI is known)
 $mkUri = fn(string $uri, string $host = 'pixelite.cz', string $m = 'GET') => new Request($m, '/' . trim((string) parse_url($uri, PHP_URL_PATH), '/'), [], [], ['REMOTE_ADDR' => '203.0.113.9', 'REQUEST_URI' => $uri, 'HTTP_HOST' => $host]);
 foreach ([['/en', '/en/'], ['/cs?x=1', '/cs/?x=1'], ['/en/pricing/', '/en/pricing'], ['/cs/order/?package=basic', '/cs/order?package=basic']] as [$from, $to]) {
@@ -606,7 +614,7 @@ check('catalog contains only the intended entries: no generic Bootstrap / third-
 foreach (['en', 'cs'] as $lang) {
     $r = $gal($lang);
     check("gallery $lang: 200, one h1, a card per design linking to its page and to the order form, search form, index,follow", $r->status === 200 && substr_count($r->body, '<h1') === 1 && substr_count($r->body, 'data-template-card') === count($slugs) && str_contains($r->body, 'name="q"') && str_contains($r->body, "/$lang/templates/lumora") && str_contains($r->body, "/$lang/order?template=lumora") && str_contains($r->body, 'content="index,follow"'));
-    check("gallery $lang: single-option filters are not offered (only controls that do something)", !str_contains($r->body, 'name="category"') && !str_contains($r->body, 'name="style"') && !str_contains($r->body, 'name="sort"'));
+    check("gallery $lang: a filter control appears only when it offers more than one choice (category, style, sort)", str_contains($r->body, 'name="category"') === (count(Pixelite\TemplateCatalog::categories()) > 1) && str_contains($r->body, 'name="style"') === (count(Pixelite\TemplateCatalog::styles()) > 1) && str_contains($r->body, 'name="sort"') === (count($slugs) > 1));
     check("gallery $lang: previews are lazy (preload none, data-src) with a poster, JS only on gallery pages", str_contains($r->body, 'preload="none"') && str_contains($r->body, 'data-src="/assets/templates/lumora/preview.webm') && str_contains($r->body, '/assets/templates/lumora/poster-640.jpg') && str_contains($r->body, 'templates.js') && !str_contains($page("/$lang/pricing"), 'templates.js'));
     $d = Pixelite\handle($mkG("/$lang/templates/lumora"));
     preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $d->body, $lm);
@@ -690,7 +698,7 @@ $mkO = fn(string $m, string $p, array $post = [], array $q = []) => new Request(
 $f = Pixelite\handle($mkO('GET', '/en/order', [], ['template' => 'lumora']))->body;
 check('GET /en/order?template=lumora preselects the design (with thumbnail), project type Website and the Template package', str_contains($f, '<option value="lumora" data-thumb="/assets/templates/lumora/poster-640.jpg') && str_contains($f, ' selected>Lumora</option>') && str_contains($f, 'data-template-thumb src="/assets/templates/lumora/poster-640.jpg') && preg_match('#<option value="website" selected#', $f) && preg_match('#<option value="template" selected#', $f));
 $f2 = Pixelite\handle($mkO('GET', '/en/order', [], ['template' => 'nope">']))->body;
-check('unknown ?template= is ignored (nothing selected, thumbnail hidden)', !preg_match('#data-thumb="[^"]*"[^>]* selected>#', $f2) && str_contains($f2, 'data-template-thumb src="" ') && str_contains($f2, ' hidden>'));
+check('unknown ?template= is ignored: nothing selected and the "Chosen design" field is not shown at all', !preg_match('#data-thumb="[^"]*"[^>]* selected>#', $f2) && !str_contains($f2, 'data-template-pick') && !str_contains($f2, 'id="f-template"'));
 $mkT = function (array $over) use ($valid) { $_SESSION['form_ts'] = time() - 30; return ['_csrf' => Csrf::token()] + $over + $valid + ['consent' => '1']; };
 $r = Pixelite\handle($mkO('POST', '/en/order', $mkT(['template' => 'lumora', 'package' => 'template', 'email' => 'tpl1@example.cz', 'description' => 'Design order: build it with our branding.', 'template_name' => 'HACKED TITLE'])));
 $row = Database::pdo()->query("SELECT * FROM orders WHERE email = 'tpl1@example.cz'")->fetch();
@@ -699,6 +707,54 @@ $r = Pixelite\handle($mkO('POST', '/en/order', $mkT(['template' => 'not-a-design
 check('POST with an unknown template slug => 422, form re-shown, nothing stored', $r->status === 422 && (int) Database::pdo()->query("SELECT COUNT(*) FROM orders WHERE email = 'tpl2@example.cz'")->fetchColumn() === 0 && str_contains($r->body, 'aria-invalid="true"'));
 $bad = Pixelite\handle($mkO('POST', '/en/order', $mkT(['template' => 'lumora', 'email' => 'bad-email', 'description' => 'Validation fails but the design stays selected.'])));
 check('failed validation keeps the chosen design selected', $bad->status === 422 && (bool) preg_match('#<option value="lumora" data-thumb="/assets/templates/lumora/poster-640\.jpg[^"]*" selected>Lumora</option>#', $bad->body));
+
+// ---- every catalog entry (Lumora + the Asterform / Stillwave / Vantage / Emberveil integration): demo hygiene, assets, pages, order flow ----
+$ref->setValue(null, $savedCache); TemplateCatalog::override(null);   // the real catalog (config/templates.php), not the fixture
+$catIdx = 0;
+foreach (array_keys(TemplateCatalog::all()) as $sl) {
+    $catIdx++;
+    $e = TemplateCatalog::all()[$sl];
+    $dm = Pixelite\handle($mkG("/en/templates/$sl/demo"));
+    $dc = $dm->headers['Content-Security-Policy'] ?? '';
+    check("catalog/$sl: demo is 200 under its own CSP (frame-ancestors 'self', no inline script/style sources), SAMEORIGIN, noindex header + meta", $dm->status === 200 && str_contains($dc, "frame-ancestors 'self'") && !str_contains($dc, "script-src 'unsafe-inline'") && !str_contains($dc, 'http') && ($dm->headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' && str_contains($dm->headers['X-Robots-Tag'] ?? '', 'noindex') && (bool) preg_match('#<meta name="robots" content="[^"]*noindex#', $dm->body));
+    check("catalog/$sl: demo has no inline <style>/<script> blocks and no third-party host in its HTML, CSS or JS", (function () use ($dm, $sl) {
+        if (preg_match('#<style[\s>]#', $dm->body) || preg_match('#<script(?![^>]*\ssrc=)[^>]*>#', $dm->body)) return false;
+        $files = [$dm->body];
+        preg_match_all('#/assets/templates/' . preg_quote($sl, '#') . '/[^"\')\s]+\.(?:css|js)#', $dm->body, $m);
+        foreach (array_unique($m[0]) as $u) { $files[] = (string) file_get_contents(Pixelite\Paths::publicDir(ltrim($u, '/'))); }
+        foreach ($files as $c) {
+            $c = str_replace('http://www.w3.org/', '', $c);
+            if (preg_match('#(?:src|href)=["\']https?://|url\(\s*["\']?https?://|[\'"]https?://[a-z0-9.-]+\.(?:com|net|io|studio|cz|org)/[^\'"]*\.(?:mp4|webm|png|jpe?g|svg|woff2?)|\bfonts\.(googleapis|gstatic)|unpkg\.com|cloudfront\.net|framerusercontent|figma\.site|jsdelivr|cdnjs#i', $c)) return false;
+        }
+        return true;
+    })());
+    check("catalog/$sl: every local asset the demo, its CSS and its JS reference exists (css, js, fonts, videos, images, logo) and the gallery media exist", (function () use ($dm, $sl, $e) {
+        $files = [$dm->body]; $urls = [];
+        preg_match_all('#/assets/templates/' . preg_quote($sl, '#') . '/[^"\')\s]+#', $dm->body, $m); $urls = array_merge($urls, $m[0]);
+        foreach (array_unique($m[0]) as $u) { if (preg_match('#\.(css|js)$#', $u)) { $c = (string) file_get_contents(Pixelite\Paths::publicDir(ltrim($u, '/'))); preg_match_all('#/assets/templates/' . preg_quote($sl, '#') . '/[^"\')\s;,]+\.(?:woff2?|mp4|webm|png|jpe?g|svg|css|js|webp)#', $c, $m2); $urls = array_merge($urls, $m2[0]); } }
+        foreach (array_unique($urls) as $u) { if (!is_file(Pixelite\Paths::publicDir(ltrim($u, '/')))) return false; }
+        foreach ([$e['media']['poster']['640'], $e['media']['poster']['1280'], $e['media']['video']] as $f) { if (!is_file(Pixelite\Paths::publicDir('assets/' . $e['media']['dir'] . '/' . $f))) return false; }
+        foreach (($e['origin']['third_party'] ?? []) as $c) { if (!is_file(Pixelite\Paths::publicDir(ltrim($c['notice'], '/')))) return false; }
+        return count(array_unique($urls)) >= 2;
+    })());
+    foreach (['en', 'cs'] as $lg) {
+        $dp = Pixelite\handle($mkG("/$lg/templates/$sl"));
+        check("catalog/$sl ($lg): detail page 200 with its own title, preview frame to its demo and an order CTA for this design", $dp->status === 200 && str_contains($dp->body, '/templates/' . $sl . '/demo') && str_contains($dp->body, 'href="/' . $lg . '/order?template=' . $sl . '"') && str_contains($dp->body, '<h1') && str_contains($dp->body, e(TemplateCatalog::localized($e, $lg)['title'])));
+    }
+    $gl = Pixelite\handle($mkG('/en/templates'))->body;
+    check("catalog/$sl: the gallery card links to the design page and the order form for it", str_contains($gl, 'href="/en/templates/' . $sl . '"') && str_contains($gl, 'href="/en/order?template=' . $sl . '"') && str_contains($gl, '/assets/' . $e['media']['dir'] . '/' . $e['media']['poster']['640']));
+    $ip = ['REMOTE_ADDR' => '203.0.113.' . (150 + $catIdx)];
+    $fo = Pixelite\handle(new Request('GET', '/en/order', [], ['template' => $sl], $ip))->body;
+    check("catalog/$sl: /order?template=$sl preselects this design with its thumbnail", (bool) preg_match('#<option value="' . preg_quote($sl, '#') . '" data-thumb="/assets/' . preg_quote($e['media']['dir'], '#') . '/poster-640\.jpg[^"]*" selected>#', $fo));
+    $em = "cat-$sl@example.cz";
+    $ro = Pixelite\handle(new Request('POST', '/en/order', $mkT(['template' => $sl, 'package' => 'template', 'email' => $em, 'description' => 'Catalog regression order for ' . $sl . ', please ignore.']), [], $ip));
+    $crow = Database::pdo()->query("SELECT * FROM orders WHERE email = " . Database::pdo()->quote($em))->fetch();
+    check("catalog/$sl: an order stores this slug and the server-derived English name", $ro->status === 303 && $crow && $crow['template'] === $sl && $crow['template_name'] === TemplateCatalog::englishTitle($sl) && $crow['template_name'] !== '');
+    $bd = Pixelite\handle(new Request('POST', '/en/order', $mkT(['template' => $sl, 'email' => 'bad-email', 'description' => 'Validation fails but the design stays selected.']), [], $ip));
+    check("catalog/$sl: failed validation keeps this design selected", $bd->status === 422 && (bool) preg_match('#<option value="' . preg_quote($sl, '#') . '" data-thumb="[^"]*" selected>#', $bd->body));
+}
+check('catalog: the five integrated designs are present, slugs are unique and URL-safe', array_diff(['lumora', 'asterform', 'stillwave', 'vantage', 'emberveil'], array_keys(TemplateCatalog::all())) === [] && count(array_unique(array_keys(TemplateCatalog::all()))) === count(TemplateCatalog::all()) && array_reduce(array_keys(TemplateCatalog::all()), fn($c, $x) => $c && (bool) preg_match('/^[a-z0-9-]+$/', $x), true));
+$ref->setValue(null, $cacheFx); TemplateCatalog::override(array_merge([$base], $fx));   // back to the fixture for the admin section
 $r = Pixelite\handle($mkO('POST', '/en/order', $mkT(['email' => 'tpl3@example.cz', 'description' => 'No design chosen at all, please ignore.'])));
 $row3 = Database::pdo()->query("SELECT * FROM orders WHERE email = 'tpl3@example.cz'")->fetch();
 check('orders without a design still work (empty template columns)', $r->status === 303 && $row3 && $row3['template'] === '' && $row3['template_name'] === '');
@@ -790,6 +846,10 @@ check('LEAK: no prompt text in tracked/public source: public/, config/, lang/, t
 })());
 check('LEAK: the public catalog config has no prompt/body fields', !preg_match('/[\'"](prompt|body)[\'"]\s*=>/', (string) file_get_contents(Pixelite\Paths::root('config/templates.php'))));
 check('.gitignore excludes the private prompt package folder (the repository is public)', (bool) preg_match('#^/private/$#m', (string) @file_get_contents(Pixelite\Paths::root('.gitignore'))) || !is_file(Pixelite\Paths::root('.gitignore')));
+
+require __DIR__ . '/features.php';   // careers, team, accounts/CRM, projects + isolated previews, four languages (legacy templates)
+$cnt = fn(string $sql, array $a = []): int => (function () use ($sql, $a) { $s = Database::pdo()->prepare($sql); $s->execute($a); return (int) $s->fetchColumn(); })();
+require __DIR__ . '/design.php';   // the new design as the default, /legacy, canonical/noindex, admin; then features.php again on the new templates
 
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();
