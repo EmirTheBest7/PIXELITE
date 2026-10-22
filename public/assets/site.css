@@ -696,3 +696,6 @@ dialog.consent-dialog:not([open]){display:none}
 .admin__card .btn[hidden]{display:none}
 .admin__card code{background:var(--bg-soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 .admin__bar .admin__nav{flex-wrap:wrap}
+
+/* Same behaviour as the legacy design: hide the wrappers the existing banner guard (endora-banner.js) marks as the hosting provider's injected banner. */
+[data-pixelite-endora-banner-hidden]{display:none !important}
