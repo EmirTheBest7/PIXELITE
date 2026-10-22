@@ -47,6 +47,8 @@ return [
         'nav_footer' => 'Patička',
         'home' => 'Pixelite.cz – domů',
         'breadcrumb' => 'Drobečková navigace',
+        'toc' => 'Obsah stránky',
+        'honeypot' => 'Toto pole nechte prázdné',
     ],
     'theme' => [
         'label' => 'Motiv',
@@ -138,6 +140,7 @@ return [
         'login' => 'Přihlásit se',
         'legacy' => 'Původní web',
         'new_design' => 'Nový design',
+        'menu' => 'Menu',
     ],
     'hero' => [
         'title' => 'Čisté weby za férovou cenu',
@@ -394,6 +397,7 @@ return [
         'subject' => 'Přihláška: {title}',
         'published' => 'Zveřejněno {date}',
         'spontaneous' => 'Nenašli jste vhodnou pozici? I přesto nám klidně napište.',
+        'english_only' => 'Tato nabídka je k dispozici pouze v angličtině.',
     ],
     'team' => [
         'title' => 'Poznejte tým',
@@ -493,7 +497,7 @@ return [
                 'Po odeslání poptávky se její obsah posílá jako upozornění do našeho soukromého chatu na Telegramu, abychom mohli rychle reagovat. Příjemcem těchto údajů je tedy i Telegram (poskytovatel komunikační služby). Účel a právní základ jsou stejné jako v bodě 2.',
                 '[Provozovatel Telegramu, jeho umístění a případné záruky při předání – doplní provozovatel po prověření podmínek poskytovatele.]']],
             ['h' => '4. Bezpečnost a provoz webu', 'p' => [
-                'Náš webový server stejně jako každý jiný zapisuje technické údaje do přístupových a chybových logů: IP adresu, datum a čas, požadovanou adresu, stavový kód odpovědi, odkazující stránku a identifikaci prohlížeče. Solený jednosměrný otisk (hash) vaší IP adresy navíc uchováváme nejvýše 24 hodin, abychom omezili automatizované zneužívání formuláře a přihlášení zaměstnanců. Samotná IP adresa se spolu s poptávkou neukládá.',
+                'Náš webový server stejně jako každý jiný zapisuje technické údaje do přístupových a chybových logů: IP adresu, datum a čas, požadovanou adresu, stavový kód odpovědi, odkazující stránku a identifikaci prohlížeče. Solený jednosměrný otisk (hash) vaší IP adresy navíc uchováváme nejvýše 24 hodin, abychom omezili automatizované zneužívání formuláře, zákaznických účtů a přihlášení zaměstnanců. Samotná IP adresa se spolu s poptávkou neukládá.',
                 'Účel: bezpečnost, předcházení zneužití a provoz webu. Právní základ: čl. 6 odst. 1 písm. f) GDPR (oprávněný zájem). Doba uchování logů serveru: [bude doplněna].']],
             ['h' => '5. Zaměstnanecká sekce', 'p' => ['Zaměstnanci přihlášení do administrace jsou identifikováni e-mailovou adresou a relační cookie. Zpracování probíhá na základě našeho oprávněného zájmu na zabezpečení přístupu (čl. 6 odst. 1 písm. f) GDPR). Sekce není návštěvníkům přístupná.']],
             ['h' => '5a. Zákaznické účty a náhledy projektů', 'p' => [

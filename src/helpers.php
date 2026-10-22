@@ -33,7 +33,32 @@ function url_canonical(string $path = '', ?string $locale = null): string
 function url_other_design(string $path = ''): string
 {
     $other = \Pixelite\Design::current() === 'legacy' ? 'new' : 'legacy';
-    return \Pixelite\Design::prefix($other) . '/' . I18n::locale() . '/' . trim($path, '/');
+    return \Pixelite\Design::prefix($other) . '/' . I18n::locale() . '/' . trim($path, '/') . current_query();
+}
+
+/** "?a=b" of the page being rendered (GET only), so the language and design switches keep filters, ?template=, ?package= and the like. */
+function current_query(): string
+{
+    return \Pixelite\Request::$current?->querySuffix() ?? '';
+}
+
+/** Text from a per-locale map: the active language, else English, else any non-empty entry (never an empty string while one exists). */
+function localized(mixed $map, ?string $locale = null): string
+{
+    if (!is_array($map)) {
+        return is_string($map) ? $map : '';
+    }
+    foreach ([$locale ?? I18n::locale(), 'en'] as $loc) {
+        if (isset($map[$loc]) && is_string($map[$loc]) && trim($map[$loc]) !== '') {
+            return $map[$loc];
+        }
+    }
+    foreach ($map as $v) {
+        if (is_string($v) && trim($v) !== '') {
+            return $v;
+        }
+    }
+    return '';
 }
 
 function absolute_url(string $path): string

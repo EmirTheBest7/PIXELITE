@@ -5,6 +5,9 @@ namespace Pixelite;
 
 final class Request
 {
+    /** The request being handled (set by handle()); lets views build links that keep the current query string. */
+    public static ?self $current = null;
+
     public function __construct(
         public readonly string $method,
         public readonly string $path,
@@ -38,6 +41,22 @@ final class Request
     {
         $f = $this->files[$key] ?? null;
         return is_array($f) ? $f : null;
+    }
+
+    /** The GET query of this request as a safe "?a=b" suffix ('' for non-GET, an empty query or anything oversized). `next` is dropped: it names a path in the current language. */
+    public function querySuffix(): string
+    {
+        if (!in_array($this->method, ['GET', 'HEAD'], true)) {
+            return '';
+        }
+        $q = [];
+        foreach ($this->query as $k => $v) {
+            if (is_string($k) && is_string($v) && $v !== '' && $k !== 'next') {
+                $q[$k] = $v;
+            }
+        }
+        $s = http_build_query($q, '', '&', PHP_QUERY_RFC3986);
+        return ($s === '' || strlen($s) > 300) ? '' : '?' . $s;
     }
 
     public function query(string $key): string

@@ -72,3 +72,10 @@ local copies (videos re-encoded to 960–1280 px H.264 without audio, ~0.3–0.9
 **Open licence points (not cleared):** the original videos were hot-linked from a third-party AI-asset host (`cloudfront.net/…/hf_*.mp4`), and Emberveil's two hero
 images and logo from `figma.site` / `framerusercontent.com`. Confirm the rights before showing them to customers as deliverables, or replace them.
 Private implementation prompts for these four live in the git-ignored `private/template-prompts/prompts.json` (import them through the admin).
+
+## Language of the demo documents
+The demos under `templates/demos/` are **sample websites, not the Pixelite interface**: each is the template exactly as a customer's site would start, with
+English sample copy (`<html lang="en">`), and is the same in every site language. Everything Pixelite shows *around* a demo – the gallery, the design page,
+the Desktop/Phone toggle, the "open full preview" link, the iframe title, the card video label and poster alt text, the order form's "Chosen design" – is
+localized in en/cs/ru/uk. A demo should not contain Pixelite navigation, controls or messages. The only Pixelite wording inside the demos is Stillwave's English creator-attribution badge ("Pixelite Catalog", `href="#pixelite"`, part of the template's own design – left as it is and listed in the localization report). If a template is later offered in several languages,
+add a language switch to that demo and document it here.

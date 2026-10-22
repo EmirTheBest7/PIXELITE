@@ -537,3 +537,5 @@ check('no password or token ever reaches the application log', (function () use 
 check('session cookie: __Host- prefixed over HTTPS (cannot be shadowed from a sibling preview host), plain name over HTTP', Pixelite\Session::cookieName(new Request('GET', '/', [], [], ['HTTPS' => 'on'])) === '__Host-pixelite' && Pixelite\Session::cookieName(new Request('GET', '/', [], [], [])) === 'pixelite');
 check('preview: a same-registrable-domain host is flagged as weaker isolation, a separate domain is not', (function () { Env::set('APP_URL', 'https://pixelite.cz'); Env::set('PREVIEW_ORIGIN', 'https://preview.pixelite.cz'); $a = Preview::sharesSite(); Env::set('PREVIEW_ORIGIN', 'https://pixelite-preview.cz'); $b = Preview::sharesSite(); Env::set('PREVIEW_ORIGIN', ''); return $a === true && $b === false; })());
 check('cookie policy shows the real session cookie name over HTTPS', str_contains($H(new Request('GET', '/en/cookies', [], [], ['HTTPS' => 'on', 'REMOTE_ADDR' => '203.0.113.5']))->body, '<code>__Host-pixelite</code>'));
+
+require __DIR__ . '/i18n.php';   // localization regression tests (ru/uk wording, fallbacks, query-string preservation)

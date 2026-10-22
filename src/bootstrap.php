@@ -191,6 +191,7 @@ function canonicalRedirect(Request $r): ?Response
 
 function handle(Request $r): Response
 {
+    Request::$current = $r;
     I18n::set(I18n::default());
     // Client preview host: a separate origin that serves ONLY /p/<token>/… (no router, no session, no cookies). On the main host /p/… does not exist.
     if (Preview::isPreviewHost($r)) {

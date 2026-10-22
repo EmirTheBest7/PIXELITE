@@ -60,7 +60,7 @@ if ($isHome) {
             '@id' => absolute_url('/#website'),
             'name' => 'Pixelite.cz',
             'url' => absolute_url('/'),
-            'inLanguage' => ['en', 'cs'],
+            'inLanguage' => \Pixelite\I18n::LOCALES,
             'publisher' => ['@id' => absolute_url('/#organization')],
         ],
     ]];

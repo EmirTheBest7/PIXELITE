@@ -462,11 +462,11 @@ const PRICING = {
         credits: [`od 30${NB}000${NB}Kč`, `až 100${NB}USD`, 'nikoli o slevu v hotovosti'], consult: 'Nezávazná konzultace',
         budgets: [`Do 10${NB}000${NB}Kč`, `10${NB}000–30${NB}000${NB}Kč`, `30${NB}000–65${NB}000${NB}Kč`, `65${NB}000–100${NB}000${NB}Kč`, `100${NB}000${NB}Kč a více`, 'Zatím nevím'] },
   ru: { names: ['Сайт на шаблоне', 'Базовый сайт', 'Индивидуальный сайт'], from: 'От', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'CZK', ids: ['template', 'basic', 'custom'],
-        credits: [`от 30${NB}000${NB}CZK`, 'до 100 $', 'не денежная скидка'], consult: 'Необязывающая консультация',
-        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Более 100${NB}000 CZK`, 'Пока не уверен(а)'] },
+        credits: [`от 30${NB}000${NB}CZK`, 'до 100 $', 'не денежная скидка'], consult: 'Консультация без обязательств',
+        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Более 100${NB}000 CZK`, 'Пока не знаю'] },
   uk: { names: ['Сайт на шаблоні', 'Базовий сайт', 'Індивідуальний сайт'], from: 'Від', amounts: [`2${NB}999`, `32${NB}900`, `64${NB}900`], cur: 'CZK', ids: ['template', 'basic', 'custom'],
         credits: [`від 30${NB}000${NB}CZK`, 'до 100 $', 'не грошова знижка'], consult: 'Консультація без зобов’язань',
-        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Понад 100${NB}000 CZK`, 'Ще не впевнений(а)'] },
+        budgets: [`До 10${NB}000 CZK`, `10${NB}000–30${NB}000 CZK`, `30${NB}000–65${NB}000 CZK`, `65${NB}000–100${NB}000 CZK`, `Понад 100${NB}000 CZK`, 'Ще не знаю'] },
 };
 async function pricingScenarios(browser) {
   for (const d of DEVICES) for (const lang of LANGS) for (const theme of THEMES) {

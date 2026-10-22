@@ -14,7 +14,7 @@ $brand = '<span class="pill__brand">PIXELITE<i>.cz</i></span>';
 $langs = function (string $cls) use ($meta, $locale): void { ?>
 <div class="lang <?= $cls ?>" role="group" aria-label="<?= e(t('a11y.language')) ?>">
 <?php foreach (\Pixelite\I18n::LOCALES as $loc): ?>
-  <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc)) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
+  <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc) . current_query()) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
 <?php endforeach ?>
 </div>
 <?php };
@@ -37,7 +37,7 @@ $langs = function (string $cls) use ($meta, $locale): void { ?>
         <?= ui_link(url('order'), (string) t('nav.start'), 'sm accent .pill__cta') ?>
         <button type="button" class="pill__menu navbar-toggle collapsed" data-nav-toggle aria-expanded="false" aria-controls="navbar">
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 4.5h12M2 8h12M2 11.5h12"/></svg>
-          <span class="sr-only"><?= e(t('a11y.toggle')) ?></span><span aria-hidden="true">Menu</span>
+          <span class="sr-only"><?= e(t('a11y.toggle')) ?></span><span aria-hidden="true"><?= e(t('nav.menu')) ?></span>
         </button>
       </div>
     </nav>

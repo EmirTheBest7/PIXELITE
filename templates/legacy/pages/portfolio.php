@@ -14,13 +14,13 @@
         <<?= $tag ?> class="article-pre"<?= $tag === 'a' ? ' href="' . e($p['url']) . '" rel="noopener"' : '' ?>>
           <div class="article-pre__img article-pre__img--placeholder"></div>
           <p class="article-pre__info">
-            <span class="article-pre__cat"><?= e($p['category'][$locale] ?? '') ?></span>
+            <span class="article-pre__cat"><?= e(localized($p['category'], $locale)) ?></span>
 <?php if (!empty($p['placeholder'])): ?>
             <span class="article-pre__date portfolio__badge"><?= e(t('portfolio.placeholder')) ?></span>
 <?php endif ?>
           </p>
-          <h3 class="article-pre__title"><?= e($p['title'][$locale] ?? '') ?></h3>
-          <p class="portfolio__summary"><?= e($p['summary'][$locale] ?? '') ?></p>
+          <h3 class="article-pre__title"><?= e(localized($p['title'], $locale)) ?></h3>
+          <p class="portfolio__summary"><?= e(localized($p['summary'], $locale)) ?></p>
 <?php if (!empty($p['placeholder'])): ?>
           <p class="portfolio__note"><?= e(t('portfolio.placeholder_note')) ?></p>
 <?php endif ?>

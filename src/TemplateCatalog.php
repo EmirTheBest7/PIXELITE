@@ -95,7 +95,7 @@ final class TemplateCatalog
             }
             $rows[] = $l;
         }
-        $collator = class_exists(\Collator::class) ? new \Collator($locale === 'cs' ? 'cs_CZ' : 'en_US') : null;
+        $collator = class_exists(\Collator::class) ? new \Collator(['cs' => 'cs_CZ', 'ru' => 'ru_RU', 'uk' => 'uk_UA'][$locale] ?? 'en_US') : null;
         $byTitle = static fn(array $a, array $b): int => $collator ? $collator->compare($a['title'], $b['title']) : strcasecmp($a['title'], $b['title']);
         usort($rows, $sort === 'az'
             ? $byTitle

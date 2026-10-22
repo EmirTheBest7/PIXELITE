@@ -45,7 +45,7 @@ if ($isHome) {
             'logo' => absolute_url('/assets/icons/apple-touch-icon.png'), 'description' => $meta['description'],
             'email' => $c['email'] ?: null, 'telephone' => $c['phone'] ?: null,
         ]),
-        ['@type' => 'WebSite', '@id' => absolute_url('/#website'), 'name' => 'Pixelite.cz', 'url' => absolute_url('/'), 'inLanguage' => ['en', 'cs'], 'publisher' => ['@id' => absolute_url('/#organization')]],
+        ['@type' => 'WebSite', '@id' => absolute_url('/#website'), 'name' => 'Pixelite.cz', 'url' => absolute_url('/'), 'inLanguage' => \Pixelite\I18n::LOCALES, 'publisher' => ['@id' => absolute_url('/#organization')]],
     ]];
 } elseif (!in_array($meta['page'], ['404', '500', 'portfolio'], true)) {
     $crumbs = $meta['crumbs'] ?? [[trim(preg_replace('/\s*[–-]\s*Pixelite\.cz$/u', '', $meta['title'])), $meta['path']]];

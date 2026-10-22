@@ -80,13 +80,24 @@ final class Careers
         Database::pdo()->prepare('DELETE FROM careers WHERE id = ?')->execute([$id]);
     }
 
-    /** @return array{title: string, description: string} text for a locale, falling back to English */
+    /**
+     * Text for a locale. A language needs BOTH its title and its description to count as translated; otherwise the English
+     * text is returned whole (never a mix) and `fallback` is true so the page can say so and mark the language.
+     * @return array{title: string, description: string, lang: string, fallback: bool}
+     */
     public static function text(array $row, ?string $locale = null): array
     {
         $locale ??= I18n::locale();
+        $t = trim((string) ($row['titles'][$locale] ?? ''));
+        $d = trim((string) ($row['descriptions'][$locale] ?? ''));
+        if ($t !== '' && $d !== '') {
+            return ['title' => $t, 'description' => $d, 'lang' => $locale, 'fallback' => false];
+        }
         return [
-            'title' => (string) ($row['titles'][$locale] ?? $row['titles']['en'] ?? ''),
-            'description' => (string) ($row['descriptions'][$locale] ?? $row['descriptions']['en'] ?? ''),
+            'title' => (string) ($row['titles']['en'] ?? ''),
+            'description' => (string) ($row['descriptions']['en'] ?? ''),
+            'lang' => 'en',
+            'fallback' => $locale !== 'en',
         ];
     }
 

@@ -39,7 +39,7 @@ require __DIR__ . '/../partials/page-hero.php' ?>
       <form id="order" class="form" method="post" action="<?= e(url('order')) ?>" novalidate>
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="form__trap" aria-hidden="true">
-          <label for="f-hp">Leave this empty</label>
+          <label for="f-hp"><?= e(t('a11y.honeypot')) ?></label>
           <input type="text" id="f-hp" name="hp_site" value="" tabindex="-1" autocomplete="off">
         </div>
         <div class="form__row"><?php $text('name', 'text', true, 'name'); $text('company', 'text', false, 'organization'); ?></div>

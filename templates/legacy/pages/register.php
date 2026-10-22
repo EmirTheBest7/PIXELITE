@@ -14,7 +14,7 @@ $o = fn(string $k): string => (string) ($old[$k] ?? ''); ?>
         <form class="form auth-form" method="post" action="<?= e(url('register')) ?>" novalidate>
           <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
           <div class="form__trap" aria-hidden="true">
-            <label for="f-hp">Leave this empty</label>
+            <label for="f-hp"><?= e(t('a11y.honeypot')) ?></label>
             <input type="text" id="f-hp" name="hp_site" value="" tabindex="-1" autocomplete="off">
           </div>
           <?php $req = true; $hint = null;

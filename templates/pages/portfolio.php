@@ -12,13 +12,13 @@ require __DIR__ . '/../partials/page-hero.php' ?>
       <<?= $tag ?> class="article-pre"<?= $tag === 'a' ? ' href="' . e($p['url']) . '" rel="noopener"' : '' ?>>
         <div class="article-pre__img"></div>
         <p class="article-pre__info">
-          <span class="article-pre__cat"><?= e($p['category'][$locale] ?? '') ?></span>
+          <span class="article-pre__cat"><?= e(localized($p['category'], $locale)) ?></span>
 <?php if (!empty($p['placeholder'])): ?>
           <span class="portfolio__badge"><?= e(t('portfolio.placeholder')) ?></span>
 <?php endif ?>
         </p>
-        <h2 class="article-pre__title"><?= e($p['title'][$locale] ?? '') ?></h2>
-        <p class="portfolio__summary"><?= e($p['summary'][$locale] ?? '') ?></p>
+        <h2 class="article-pre__title"><?= e(localized($p['title'], $locale)) ?></h2>
+        <p class="portfolio__summary"><?= e(localized($p['summary'], $locale)) ?></p>
 <?php if (!empty($p['placeholder'])): ?>
         <p class="portfolio__note"><?= e(t('portfolio.placeholder_note')) ?></p>
 <?php endif ?>

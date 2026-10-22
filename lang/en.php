@@ -47,6 +47,8 @@ return [
         'nav_footer' => 'Footer',
         'home' => 'Pixelite.cz – home',
         'breadcrumb' => 'Breadcrumb',
+        'toc' => 'On this page',
+        'honeypot' => 'Leave this field empty',
     ],
     'theme' => [
         'label' => 'Theme',
@@ -138,6 +140,7 @@ return [
         'login' => 'Sign in',
         'legacy' => 'Legacy website',
         'new_design' => 'New design',
+        'menu' => 'Menu',
     ],
     'hero' => [
         'title' => 'Clean websites at a fair price',
@@ -393,6 +396,7 @@ return [
         'subject' => 'Application: {title}',
         'published' => 'Published {date}',
         'spontaneous' => 'Don’t see a fitting position? You are welcome to write to us anyway.',
+        'english_only' => 'This vacancy is available in English only.',
     ],
     'team' => [
         'title' => 'Meet the team',
@@ -492,7 +496,7 @@ return [
                 'When a request is submitted, its content is sent as a notification to a private Telegram chat operated by us, so that we can react quickly. Telegram (the messaging service) is therefore a recipient of this data. The purpose and legal basis are the same as in section 2.',
                 '[Telegram operator, its location and any transfer safeguards – to be completed by the owner after checking the provider’s terms.]']],
             ['h' => '4. Website security and operation', 'p' => [
-                'Like any web server, ours records technical data in access and error logs: IP address, date and time, requested address, response status, referring page and browser identification. We also keep a salted one-way hash of your IP address for up to 24 hours to limit automated abuse of the request form and the staff login. The IP address itself is not stored with your request.',
+                'Like any web server, ours records technical data in access and error logs: IP address, date and time, requested address, response status, referring page and browser identification. We also keep a salted one-way hash of your IP address for up to 24 hours to limit automated abuse of the request form, customer accounts and the staff login. The IP address itself is not stored with your request.',
                 'Purpose: security, preventing abuse and keeping the website running. Legal basis: Art. 6(1)(f) GDPR (legitimate interest). Server log retention: [to be completed].']],
             ['h' => '5. Staff area', 'p' => ['Staff who sign in to the administration area are identified by email address and a session cookie. This is processed on the basis of our legitimate interest in securing access (Art. 6(1)(f) GDPR). The area is not available to visitors.']],
             ['h' => '5a. Customer accounts and project previews', 'p' => [

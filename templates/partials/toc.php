@@ -1,5 +1,5 @@
-<?php /** Legal-page table of contents. @var list<array{0:string,1:string}> $tocItems [id, label]. Strings are concept-local: lang/ is shared with the untouched original. */
-$tocLabel = \Pixelite\I18n::locale() === 'cs' ? 'Obsah stránky' : 'On this page'; ?>
+<?php /** Legal-page table of contents. @var list<array{0:string,1:string}> $tocItems [id, label]. */
+$tocLabel = (string) t('a11y.toc'); ?>
 <nav class="toc" aria-label="<?= e($tocLabel) ?>" data-toc>
   <p class="toc__title"><?= e($tocLabel) ?></p>
   <ol>

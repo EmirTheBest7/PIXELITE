@@ -8,7 +8,7 @@ require __DIR__ . '/../partials/page-hero.php' ?>
 <?php if ($formError || $errors): ?><div class="form__alert" role="alert" tabindex="-1" data-form-alert><?= e(t('auth.form_errors.' . ($formError ?: 'fix'))) ?></div><?php endif ?>
     <form class="form" method="post" action="<?= e(url('register')) ?>" novalidate>
       <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-      <div class="form__trap" aria-hidden="true"><label for="f-hp">Leave this empty</label><input type="text" id="f-hp" name="hp_site" value="" tabindex="-1" autocomplete="off"></div>
+      <div class="form__trap" aria-hidden="true"><label for="f-hp"><?= e(t('a11y.honeypot')) ?></label><input type="text" id="f-hp" name="hp_site" value="" tabindex="-1" autocomplete="off"></div>
       <?php $req = true; $hint = null;
         $f = 'name'; $label = (string) t('auth.name'); $type = 'text'; $value = $o('name'); $auto = 'name'; require __DIR__ . '/../partials/auth-field.php';
         $f = 'email'; $label = (string) t('auth.email'); $type = 'email'; $value = $o('email'); $auto = 'email'; require __DIR__ . '/../partials/auth-field.php';

@@ -20,7 +20,7 @@ $nav = [
     </button>
     <div class="lang" role="group" aria-label="<?= e(t('a11y.language')) ?>">
 <?php foreach (\Pixelite\I18n::LOCALES as $loc): ?>
-      <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc)) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" title="<?= e(\Pixelite\I18n::NAMES[$loc]) ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
+      <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc) . current_query()) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" title="<?= e(\Pixelite\I18n::NAMES[$loc]) ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><?= strtoupper($loc) ?></a>
 <?php endforeach ?>
     </div>
     <div class="header__theme"><?php require __DIR__ . '/theme-cycle.php' ?></div>
