@@ -29,5 +29,6 @@
 </main>
 <script src="<?= e(asset('site-theme.js')) ?>" defer></script>
 <script src="<?= e(asset('admin.js')) ?>" defer></script>
+<script src="<?= e(asset('endora-banner.js')) ?>" defer></script>
 </body>
 </html>
