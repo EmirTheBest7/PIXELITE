@@ -708,7 +708,7 @@ check('POST with an unknown template slug => 422, form re-shown, nothing stored'
 $bad = Pixelite\handle($mkO('POST', '/en/order', $mkT(['template' => 'lumora', 'email' => 'bad-email', 'description' => 'Validation fails but the design stays selected.'])));
 check('failed validation keeps the chosen design selected', $bad->status === 422 && (bool) preg_match('#<option value="lumora" data-thumb="/assets/templates/lumora/poster-640\.jpg[^"]*" selected>Lumora</option>#', $bad->body));
 
-// ---- every catalog entry (Lumora + the Asterform / Stillwave / Vantage / Emberveil integration): demo hygiene, assets, pages, order flow ----
+// ---- every catalog entry (Lumora + the Asterform / Stillwave / Vantage / Emberveil / Azur integration): demo hygiene, assets, pages, order flow ----
 $ref->setValue(null, $savedCache); TemplateCatalog::override(null);   // the real catalog (config/templates.php), not the fixture
 $catIdx = 0;
 foreach (array_keys(TemplateCatalog::all()) as $sl) {
@@ -753,7 +753,7 @@ foreach (array_keys(TemplateCatalog::all()) as $sl) {
     $bd = Pixelite\handle(new Request('POST', '/en/order', $mkT(['template' => $sl, 'email' => 'bad-email', 'description' => 'Validation fails but the design stays selected.']), [], $ip));
     check("catalog/$sl: failed validation keeps this design selected", $bd->status === 422 && (bool) preg_match('#<option value="' . preg_quote($sl, '#') . '" data-thumb="[^"]*" selected>#', $bd->body));
 }
-check('catalog: the five integrated designs are present, slugs are unique and URL-safe', array_diff(['lumora', 'asterform', 'stillwave', 'vantage', 'emberveil'], array_keys(TemplateCatalog::all())) === [] && count(array_unique(array_keys(TemplateCatalog::all()))) === count(TemplateCatalog::all()) && array_reduce(array_keys(TemplateCatalog::all()), fn($c, $x) => $c && (bool) preg_match('/^[a-z0-9-]+$/', $x), true));
+check('catalog: the six integrated designs are present, slugs are unique and URL-safe', array_diff(['lumora', 'asterform', 'stillwave', 'vantage', 'emberveil', 'azur'], array_keys(TemplateCatalog::all())) === [] && count(array_unique(array_keys(TemplateCatalog::all()))) === count(TemplateCatalog::all()) && array_reduce(array_keys(TemplateCatalog::all()), fn($c, $x) => $c && (bool) preg_match('/^[a-z0-9-]+$/', $x), true));
 $ref->setValue(null, $cacheFx); TemplateCatalog::override(array_merge([$base], $fx));   // back to the fixture for the admin section
 $r = Pixelite\handle($mkO('POST', '/en/order', $mkT(['email' => 'tpl3@example.cz', 'description' => 'No design chosen at all, please ignore.'])));
 $row3 = Database::pdo()->query("SELECT * FROM orders WHERE email = 'tpl3@example.cz'")->fetch();

@@ -93,4 +93,23 @@ return [
         ],
         'prompt_ref' => 'emberveil',
     ],
+    [
+        'slug' => 'azur',
+        'category' => 'beauty',
+        'style' => 'light',
+        'featured' => false,
+        'tags' => ['one-page', 'animated', 'scroll-reveal', 'glass-ui', 'gallery-lightbox'],
+        'media' => ['dir' => 'templates/azur', 'poster' => ['640' => 'poster-640.jpg', '1280' => 'poster-1280.jpg'], 'video' => 'preview.webm'],
+        'demo' => 'azur',
+        'stack' => ['HTML', 'CSS', 'JavaScript'],
+        'origin' => [
+            'author' => 'Pixelite',
+            'third_party' => [
+                ['name' => 'Marcellus', 'license' => 'SIL OFL 1.1', 'url' => 'https://github.com/google/fonts/tree/main/ofl/marcellus', 'notice' => '/assets/templates/azur/fonts/OFL-Marcellus.txt'],
+                ['name' => 'Albert Sans', 'license' => 'SIL OFL 1.1', 'url' => 'https://github.com/usted/Albert-Sans', 'notice' => '/assets/templates/azur/fonts/OFL-Albert-Sans.txt'],
+                ['name' => 'Unsplash photographs (sample images)', 'license' => 'Unsplash License', 'url' => 'https://unsplash.com/license', 'notice' => '/assets/templates/azur/img/LICENSE-unsplash.txt'],
+            ],
+        ],
+        'prompt_ref' => 'azur',
+    ],
 ];

@@ -73,6 +73,18 @@ local copies (videos re-encoded to 960–1280 px H.264 without audio, ~0.3–0.9
 images and logo from `figma.site` / `framerusercontent.com`. Confirm the rights before showing them to customers as deliverables, or replace them.
 Private implementation prompts for these four live in the git-ignored `private/template-prompts/prompts.json` (import them through the admin).
 
+## Azur
+Pixelite's blue "liquid glass" website for a lash artist (category *Beauty and wellness*), a one-page site built from a beauty-salon homepage structure with
+original code and copy. Parts: floating glass header (tinted over the hero, white after scroll), full-bleed photo hero, promo band with an optional countdown,
+review slider, service cards, artist section with photo slider, portfolio mosaic + lightbox (Esc / arrows / swipe, focus returns), dark price list, Instagram grid,
+FAQ accordion, contact, footer with marquee, floating booking button. All business data lives in the `CONFIG` block at the top of `azur.js` plus the HTML.
+Adaptations (and nothing else): Google Fonts → self-hosted Marcellus + Albert Sans (OFL, notices next to the fonts); Unsplash hotlinks → local JPEGs in
+`img/` (`*-1000.jpg` for grids, `*-1800.jpg` for hero and lightbox via `data-full`; Unsplash License, ids in `img/LICENSE-unsplash.txt`); `<title>`/`<link>` paths and a
+`noindex` meta; sample e-mail on `.example`; map link `#`; `history.replaceState` guarded because the preview iframe is sandboxed.
+**Differences from the other demos:** the sample copy is **Czech** (`<html lang="cs">`) because the template was designed for a Czech lash artist and the copy is part of the
+design; every Pixelite-side string around it is localized as usual. **Open points:** prices, reviews, the 5,0 rating, experience figures and the promo code are invented
+placeholders; the photos are stand-ins. The private prompt is in the git-ignored `private/template-prompts/prompts.json` (import through the admin).
+
 ## Language of the demo documents
 The demos under `templates/demos/` are **sample websites, not the Pixelite interface**: each is the template exactly as a customer's site would start, with
 English sample copy (`<html lang="en">`), and is the same in every site language. Everything Pixelite shows *around* a demo – the gallery, the design page,

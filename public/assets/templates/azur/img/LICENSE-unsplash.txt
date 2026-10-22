@@ -1,0 +1,12 @@
+Photographs in this folder come from Unsplash (https://unsplash.com) and are used under the Unsplash License
+(https://unsplash.com/license): free to use, copy, modify and distribute for commercial and non-commercial purposes,
+no permission or attribution required. They are stand-in sample photography for the Azur demo; a customer's website
+built from this template uses the customer's own photographs.
+
+Unsplash photo ids (https://unsplash.com/photos/<id>):
+eye-hero  1639629509821-c54cdd984227     eye-blue   1587910234573-d6fc84743bc8
+eye-brown 1548902378-2ec44c906391        applying   1674049406467-824ea37c7184
+tweezers  1770999086860-143f54adf01b     lifting    1735151226446-1d364b4adc2f
+artist    1772236617396-2f8460293c07     makeup     1709477542149-f4e0e21d590b
+session   1589710751893-f9a6770ad71b     salon      1781450090585-1a511b7066d9
+artist-2  1772235616130-b80e12f0ab7a     salon-2    1633681926022-84c23e8cb2d6

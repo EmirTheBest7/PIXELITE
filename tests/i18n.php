@@ -63,7 +63,7 @@ $allowedLatin = '/\b(?:Pixelite|Dreamers|Ad|Credits|cookie|Cookie|SEO|SaaS|CZK|U
 $english = '/\b(?:the|and|your|with|for|you|our|are|please|from|this|that|have|not|will|sign|start|learn|more|read|contact us|home|menu|about)\b/i';
 foreach (['ru', 'uk'] as $lg) {
     $bad = [];
-    foreach (['', 'pricing', 'process', 'contact', 'privacy', 'cookies', 'terms', 'order', 'templates', 'templates/lumora', 'templates/asterform', 'templates/stillwave', 'templates/vantage', 'templates/emberveil', 'team', 'careers', 'login', 'register', 'portfolio', 'no-such-page'] as $pg) {
+    foreach (['', 'pricing', 'process', 'contact', 'privacy', 'cookies', 'terms', 'order', 'templates', 'templates/lumora', 'templates/asterform', 'templates/stillwave', 'templates/vantage', 'templates/emberveil', 'templates/azur', 'team', 'careers', 'login', 'register', 'portfolio', 'no-such-page'] as $pg) {
         $guest();
         $text = $vis($page("/$lg/$pg"));
         $text = preg_replace($allowedLatin, ' ', $text);
