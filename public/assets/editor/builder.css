@@ -230,3 +230,6 @@
 
 /* Hosting-provider banner: endora-banner.js marks the wrapper it injects; hide it (same rule as site.css / style.css). */
 [data-pixelite-endora-banner-hidden]{display:none !important}
+
+/* Hosting-provider (Endora free plan) panel injected into HTML responses: scripts cannot run in these documents, so hide it by its markup. */
+[id*="endora" i],[class*="endora" i],iframe[src*="endora." i],body > *:has(> a[href*="endora." i]),body > *:has(> iframe[src*="endora." i]){display:none !important}
