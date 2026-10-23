@@ -227,3 +227,6 @@
 .pxe-title[data-note] span::after { content: " · " attr(data-note); }
 .pxe-title[data-note] span { white-space: nowrap; }
 @media (max-width: 700px) { .pxe-title[data-note] span::after { content: none; } }
+
+/* Hosting-provider banner: endora-banner.js marks the wrapper it injects; hide it (same rule as site.css / style.css). */
+[data-pixelite-endora-banner-hidden]{display:none !important}

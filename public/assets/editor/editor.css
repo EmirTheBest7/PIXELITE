@@ -122,3 +122,6 @@ kbd { font: inherit; font-size: 11.5px; padding: 1px 6px; border: 1px solid var(
   .pxe-panel { padding: 12px; }
   .pxe-stage { height: 80svh; min-height: 520px; }
 }
+
+/* Hosting-provider banner: endora-banner.js marks the wrapper it injects; hide it (same rule as site.css / style.css). */
+[data-pixelite-endora-banner-hidden]{display:none !important}
