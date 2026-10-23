@@ -122,6 +122,17 @@ function logo_mark(string $class = ''): string
     return '<img' . ($class !== '' ? ' class="' . e($class) . '"' : '') . ' src="' . e(asset('img/logo.svg')) . '" alt="" width="28" height="28">';
 }
 
+/** The Pixelite mark for the default design: inline SVG so it follows the theme (cells use currentColor, the accent cell --logo-accent). Decorative: the wordmark carries the name. $h = rendered height in px. */
+function brand_mark(int $h, string $class = 'brand-mark'): string
+{
+    static $cells = [[0, 0], [15, 0], [0, 15], [30, 15], [0, 30], [15, 30], [30, 30], [0, 45]];
+    $g = '';
+    foreach ($cells as [$x, $y]) {
+        $g .= '<rect x="' . $x . '" y="' . $y . '" width="12" height="12" rx="2.5"/>';
+    }
+    return '<svg class="' . e($class) . '" width="' . (int) round($h * 42 / 57) . '" height="' . $h . '" viewBox="0 0 42 57" aria-hidden="true" focusable="false"><g fill="currentColor">' . $g . '</g><rect class="brand-mark__accent" x="30" y="0" width="12" height="12" rx="2.5"/></svg>';
+}
+
 /** VAT display setting from .env PRICE_VAT_MODE: incl | excl | none. Anything else (or unset) = unknown => visible placeholder, never a guess. */
 function vat_mode(): string
 {

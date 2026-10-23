@@ -11,7 +11,7 @@
 <body class="admin">
 <header class="admin__bar">
   <div class="wrap">
-    <a class="admin__brand" href="/admin"><img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="32" height="32"><span>PIXELITE<i>.cz admin</i></span></a>
+    <a class="admin__brand" href="/admin"><?= brand_mark(28) ?><span>pixelite<i>.cz admin</i></span></a>
 <?php if (!empty($_SESSION['admin_at'])): ?>
     <nav class="admin__nav" aria-label="Admin">
       <a href="/admin"<?= $adminPath === '/admin' || str_starts_with($adminPath, '/admin/orders') ? ' aria-current="page"' : '' ?>>Orders</a>

@@ -5,6 +5,7 @@
   <script src="<?= e(asset('theme-init.js')) ?>"></script>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="<?= e(asset('icons/favicon.svg')) ?>" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-title" content="Pixelite">
   <link rel="apple-touch-icon" href="<?= e(asset('icons/apple-touch-icon.png')) ?>">
   <link rel="preload" href="/assets/fonts/onest/onest-latin.woff2" as="font" type="font/woff2" crossorigin>
 <?php if (in_array(\Pixelite\I18n::locale(), ['ru', 'uk'], true)): ?>

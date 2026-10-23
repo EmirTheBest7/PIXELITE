@@ -1,9 +1,9 @@
-<?php $c = company(); $brand = '<span>PIXELITE<i>.cz</i></span>'; ?>
+<?php $c = company(); $brand = '<span>pixelite<i>.cz</i></span>'; ?>
 <footer class="footer">
   <div class="wrap">
     <div class="footer__top">
       <div>
-        <a class="footer__brand" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="40" height="40"><?= $brand ?></a>
+        <a class="footer__brand" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><?= brand_mark(34) ?><?= $brand ?></a>
         <address class="footer__company">
           <span class="footer__co-name"><?= company_field('name') ?></span><br>
           <span class="footer__co-label"><?= e(t('company.ico')) ?></span> <?= company_field('ico') ?>

@@ -10,7 +10,7 @@ $nav = [   // [href, label key, page id for aria-current]
     ['contact', 'nav.contact', 'contact'],
 ];
 $href = fn(string $h): string => str_starts_with($h, '#') ? url('') . $h : url($h);
-$brand = '<span class="pill__brand">PIXELITE<i>.cz</i></span>';
+$brand = '<span class="pill__brand">pixelite<i>.cz</i></span>';
 $flags = ['en' => "\u{1F1EC}\u{1F1E7}", 'cs' => "\u{1F1E8}\u{1F1FF}", 'ru' => "\u{1F1F7}\u{1F1FA}", 'uk' => "\u{1F1FA}\u{1F1E6}"];   // emoji flags: decorative, the language name is always in the text
 $langLink = function (string $loc, bool $named) use ($meta, $locale, $flags): void { ?>
 <a class="lang__link<?= $loc === $locale ? ' is-active' : '' ?>" href="<?= e(url($meta['path'], $loc) . current_query()) ?>" hreflang="<?= $loc ?>" lang="<?= $loc ?>" data-lang="<?= $loc ?>"<?= $loc === $locale ? ' aria-current="true"' : '' ?>><span class="lang__flag" aria-hidden="true"><?= $flags[$loc] ?></span><span><?= $named ? e(\Pixelite\I18n::NAMES[$loc]) : strtoupper($loc) ?></span></a>
@@ -35,7 +35,7 @@ $langs = function (bool $dropdown) use ($locale, $flags, $langLink): void {
   <div class="wrap">
     <nav class="pill" aria-label="<?= e(t('a11y.nav_main')) ?>">
       <div class="pill__left">
-        <a class="pill__logo" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="36" height="36"><?= $brand ?></a>
+        <a class="pill__logo" href="<?= e(url('')) ?>" aria-label="<?= e(t('a11y.home')) ?>"><?= brand_mark(30) ?><?= $brand ?></a>
         <ul class="pill__links">
 <?php foreach ($nav as [$h, $label, $id]): ?>
           <li><a class="pill__link header__link" href="<?= e($href($h)) ?>"<?= $id !== null && $id === $cur ? ' aria-current="page"' : '' ?>><?= e(t($label)) ?></a></li>
@@ -59,7 +59,7 @@ $langs = function (bool $dropdown) use ($locale, $flags, $langLink): void {
   <div class="sheet__backdrop" data-nav-close></div>
   <div class="sheet__panel">
     <div class="sheet__head">
-      <a class="pill__logo" href="<?= e(url('')) ?>"><img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="32" height="32"><?= $brand ?></a>
+      <a class="pill__logo" href="<?= e(url('')) ?>"><?= brand_mark(28) ?><?= $brand ?></a>
       <button type="button" class="sheet__close" data-nav-close aria-label="<?= e(t('consent.close')) ?>"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg></button>
     </div>
     <ul class="sheet__nav">

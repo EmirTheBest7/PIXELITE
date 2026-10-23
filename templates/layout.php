@@ -42,7 +42,7 @@ if ($isHome) {
     $ld = ['@context' => 'https://schema.org', '@graph' => [
         array_filter([
             '@type' => 'Organization', '@id' => absolute_url('/#organization'), 'name' => 'Pixelite.cz', 'url' => absolute_url('/'),
-            'logo' => absolute_url('/assets/icons/apple-touch-icon.png'), 'description' => $meta['description'],
+            'logo' => absolute_url('/assets/icons/icon-512.png'), 'description' => $meta['description'],
             'email' => $c['email'] ?: null, 'telephone' => $c['phone'] ?: null,
         ]),
         ['@type' => 'WebSite', '@id' => absolute_url('/#website'), 'name' => 'Pixelite.cz', 'url' => absolute_url('/'), 'inLanguage' => \Pixelite\I18n::LOCALES, 'publisher' => ['@id' => absolute_url('/#organization')]],
