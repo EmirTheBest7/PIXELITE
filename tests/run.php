@@ -536,7 +536,7 @@ check('index.php is layout-agnostic (requires ../src/bootstrap.php relative to i
 check('.htaccess denies dotfiles and data extensions, no listing, rewrites to the front controller', (function () { $h = (string) file_get_contents(Pixelite\Paths::root('public/.htaccess')); return str_contains($h, 'Options -Indexes') && str_contains($h, 'Require all denied') && str_contains($h, 'Deny from all') && str_contains($h, 'RewriteRule ^ index.php [L]'); })());
 
 echo "seo regression\n";
-$seoPaths = ['', 'templates', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms'];
+$seoPaths = ['', 'templates', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms', 'builder'];
 $titles = []; $descs = [];
 foreach (I18n::LOCALES as $lang) {
     foreach ($seoPaths as $pg) {
@@ -850,6 +850,7 @@ check('.gitignore excludes the private prompt package folder (the repository is 
 require __DIR__ . '/features.php';   // careers, team, accounts/CRM, projects + isolated previews, four languages (legacy templates)
 $cnt = fn(string $sql, array $a = []): int => (function () use ($sql, $a) { $s = Database::pdo()->prepare($sql); $s->execute($a); return (int) $s->fetchColumn(); })();
 require __DIR__ . '/design.php';   // the new design as the default, /legacy, canonical/noindex, admin; then features.php again on the new templates
+require __DIR__ . '/editor.php';   // EXPERIMENTAL visual editor: switch, auth, tenant isolation, CSRF, schema, images, escaping
 
 exec('rm -rf ' . escapeshellarg($tmp));
 ob_end_clean();

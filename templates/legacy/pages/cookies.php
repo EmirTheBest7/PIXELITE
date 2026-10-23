@@ -24,7 +24,7 @@ foreach ($cfg['storage'] as $item) { $byGroup[$item['group']][] = $item; }
             <tbody>
 <?php foreach ($byGroup[$group] as $item): ?>
               <tr>
-                <th scope="row" data-label="<?= e(t('cookies.col_name')) ?>"><code><?= e($item['id'] === 'session' ? ($sessionCookie ?? $item['name']) : $item['name']) ?></code></th>
+                <th scope="row" data-label="<?= e(t('cookies.col_name')) ?>"><code><?= e($item['id'] === 'session' ? ($sessionCookie ?? $item['name']) : ($item['id'] === 'builder' ? ($builderCookie ?? $item['name']) : $item['name'])) ?></code></th>
                 <td data-label="<?= e(t('cookies.col_purpose')) ?>"><?= e(t("cookies.items.{$item['id']}.purpose")) ?></td>
                 <td data-label="<?= e(t('cookies.col_duration')) ?>"><?= e(t("cookies.items.{$item['id']}.duration")) ?></td>
                 <td data-label="<?= e(t('cookies.col_type')) ?>"><?= e(t($item['type'] === 'cookie' ? 'cookies.type_cookie' : 'cookies.type_storage')) ?></td>

@@ -44,7 +44,7 @@ final class PageController extends BaseController
 
     public function cookies(Request $r): Response
     {
-        return $this->page('cookies', 'cookies', ['sessionCookie' => \Pixelite\Session::cookieName($r)]);
+        return $this->page('cookies', 'cookies', ['sessionCookie' => \Pixelite\Session::cookieName($r), 'builderCookie' => \Pixelite\Editor\Builder\Anon\AnonWorkspaces::cookieName($r)]);
     }
 
     public function terms(): Response

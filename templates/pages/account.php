@@ -42,6 +42,7 @@ require __DIR__ . '/../partials/page-hero.php' ?>
       <ul class="acct-list">
 <?php foreach ($projects as $p): ?>
         <li><strong><?= e($p['name']) ?></strong><span class="acct-list__meta"><?= e(t('account.status.' . $p['status'])) ?></span>
+<?php if (\Pixelite\Editor\Editor::enabled() && $p['status'] !== 'archived'): /* EXPERIMENTAL visual editor: only while EDITOR_ENABLED=true; English-only on purpose */ ?><?= ui_link('/editor/projects/' . (int) $p['id'], 'Edit visually (experimental)', 'sm ghost', [], (string) $p['name']) ?><?= ui_link('/editor/projects/' . (int) $p['id'] . '/builder', 'Site builder (experimental)', 'sm ghost', [], (string) $p['name']) ?><?php endif ?>
 <?php if ($p['preview'] !== ''): ?><?= ui_link($p['preview'], (string) t('account.preview_open'), 'sm ghost', ['target' => '_blank', 'rel' => 'noopener noreferrer'], $p['name']) ?><?php else: ?><span class="acct-list__meta"><?= e(t('account.preview_off')) ?></span><?php endif ?>
         </li>
 <?php endforeach ?>

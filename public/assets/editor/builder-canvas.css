@@ -1,0 +1,4 @@
+/* Pixelite site builder (EXPERIMENTAL) – extra rules for the page while it is edited (the iframe in the builder only; never in the preview).
+   The highlight/selection frames are drawn by the builder shell around the iframe; this file only handles typing. */
+[contenteditable] { cursor: text; caret-color: #3a5cff; -webkit-user-select: text !important; user-select: text !important; outline: 0; }
+body:not(:has(*)) { min-height: 100vh; }

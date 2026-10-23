@@ -10,6 +10,7 @@ return [
     'storage' => [
         ['id' => 'session', 'group' => 'necessary',   'name' => 'pixelite',         'type' => 'cookie'],
         ['id' => 'consent', 'group' => 'necessary',   'name' => 'pixelite_consent', 'type' => 'cookie'],
+        ['id' => 'builder', 'group' => 'necessary',   'name' => 'pixelite_bw',      'type' => 'cookie'],   // public site builder: set only after "Start building"
         ['id' => 'lang',    'group' => 'preferences', 'name' => 'pixelite_lang',    'type' => 'cookie'],
         ['id' => 'theme',   'group' => 'preferences', 'name' => 'pixelite_theme',   'type' => 'storage'],
     ],

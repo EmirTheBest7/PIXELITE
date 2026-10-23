@@ -107,6 +107,17 @@ export async function launch() {
         }
         await sleep(250);
       },
+      /** Real mouse click(s) at page coordinates (e.g. inside an iframe); clickCount 2 = double-click. */
+      async mouse(x, y, clickCount = 1) {
+        await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+        for (let i = 1; i <= clickCount; i++) {
+          await s('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: i });
+          await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: i });
+        }
+        await sleep(250);
+      },
+      /** Type text into the focused element as real input events. */
+      async type(text) { await s('Input.insertText', { text }); await sleep(120); },
       /** Move the pointer (no click) – hover/cursor effects. */
       async move(x, y) { await s('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }); },
       async key(key, code = key) {

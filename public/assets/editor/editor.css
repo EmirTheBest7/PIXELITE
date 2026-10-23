@@ -1,0 +1,124 @@
+/* =====================================================================
+   PIXELITE – experimental visual editor (shell).
+   Built on the site's own tokens, fonts and buttons (site.css is loaded first): --bg --surface --line --text --accent --ink --r-* --shadow-*.
+   No VvvebJs stylesheet is used; the elements the vendored builder.js creates (#highlight-box, #select-box …) are styled here.
+   Light and dark follow the site theme because only tokens are used.
+   ===================================================================== */
+.pxe { margin: 0; height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; background: var(--bg-soft); color: var(--text); font-family: var(--font); }
+.pxe-skip { position: absolute; left: 12px; top: -48px; z-index: 50; background: var(--ink); color: var(--on-ink); padding: 8px 14px; border-radius: var(--r-pill); font-size: 13px; text-decoration: none; }
+.pxe-skip:focus { top: 8px; }
+
+/* ---- top bar ---- */
+.pxe-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.pxe-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
+.pxe-brand i { font-style: normal; font-weight: 400; color: var(--text-2); }
+.pxe-brand__mark { width: 28px; height: 28px; border-radius: 8px; }
+.pxe-badge { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-text); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-pill); padding: 2px 9px; }
+.pxe-title { display: flex; flex-direction: column; min-width: 0; margin-right: auto; line-height: 1.25; padding-left: 14px; border-left: 1px solid var(--line); }
+.pxe-title strong { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30ch; }
+.pxe-title span { font-size: 12px; color: var(--text-2); }
+.pxe-bar__group { display: inline-flex; gap: 2px; padding: 3px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--r-pill); }
+.pxe-seg { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--text-2); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s, color .2s; }
+.pxe-seg--icon { padding: 0 9px; }
+.pxe-seg:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--text); background: var(--surface); }
+.pxe-seg[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.pxe-seg:disabled { opacity: .4; cursor: not-allowed; }
+.pxe-status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); max-width: 36ch; }
+.pxe-status__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.pxe-status[data-state="dirty"] .pxe-status__dot { background: var(--accent); }
+.pxe-status[data-state="saving"] .pxe-status__dot, .pxe-status[data-state="loading"] .pxe-status__dot { background: var(--line-2); animation: pxe-pulse 1s ease-in-out infinite; }
+.pxe-status[data-state="error"] { color: var(--err); }
+.pxe-status[data-state="error"] .pxe-status__dot { background: var(--err); }
+.pxe-link { border: 0; background: none; padding: 4px 0; font: inherit; font-size: 13px; color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.pxe-bar .btn { min-height: 36px; }
+
+/* ---- layout ---- */
+.pxe-main { display: grid; grid-template-columns: 272px minmax(0, 1fr) 320px; min-height: 0; }
+.pxe-panel { overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; align-content: start; }
+.pxe-panel--left { border-right: 1px solid var(--line); }
+.pxe-panel--right { border-left: 1px solid var(--line); }
+.pxe-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; }
+.pxe-card--note { background: transparent; border-style: dashed; }
+.pxe-card__title, .pxe-section { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+.pxe-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.pxe-field__label { font-size: 13px; font-weight: 600; }
+.pxe-field__hint { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text-2); }
+.pxe-empty { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
+.pxe-input { min-height: 40px; padding: 9px 12px; font-size: 14px; }
+textarea.pxe-input { resize: vertical; min-height: 96px; line-height: 1.45; }
+.pxe-check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.pxe-check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.pxe-color { display: flex; align-items: center; gap: 10px; }
+.pxe-color input[type="color"] { width: 44px; height: 36px; padding: 2px; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--surface); cursor: pointer; }
+.pxe-color__value { flex: 1; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.pxe-color:not(.is-set) [data-color-reset] { visibility: hidden; }
+.pxe-color:not(.is-set) input[type="color"] { opacity: .4; }
+.pxe-image { display: flex; align-items: center; gap: 12px; }
+.pxe-image__thumb { flex: none; width: 96px; height: 64px; object-fit: cover; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg-soft); }
+.pxe-image > div { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.pxe-image label.btn[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+.pxe-image input:focus-visible + .pxe-link, .pxe-image label:has(+ input:focus-visible) { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+kbd { font: inherit; font-size: 11.5px; padding: 1px 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; background: var(--surface); }
+
+/* ---- stage: the page being edited (and the preview of the saved draft) ---- */
+.pxe-stage { --dw: 1280px; --dh: 800px; --k: 1; position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg-hero); outline: 0; }
+.pxe-stage[data-device="tablet"] { --dw: 820px; --dh: 1100px; }
+.pxe-stage[data-device="phone"] { --dw: 390px; --dh: 844px; }
+/* Each screen size is rendered at its real pixel size (so the template's own media queries apply) and scaled down to fit (--k, set by px-editor.js). */
+.pxe-frame, .pxe-preview { position: absolute; left: 50%; top: 50%; width: var(--dw); height: var(--dh); margin-left: calc(var(--dw) * var(--k) / -2); margin-top: calc(var(--dh) * var(--k) / -2); transform: scale(var(--k)); transform-origin: 0 0; background: #000; border: 0; border-radius: calc(var(--r-md) / var(--k)); box-shadow: var(--shadow-md); overflow: hidden; }
+.pxe-frame iframe, .pxe-preview iframe { display: block; width: 100%; height: 100%; border: 0; background: #000; }
+.pxe-preview { display: none; }
+.is-preview .pxe-preview { display: block; }
+.is-preview .pxe-frame { visibility: hidden; pointer-events: none; }
+
+/* the frames VvvebJs positions over the iframe (coordinates are relative to the iframe, hence the absolutely positioned layer) */
+#iframe-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#highlight-box, #select-box { position: absolute; display: none; box-sizing: border-box; pointer-events: none; border-radius: 4px; }
+#highlight-box { border: 2px dashed color-mix(in srgb, var(--accent) 75%, #fff); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+#select-box { border: 2px solid #3a5cff; box-shadow: 0 0 0 1px rgba(255, 255, 255, .5), 0 0 0 4px rgba(27, 69, 255, .25); }
+#select-box.text-edit { border-style: dashed; }
+#highlight-name { position: absolute; left: 0; top: 0; z-index: 2; display: flex; gap: 6px; padding: 2px 8px; font: 600 11px/1.5 var(--font); color: #fff; background: #1b45ff; border-radius: 0 0 6px 0; white-space: nowrap; }
+#highlight-name .type { opacity: .75; }
+#highlight-name .name:empty, #highlight-name .type:empty { display: none; }
+.pxe:not(.pxb) #select-actions, .pxe:not(.pxb) #section-actions, .pxe:not(.pxb) #add-section-box, .pxe:not(.pxb) .resize { display: none !important; }
+.loading-message { position: absolute; inset: 0; display: none; place-items: center; align-content: center; gap: 12px; background: var(--surface); color: var(--text-2); font-size: 14px; }
+.loading-message.active { display: grid; }
+.pxe-spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--line-2); border-top-color: var(--accent); animation: pxe-spin .8s linear infinite; }
+
+/* site.css styles .section as a page band: not here */
+.pxe .section { padding: 0; margin: 0; border: 0; background: none; display: block; }
+/* the scaled frame shrinks the overlay too: keep the label and outlines at a constant on-screen size */
+#highlight-box, #select-box { border-width: calc(2px / var(--k)); }
+#highlight-name { transform: scale(calc(1 / var(--k))); transform-origin: 0 0; }
+
+/* ---- toasts ---- */
+.pxe-toasts { position: fixed; left: 50%; bottom: 20px; z-index: 60; transform: translateX(-50%); display: grid; gap: 8px; width: min(420px, calc(100% - 32px)); pointer-events: none; }
+.pxe-toast { padding: 12px 16px; border-radius: var(--r-md); background: var(--ink); color: var(--on-ink); font-size: 14px; line-height: 1.4; box-shadow: var(--shadow-md); pointer-events: auto; }
+.pxe-toast--error { background: var(--err); color: #fff; }
+
+@keyframes pxe-spin { to { transform: rotate(360deg); } }
+@keyframes pxe-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .pxe-spinner, .pxe-status__dot { animation: none !important; }  }
+
+/* ---- narrower screens: the page first, the panels below it ---- */
+@media (max-width: 1100px) {
+  .pxe { height: auto; min-height: 100dvh; overflow: auto; display: block; }
+  .pxe-bar { padding: 10px 16px; }
+  .pxe-title { flex-basis: 100%; order: 3; border-left: 0; padding-left: 0; margin-right: 0; }
+  .pxe-main { display: flex; flex-direction: column; }
+  .pxe-stage { height: 72vh; height: 72svh; min-height: 460px; order: 1; }
+  .pxe-panel--right { order: 2; border-left: 0; border-top: 1px solid var(--line); }
+  .pxe-panel--left { order: 3; border-right: 0; border-top: 1px solid var(--line); }
+  .pxe-panel { overflow: visible; }
+  .pxe-seg { min-height: 40px; }
+  .pxe-seg--icon { padding: 0 12px; }
+  .pxe-bar .btn { min-height: 40px; }
+}
+@media (max-width: 560px) {
+  .pxe-bar { padding: 10px 12px; gap: 8px; }
+  .pxe-seg span { display: none; }
+  .pxe-seg--icon { min-width: 40px; }
+  .pxe-status { flex-basis: 100%; max-width: none; order: 4; }
+  .pxe-panel { padding: 12px; }
+  .pxe-stage { height: 80svh; min-height: 520px; }
+}

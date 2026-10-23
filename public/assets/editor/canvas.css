@@ -1,0 +1,16 @@
+/* Pixelite visual editor (EXPERIMENTAL) – extra rules for the page while it is being edited (the iframe in the editor only; never in the preview).
+   The highlight/selection frames are drawn by the editor shell around the iframe, so this file only handles typing and hidden blocks. */
+[data-px-canvas] [data-px-field] { cursor: pointer; }
+[data-px-canvas] [contenteditable] {
+  cursor: text;
+  caret-color: #3a5cff;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  outline: 0;
+}
+[data-px-canvas] [data-px-visible="0"] {
+  opacity: .3;
+  filter: grayscale(1);
+  outline: 2px dashed rgba(255, 255, 255, .55);
+  outline-offset: 4px;
+}

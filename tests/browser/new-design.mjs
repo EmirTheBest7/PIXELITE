@@ -132,7 +132,7 @@ try {
     ok('theme cycle light→(system→light→dark) changes data-theme', await page.eval(`document.documentElement.getAttribute('data-theme')==='light'`));
     await page.tap('[data-theme-cycle]'); await sleep(200);
     ok('theme cycle reaches dark', await page.eval(`document.documentElement.getAttribute('data-theme')==='dark'`));
-    ok('desktop: nav links present, aria-current on Home', await page.eval(`document.querySelectorAll('.pill__link').length===6 && document.querySelector('.pill__link[aria-current]').getAttribute('href')==='/en/' && !document.querySelector('.pill [data-design-switch]') && document.querySelector('.footer [data-design-switch]').getAttribute('href')==='/legacy/en/'`));
+    ok('desktop: nav links present, aria-current on Home', await page.eval(`document.querySelectorAll('.pill__link').length===7 && document.querySelector('.pill__link[aria-current]').getAttribute('href')==='/en/' && !document.querySelector('.pill [data-design-switch]') && document.querySelector('.footer [data-design-switch]').getAttribute('href')==='/legacy/en/'`));
     await page.eval(`document.querySelector('.footer [data-design-switch]').click(); true`); await sleep(1500);
     ok('desktop: the footer Legacy link opens /legacy/en/ (legacy design) and the legacy header offers "New design"', (await page.eval('location.pathname')) === '/legacy/en/' && await page.eval(`document.querySelector('[data-design-switch]').getAttribute('href')==='/en/'`));
     await page.tap('[data-design-switch]'); await sleep(1500);

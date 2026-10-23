@@ -5,6 +5,7 @@ $nav = [   // [href, label key, page id for aria-current]
     ['', 'nav.home', 'home'],
     ['#services', 'nav.services', null],
     ['templates', 'nav.templates', 'templates'],
+    ...(\Pixelite\Editor\Builder\Anon\AnonWorkspaces::offered() ? [['builder', 'nav.builder', 'builder']] : []),   // public site builder (BUILDER_PUBLIC)
     ['pricing', 'nav.pricing', 'pricing'],
     ['process', 'nav.process', 'process'],
     ['contact', 'nav.contact', 'contact'],

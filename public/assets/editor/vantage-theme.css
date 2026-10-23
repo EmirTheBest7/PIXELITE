@@ -1,0 +1,11 @@
+/* Pixelite visual editor (EXPERIMENTAL) – the editable colours of the Vantage design.
+   Loaded after templates/vantage/vantage.css (which stays untouched). Without a custom value each variable falls back to the template's own colour,
+   so an unedited draft renders exactly like the demo. The variables are set by /editor/projects/<id>/theme.css (validated #rrggbb only). */
+.hero-title .line-one { color: var(--px-title-1, #ffffff); }
+.hero-title .line-two { color: var(--px-title-2, rgba(211, 207, 207, .78)); }
+.hero-copy { color: var(--px-copy, rgba(226, 229, 228, .84)); }
+.primary-cta { background: var(--px-cta-bg, #ffffff); color: var(--px-cta-text, #111111); text-decoration: none; }
+.primary-cta .label { color: var(--px-cta-text, #111111); }
+/* The headline is one non-wrapping line in the original; once the customer changes it, let it wrap instead of running off the screen (an untouched headline keeps the original layout). */
+.hero-title.px-wrap { white-space: normal; }
+.hero-title.px-wrap .line-reveal { overflow-wrap: anywhere; }

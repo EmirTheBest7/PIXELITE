@@ -1,0 +1,25 @@
+VvvebJs (https://github.com/givanz/VvvebJs), Apache License 2.0 - see LICENSE in this folder.
+Upstream commit: 1acbab7ebfe3e7b004f1f18c039d26550fc04bd8. Upstream ships no NOTICE file.
+
+builder.js  - modified: (1) the template compiler that used new Function() is replaced by a lookup of plain functions in window.PixeliteTemplates;
+              (2) the editor-helper stylesheet URL is configurable (Vvveb.helpersCss);
+              (3) Vvveb.Builder.resolveTarget() / canEditText() hooks restrict which nodes can be highlighted, selected and typed into;
+              (4) the iframe leave-warning asks Vvveb.Builder.confirmLeave() instead of checking the undo history.
+undo.js     - notice added; code unchanged.
+inputs.js   - reduced to Input, TextInput, TextareaInput, CheckboxInput, SelectInput, LinkInput, ColorInput, ToggleInput, SectionInput, ButtonInput.
+
+Not included from upstream: editor.html, css/, fonts/, img/, demo/, icons and the sample save.php/upload.php/scan.php.
+Full notes: docs/editor/README.md in the Pixelite repository.
+
+--- Site builder (free-form) ---------------------------------------------------------------------------------------------------------------
+Additional files copied from upstream libs/builder/ (modified, each starts with a MODIFIED BY PIXELITE notice): components-common.js, components-html.js,
+components-bootstrap5.js. Removed from them: the "Bootstrap variables" panel, html/video, html/audio, html/pdf, html/embed, html/html, html/iframe, html/navbar,
+the alert's dismiss button (data-bs-*), remote example links; icon references are unused.
+inputs.js: now the full upstream set except IconSelectInput, HtmlListSelectInput, VideoInput, SvgInput, FileUploadInput, GridLayoutInput, ProductsInput, AutocompleteInput,
+AutocompleteList; ImageInput is replaced by an original media-library input (no jQuery, no upload.php); TagsInput is a plain text input.
+builder.js (in addition to the changes above): upstream save/saveElement/download/newPage/darkMode and the sample FileManager (save.php, delete, rename endpoints) are
+removed; list loaders no longer use icon/preview images; element names and layer titles taken from the page are shown with textContent / escaped; scrollIntoView on canvas nodes
+replaced by a scroll of the iframe page only; the text-toolbar buttons are bound once.
+Property-panel templates: derived from upstream editor.html, precompiled by scripts/build-editor-templates.mjs (generated file public/assets/editor/px-templates.generated.js).
+Bootstrap 5.3.3 (MIT, (c) The Bootstrap Authors) is vendored unmodified in ../bootstrap/ with its LICENSE: the CSS is used inside the canvas, the bundle JS in the builder shell.
+Not included: upstream blocks/sections (they use external images and links), icons, CodeMirror, TinyMCE, CKEditor, jQuery, Coloris, media gallery, AI assistant.

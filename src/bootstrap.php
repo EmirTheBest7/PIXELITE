@@ -99,6 +99,48 @@ function buildRouter(): Router
     $router->add('GET', '/admin/orders/{id}', fn(Request $r, array $p) => $admin->show($r, $p));
     $router->add('POST', '/admin/orders/{id}/retry', fn(Request $r, array $p) => $admin->retry($r, $p));
 
+    // PUBLIC site builder (src/Editor/Builder/Anon/): no account, temporary per-visitor workspaces. On by default; BUILDER_PUBLIC=false switches it (routes + links) off.
+    if (\Pixelite\Editor\Builder\Anon\AnonWorkspaces::enabled()) {
+        $bpage = new \Pixelite\Controllers\BuilderPageController();
+        $pub = new \Pixelite\Editor\Builder\Anon\PublicBuilderController();
+        $router->add('GET', '/{lang}/builder', fn(Request $r) => $bpage->landing($r));
+        $router->add('POST', '/{lang}/builder', fn(Request $r) => $bpage->start($r));
+        $router->add('GET', '/builder/w', fn(Request $r, array $p) => $pub->shell($r, $p));
+        $router->add('GET', '/builder/w/site', fn(Request $r, array $p) => $pub->site($r, $p));
+        $router->add('POST', '/builder/w/pages', fn(Request $r, array $p) => $pub->createPage($r, $p));
+        $router->add('GET', '/builder/w/pages/{slug}/canvas', fn(Request $r, array $p) => $pub->canvas($r, $p));
+        $router->add('GET', '/builder/w/pages/{slug}/preview', fn(Request $r, array $p) => $pub->preview($r, $p));
+        $router->add('POST', '/builder/w/pages/{slug}', fn(Request $r, array $p) => $pub->savePage($r, $p));
+        $router->add('POST', '/builder/w/pages/{slug}/delete', fn(Request $r, array $p) => $pub->deletePage($r, $p));
+        $router->add('GET', '/builder/w/media', fn(Request $r, array $p) => $pub->mediaList($r, $p));
+        $router->add('POST', '/builder/w/media', fn(Request $r, array $p) => $pub->uploadMedia($r, $p));
+        $router->add('GET', '/builder/w/media/{slug}', fn(Request $r, array $p) => $pub->mediaFile($r, $p));
+        $router->add('POST', '/builder/w/media/{slug}/delete', fn(Request $r, array $p) => $pub->mediaDelete($r, $p));
+    }
+
+    // EXPERIMENTAL visual editor (src/Editor/): the routes only exist while EDITOR_ENABLED=true; otherwise every /editor/… URL is a plain 404.
+    if (\Pixelite\Editor\Editor::enabled()) {
+        $editor = new \Pixelite\Editor\EditorController();
+        $router->add('GET', '/editor/projects/{id}', fn(Request $r, array $p) => $editor->shell($r, $p));
+        $router->add('GET', '/editor/projects/{id}/canvas', fn(Request $r, array $p) => $editor->canvas($r, $p));
+        $router->add('GET', '/editor/projects/{id}/preview', fn(Request $r, array $p) => $editor->preview($r, $p));
+        $router->add('GET', '/editor/projects/{id}/theme.css', fn(Request $r, array $p) => $editor->themeCss($r, $p));
+        $router->add('GET', '/editor/projects/{id}/draft', fn(Request $r, array $p) => $editor->draft($r, $p));
+        $router->add('POST', '/editor/projects/{id}/draft', fn(Request $r, array $p) => $editor->saveDraft($r, $p));
+        $router->add('POST', '/editor/projects/{id}/media', fn(Request $r, array $p) => $editor->uploadMedia($r, $p));
+        $router->add('GET', '/editor/projects/{id}/media/{slug}', fn(Request $r, array $p) => $editor->media($r, $p));
+        $builder = new \Pixelite\Editor\Builder\BuilderController();
+        $router->add('GET', '/editor/projects/{id}/builder', fn(Request $r, array $p) => $builder->shell($r, $p));
+        $router->add('GET', '/editor/projects/{id}/builder/site', fn(Request $r, array $p) => $builder->site($r, $p));
+        $router->add('POST', '/editor/projects/{id}/builder/pages', fn(Request $r, array $p) => $builder->createPage($r, $p));
+        $router->add('GET', '/editor/projects/{id}/builder/pages/{slug}/canvas', fn(Request $r, array $p) => $builder->canvas($r, $p));
+        $router->add('GET', '/editor/projects/{id}/builder/pages/{slug}/preview', fn(Request $r, array $p) => $builder->preview($r, $p));
+        $router->add('POST', '/editor/projects/{id}/builder/pages/{slug}', fn(Request $r, array $p) => $builder->savePage($r, $p));
+        $router->add('POST', '/editor/projects/{id}/builder/pages/{slug}/delete', fn(Request $r, array $p) => $builder->deletePage($r, $p));
+        $router->add('GET', '/editor/projects/{id}/builder/media', fn(Request $r, array $p) => $builder->mediaList($r, $p));
+        $router->add('POST', '/editor/projects/{id}/builder/media/{slug}/delete', fn(Request $r, array $p) => $builder->mediaDelete($r, $p));
+    }
+
     // Bare "/" picks a language: remembered choice (cookie) > browser preference > APP_LOCALE.
     $router->add('GET', '/', function (Request $r): Response {
         $pick = $_COOKIE['pixelite_lang'] ?? '';

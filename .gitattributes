@@ -1,0 +1,4 @@
+# Verbatim upstream (VvvebJs, Apache-2.0) or generated from scripts/editor/: not reformatted, so whitespace is not checked.
+public/assets/editor/vendor/vvvebjs/*.js -whitespace
+public/assets/editor/px-templates.generated.js -whitespace
+scripts/editor/templates.html -whitespace

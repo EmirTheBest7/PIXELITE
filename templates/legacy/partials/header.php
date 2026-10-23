@@ -4,6 +4,7 @@ $nav = [
     ['', 'nav.home'],
     ['#services', 'nav.services'],
     ['templates', 'nav.templates'],
+    ...(\Pixelite\Editor\Builder\Anon\AnonWorkspaces::offered() ? [['builder', 'nav.builder']] : []),   // public site builder (BUILDER_PUBLIC)
     ['pricing', 'nav.pricing'],
     ['process', 'nav.process'],
     ['contact', 'nav.contact'],
