@@ -46,7 +46,7 @@ const AUDIT = `(() => {
   for (const e of document.querySelectorAll('body *')) {
     if (skip(e) || !vis(e)) continue;
     const r = e.getBoundingClientRect(), c = getComputedStyle(e);
-    if (c.position !== 'fixed' && r.right > W + 1 && !e.closest('.hero-laptop')) o.over.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0] + ' r=' + Math.round(r.right));
+    if (c.position !== 'fixed' && r.right > W + 1 && !e.closest('.fan')) o.over.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0] + ' r=' + Math.round(r.right));
   }
   for (const i of document.querySelectorAll('img')) if (!i.hasAttribute('alt')) o.noalt.push(i.src);
   for (const f of document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]),select,textarea')) {
@@ -54,7 +54,7 @@ const AUDIT = `(() => {
   }
   const ids = {}; for (const e of document.querySelectorAll('[id]')) { ids[e.id] = (ids[e.id] || 0) + 1; } o.dupIds = Object.keys(ids).filter((k) => ids[k] > 1);
   for (const e of document.querySelectorAll('a[href],button,select,input:not([type=hidden]),summary')) {
-    if (skip(e) || !vis(e) || e.closest('.hero-laptop')) continue; const r = e.getBoundingClientRect();
+    if (skip(e) || !vis(e) || e.closest('.fan')) continue; const r = e.getBoundingClientRect();
     if (e.tagName === 'A' && getComputedStyle(e).display === 'inline') continue;
     if (r.height < 32 || r.width < 32) o.small.push((e.tagName + ':' + (e.textContent || e.name || '').trim().slice(0, 18)) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
   }
@@ -140,22 +140,19 @@ try {
     await page.close();
   }
 
-  /* ---------- 3. notebook animation ---------- */
+  /* ---------- 3. hero design fan ---------- */
   for (const [label, rm, w] of [['desktop', false, 1440], ['narrow 320', false, 320], ['reduced motion', true, 390]]) {
-    const page = await chrome.newPage({ width: w, height: 800, dpr: 2, mobile: w < 700, reducedMotion: rm });
+    const page = await chrome.newPage({ width: w, height: 800, dpr: 1, mobile: w < 700, reducedMotion: rm });
     await page.setCookie(BASE, 'pixelite_consent', CONSENT);
-    await page.goto(`${BASE}/en/`); await sleep(100);
-    const early = await page.eval(`(() => { const l = document.querySelector('.lp-lid'); const c = getComputedStyle(l); return {name:c.animationName, tf:c.transform}; })()`);
-    if (rm) ok('reduced motion: no lid animation (open end state)', early.name === 'none');
-    else {
-      ok(`${label}: lid animation defined`, early.name === 'lp-open');
-      await sleep(2800);
-      const end = await page.eval(`(() => { const l = document.querySelector('.lp-lid'); const r = document.querySelector('.hero-laptop').getBoundingClientRect(); return {tf:getComputedStyle(l).transform, left:r.left, right:r.right, W:innerWidth, running:document.getAnimations().filter(a=>a.playState==='running').length}; })()`);
-      ok(`${label}: notebook fits the viewport`, end.left >= -1 && end.right <= end.W + 1, JSON.stringify(end));
-      ok(`${label}: animation finishes (no endless loops)`, end.running === 0 || end.running <= 1, 'running=' + end.running);
-    }
-    ok(`${label}: no layout shift of the laptop box`, await page.eval(`(() => { const r = document.querySelector('.hero-laptop').getBoundingClientRect(); return Math.abs(r.width / r.height - 31.25 / 18.4) < 0.02; })()`));
-    if (SHOTS && !rm) await page.screenshot(path.join(SHOTS, `notebook-${w}.png`), { full: false });
+    await page.goto(`${BASE}/en/`); await sleep(500);
+    const active = () => page.eval(`document.querySelector('.fan__card[data-pos="0"] .fan__name').textContent`);
+    const first = await active();
+    ok(`fan ${label}: no pause button, label and one centre card`, await page.eval(`!document.querySelector('[data-fan-pause]') && !!document.querySelector('.fan__label') && document.querySelectorAll('.fan__card[data-pos="0"]').length === 1`));
+    await sleep(5000);
+    const later = await active();
+    if (rm) ok(`fan ${label}: no auto-advance under reduced motion`, later === first, `${first} -> ${later}`);
+    else ok(`fan ${label}: auto-advances`, later !== first, `${first} -> ${later}`);
+    ok(`fan ${label}: the page does not scroll sideways`, await page.eval(`document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1`));
     await page.close();
   }
 

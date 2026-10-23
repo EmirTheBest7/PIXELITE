@@ -41,4 +41,5 @@
       <?php require __DIR__ . '/theme-switch.php' ?>
     </div>
   </div>
+  <div class="footer__giant" aria-hidden="true">pixelite</div>
 </footer>

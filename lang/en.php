@@ -147,6 +147,9 @@ return [
         'subtitle' => 'Simple, professional digital solutions for people and small businesses.',
         'cta' => 'Start a project',
         'secondary' => 'Services',
+        'fan_label' => 'Design templates',
+        'view_designs' => 'View designs',
+        'fan_aria' => 'Website designs you can start from',
     ],
     'services' => [
         'title' => 'Services & pricing',

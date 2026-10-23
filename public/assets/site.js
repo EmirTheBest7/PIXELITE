@@ -1,5 +1,5 @@
 /* Pixelite concept – small, dependency-free behaviour (CSP: external file only).
-   Navigation sheet · language cookie · order-form helpers · hero shader · notebook tilt · legal TOC · switch offset. */
+   Navigation sheet · language cookie · order-form helpers · hero shader · design fan · legal TOC · switch offset. */
 (function () {
   'use strict';
   var doc = document, root = doc.documentElement;
@@ -133,17 +133,29 @@
     cv.addEventListener('webglcontextlost', function (e) { e.preventDefault(); stop(); cv.classList.remove('is-live'); });
   }
 
-  /* ---- notebook: a very light pointer tilt (fine pointers only, never under reduced motion) ---- */
-  var stage = doc.querySelector('.hero__stage'), tilt = doc.querySelector('.lp-tilt');
-  if (stage && tilt && window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
-    var pend = false, ex = 0, ey = 0;
-    stage.addEventListener('pointermove', function (e) {
-      if (reduce.matches) { return; }
-      var r = stage.getBoundingClientRect();
-      ex = ((e.clientX - r.left) / r.width - 0.5) * 2; ey = ((e.clientY - r.top) / r.height - 0.5) * 2;
-      if (!pend) { pend = true; requestAnimationFrame(function () { pend = false; tilt.style.setProperty('--ty', (ex * 5).toFixed(2) + 'deg'); tilt.style.setProperty('--tx', (-ey * 3).toFixed(2) + 'deg'); }); }
+  /* ---- hero fan (English trial): the real designs, auto-advancing; paused on hover/focus, when the tab is hidden and under reduced motion ---- */
+  var fan = doc.querySelector('[data-fan]');
+  if (fan) {
+    var cards = [].slice.call(fan.querySelectorAll('.fan__card')), fn = cards.length, fa = 0, ft = null, fHover = false;
+    var fset = function (a) {
+      fa = (a + fn) % fn;
+      cards.forEach(function (c, i) {
+        var p = ((i - fa + fn + Math.floor(fn / 2)) % fn) - Math.floor(fn / 2);
+        c.setAttribute('data-pos', String(p));
+        c.querySelector('a').setAttribute('tabindex', Math.abs(p) <= 1 ? '0' : '-1');
+      });
+    };
+    var fstop = function () { if (ft) { clearInterval(ft); ft = null; } };
+    var fgo = function () { fstop(); if (!fHover && !reduce.matches && !doc.hidden) { ft = setInterval(function () { fset(fa + 1); }, 4200); } };
+    cards.forEach(function (c, i) {
+      c.querySelector('a').addEventListener('click', function (e) { if (i !== fa) { e.preventDefault(); fset(i); fgo(); } });
     });
-    stage.addEventListener('pointerleave', function () { tilt.style.setProperty('--ty', '0deg'); tilt.style.setProperty('--tx', '0deg'); });
+    fan.addEventListener('pointerenter', function () { fHover = true; fstop(); });
+    fan.addEventListener('pointerleave', function () { fHover = false; fgo(); });
+    fan.addEventListener('focusin', function () { fHover = true; fstop(); });
+    fan.addEventListener('focusout', function () { fHover = false; fgo(); });
+    doc.addEventListener('visibilitychange', fgo);
+    fset(0); fgo();
   }
 
   /* ---- legal pages: table of contents highlights the section in view ---- */

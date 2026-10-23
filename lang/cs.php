@@ -147,6 +147,9 @@ return [
         'subtitle' => 'Jednoduchá a profesionální digitální řešení pro lidi a malé firmy.',
         'cta' => 'Zahájit projekt',
         'secondary' => 'Služby',
+        'fan_label' => 'Šablony webů',
+        'view_designs' => 'Zobrazit návrhy',
+        'fan_aria' => 'Návrhy webů, ze kterých můžete začít',
     ],
     'services' => [
         'title' => 'Služby a ceny',
