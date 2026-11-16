@@ -5,8 +5,8 @@ name: Provision bot config on Endora (FTP)
 #   secret BOT_LASH_ENV (the bot's whole production .env)  ->  FTP ./bots/lash/.env
 #   its BASE_URL                                           ->  FTP ./storage/bot-urls.ini  (read by /admin/bots)
 # The repository is public: values come only from GitHub secrets, are never echoed, and never enter an artifact.
-# Each FTP step has its OWN state file, so it can only ever replace or delete the one file it uploaded itself; it never
-# touches the bot's code, its database or anything of the site. Changing the secret does nothing until this workflow
+# The upload is two single-file FTP PUTs, so it can only ever replace those two files; it never deletes anything and
+# never touches the bot's code, its database or anything of the site. Changing the secret does nothing until this workflow
 # runs again: Actions -> "Provision bot config" -> Run workflow (or a push that changes this file / config/bots.php).
 # Live only when the repository variable DEPLOY_ENABLED is "true" (same switch as the site deploy).
 
@@ -83,42 +83,42 @@ jobs:
         run: |
           if [ "$LIVE" = "true" ]; then echo "::notice::LIVE provisioning"; else echo "::notice::DRY RUN - nothing is uploaded"; fi
 
-      # server-dir values are literals on purpose (no secret, no expression): ./bots/lash/ and ./storage/ only.
-      - name: FTP - bot .env (./bots/lash/.env)
+      # Two single-file PUTs with lftp (not FTP-Deploy-Action): a put can only write the named file, never delete, and
+      # lftp prints the server's own reply. The Endora FTP server resets the data connection when a file is STORed under
+      # the name ".env" (run 43967603304, twice), so the .env goes up under a temporary name and is renamed in place.
+      # Remote paths are literals on purpose: bots/lash/.env and storage/bot-urls.ini only.
+      - name: Install lftp
         if: steps.build.outputs.configured == 'true'
-        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
-          port: ${{ vars.FTP_PORT || '21' }}
-          security: ${{ vars.FTP_SECURITY || 'strict' }}
-          timeout: 60000
-          local-dir: ./.provision/lash/
-          server-dir: ./bots/lash/
-          state-name: .ftp-deploy-sync-state-pixelite-bot-lash-env.json
-          dry-run: ${{ env.LIVE != 'true' }}
-          dangerous-clean-slate: false
-          log-level: minimal
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
 
-      - name: FTP - monitor URL (./storage/bot-urls.ini)
+      - name: FTP - bot .env and monitor URL
         if: steps.build.outputs.configured == 'true'
-        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
-          port: ${{ vars.FTP_PORT || '21' }}
-          security: ${{ vars.FTP_SECURITY || 'strict' }}
-          timeout: 60000
-          local-dir: ./.provision/urls/
-          server-dir: ./storage/
-          state-name: .ftp-deploy-sync-state-pixelite-bot-urls.json
-          dry-run: ${{ env.LIVE != 'true' }}
-          dangerous-clean-slate: false
-          log-level: minimal
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTOCOL: ${{ vars.FTP_PROTOCOL || 'ftp' }}
+          FTP_PORT: ${{ vars.FTP_PORT || '21' }}
+          FTP_SECURITY: ${{ vars.FTP_SECURITY || 'strict' }}
+        run: |
+          set +x
+          host="${FTP_SERVER#ftp://}"; host="${host#ftps://}"; host="${host%%/*}"
+          if [ "$FTP_PROTOCOL" = "ftps" ]; then
+            tls="set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ssl:verify-certificate $([ "$FTP_SECURITY" = loose ] && echo no || echo yes);"
+          else
+            tls="set ftp:ssl-allow no;"
+          fi
+          ftp() { lftp -u "$FTP_USERNAME,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$host" -e "$tls set net:max-retries 2; set net:timeout 30; set cmd:fail-exit yes; $1; bye" 2>&1; }
+          if [ "$LIVE" != "true" ]; then
+            echo "DRY RUN: would upload bots/lash/.env and storage/bot-urls.ini"
+            ftp "cls -1 -d bots/lash storage" || true
+            exit 0
+          fi
+          tmp=".env.upload-$(openssl rand -hex 6)"
+          ftp "mkdir -p -f bots/lash; put .provision/lash/.env -o bots/lash/$tmp; mv bots/lash/$tmp bots/lash/.env; put .provision/urls/bot-urls.ini -o storage/bot-urls.ini" \
+            || { echo "::error::upload failed"; ftp "rm -f bots/lash/$tmp" || true; exit 1; }
+          echo "--- placed (names and sizes) ---"
+          ftp "cls -1 -a -s bots/lash/.env storage/bot-urls.ini"
 
       - name: Remove the files from the runner
         if: always()

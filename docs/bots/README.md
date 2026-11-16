@@ -60,8 +60,12 @@ A bot's production `.env` must never be in a repository, so this repo provisions
   `gh secret set BOT_LASH_ENV -R EmirTheBest7/PIXELITE < ~/Projects/GITHUB/TG-PHPBot/.env.production`
 - The workflow validates it (APP_ENV, BASE_URL `https://pixelite.cz/tg/<16-64 chars>`, a token-shaped BOT_TOKEN,
   WEBHOOK_SECRET, TICK_SECRET non-empty; no DB_PATH/LOG_DIR) and refuses to upload a broken file. Then it uploads
-  `./bots/lash/.env` and `./storage/bot-urls.ini` (`BOT_LASH_URL = "<BASE_URL>"`, read by `/admin/bots`), each with its
-  own FTP state file, so it can only replace those two files. Nothing is echoed; the path segment is masked.
+  `./bots/lash/.env` and `./storage/bot-urls.ini` (`BOT_LASH_URL = "<BASE_URL>"`, read by `/admin/bots`) as two
+  single-file `lftp` PUTs, so it can only replace those two files and never deletes anything. Nothing is echoed; the path
+  segment is masked.
+- **The Endora FTP server resets the data connection when a file is stored under the name `.env`** (run 43967603304,
+  reproduced twice; other dotfiles such as `.htaccess` upload fine). The workflow therefore uploads `.env.upload-<random>`
+  and renames it to `.env` on the server. A bot's own deploy must exclude `.env*` anyway.
 - Runs on a push that changes the workflow or `config/bots.php`, or by hand (Actions → Run workflow). **Changing the
   secret alone does nothing until it runs.** Live only when `DEPLOY_ENABLED=true`, same as the site deploy. Without the
   secret it skips with a notice.
