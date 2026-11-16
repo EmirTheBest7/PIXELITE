@@ -135,6 +135,14 @@ check('bot monitor: redirects are not followed', $mon("http://127.0.0.1:$bport/r
 $b = $mon('http://127.0.0.1:1/secret-path');
 check('bot monitor: unreachable => down, the error never contains the secret path', $b['state'] === 'down' && !str_contains($b['detail'], 'secret-path'), $b['detail']);
 Env::set('BOT_TEST_URL', '');
+$ini = tempnam(sys_get_temp_dir(), 'boturls');
+file_put_contents($ini, "BOT_TEST_URL = \"http://127.0.0.1:$bport/secret-path\"\n");
+$b = BotMonitor::check(['t' => ['name' => 'Test', 'repo' => '', 'env' => 'BOT_TEST_URL']], $ini)[0];
+check('bot monitor: without the .env key the URL comes from storage/bot-urls.ini (written by the provisioning workflow)', $b['state'] === 'up', json_encode($b));
+Env::set('BOT_TEST_URL', 'http://127.0.0.1:1/x');
+check('bot monitor: the .env key wins over storage/bot-urls.ini', BotMonitor::check(['t' => ['name' => 'Test', 'repo' => '', 'env' => 'BOT_TEST_URL']], $ini)[0]['state'] === 'down');
+Env::set('BOT_TEST_URL', '');
+unlink($ini);
 proc_terminate($bproc);
 
 $valid['description'] = 'HTTP flow: we need a simple site for a cafe.';

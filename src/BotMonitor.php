@@ -6,21 +6,24 @@ namespace Pixelite;
 /**
  * Health of the self-deployed Telegram bots (config/bots.php, docs/bots/README.md). Server-side GET of <base>/health:
  * no redirects, short timeouts, capped body, only the documented fields are kept. The base URL (with the bot's random
- * path) comes from .env and is never shown in full; errors are stripped of it.
+ * path) comes from .env, else from storage/bot-urls.ini (written by .github/workflows/provision-bots.yml), and is never
+ * shown in full; errors are stripped of it.
  */
 final class BotMonitor
 {
     private const MAX_BODY = 8192;
 
     /** @return list<array{slug:string,name:string,repo:string,env:string,host:string,state:string,version:string,deployed_at:string,db:?bool,detail:string,ms:int}> */
-    public static function check(?array $bots = null): array
+    public static function check(?array $bots = null, ?string $urlsFile = null): array
     {
         $bots ??= require dirname(__DIR__) . '/config/bots.php';
+        $urlsFile ??= dirname(__DIR__) . '/storage/bot-urls.ini';
+        $urls = is_file($urlsFile) ? (parse_ini_file($urlsFile, false, INI_SCANNER_RAW) ?: []) : [];
         $out = [];
         foreach ($bots as $slug => $b) {
             $row = ['slug' => (string) $slug, 'name' => (string) $b['name'], 'repo' => (string) ($b['repo'] ?? ''), 'env' => (string) $b['env'],
                 'host' => '', 'state' => 'not_configured', 'version' => '', 'deployed_at' => '', 'db' => null, 'detail' => '', 'ms' => 0];
-            $base = rtrim(Env::get($row['env']), '/');
+            $base = rtrim(Env::get($row['env']) ?: (string) ($urls[$row['env']] ?? ''), '/');
             $u = $base === '' ? false : parse_url($base);
             if (!$u || !in_array(strtolower($u['scheme'] ?? ''), ['http', 'https'], true) || empty($u['host'])) {
                 $row['detail'] = $base === '' ? 'Set ' . $row['env'] . ' in .env.' : $row['env'] . ' is not an http(s) URL.';

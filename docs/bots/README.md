@@ -54,13 +54,29 @@ A bot bug or a leaked bot-repo secret can therefore read Pixelite's `.env` or ch
 bots the owner writes. **Customer bots, or any code Pixelite does not control, go on a separate hosting** with its own
 FTP account, using the same layout and workflow.
 
+## Server config from Pixelite: `.github/workflows/provision-bots.yml`
+A bot's production `.env` must never be in a repository, so this repo provisions it from a GitHub secret:
+- Secret **`BOT_LASH_ENV`** (this repo) = the bot's whole production `.env`. Set it from the file, never by pasting:
+  `gh secret set BOT_LASH_ENV -R EmirTheBest7/PIXELITE < ~/Projects/GITHUB/TG-PHPBot/.env.production`
+- The workflow validates it (APP_ENV, BASE_URL `https://pixelite.cz/tg/<16-64 chars>`, a token-shaped BOT_TOKEN,
+  WEBHOOK_SECRET, TICK_SECRET non-empty; no DB_PATH/LOG_DIR) and refuses to upload a broken file. Then it uploads
+  `./bots/lash/.env` and `./storage/bot-urls.ini` (`BOT_LASH_URL = "<BASE_URL>"`, read by `/admin/bots`), each with its
+  own FTP state file, so it can only replace those two files. Nothing is echoed; the path segment is masked.
+- Runs on a push that changes the workflow or `config/bots.php`, or by hand (Actions → Run workflow). **Changing the
+  secret alone does nothing until it runs.** Live only when `DEPLOY_ENABLED=true`, same as the site deploy. Without the
+  secret it skips with a notice.
+- The secret is the source of truth: a hand edit of the server `.env` is overwritten only when the secret changes and
+  the workflow runs again (the action compares against its own state, not the server file).
+- The bot repo's secrets must agree with it: `BOT_PUBLIC_PATH` = the path segment of `BASE_URL`, `TICK_SECRET` = the
+  same `TICK_SECRET`.
+
 ## Monitoring: `/admin/bots`
 Staff page (same guard as the rest of `/admin`, read-only, no CSRF needed). Every load calls each registered bot's
 `/health` from the server (`src/BotMonitor.php`: GET only, no redirects, 3 s connect / 5 s total, body capped at 8 KB) and
 shows up / degraded / down / not configured, the live commit (linked to the bot repo), deploy time, database flag and
 response time. Only the host is displayed, never the secret path, and error texts are stripped of the URL.
-- Register a bot in `config/bots.php` (`name`, `repo`, `env`), then put its base URL into `.env` under that key, e.g.
-  `BOT_LASH_URL=https://pixelite.cz/tg/<random-path>`. Without it the bot shows as "not configured".
+- Register a bot in `config/bots.php` (`name`, `repo`, `env`). Its base URL comes from Pixelite's `.env` under that
+  key, else from `storage/bot-urls.ini` written by the provisioning workflow. Without either it shows "not configured".
 - The check runs from the Endora server to its own public domain. If a bot shows "down" while it works from outside,
   check that the host can reach its own HTTPS address before suspecting the bot.
 

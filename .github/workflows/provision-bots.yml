@@ -1,0 +1,125 @@
+name: Provision bot config on Endora (FTP)
+
+# Server-side configuration for the Telegram bots that deploy themselves next to the site (docs/bots/README.md).
+# The bots' CODE is uploaded by their own repositories; this workflow only places what must never be in a repository:
+#   secret BOT_LASH_ENV (the bot's whole production .env)  ->  FTP ./bots/lash/.env
+#   its BASE_URL                                           ->  FTP ./storage/bot-urls.ini  (read by /admin/bots)
+# The repository is public: values come only from GitHub secrets, are never echoed, and never enter an artifact.
+# Each FTP step has its OWN state file, so it can only ever replace or delete the one file it uploaded itself; it never
+# touches the bot's code, its database or anything of the site. Changing the secret does nothing until this workflow
+# runs again: Actions -> "Provision bot config" -> Run workflow (or a push that changes this file / config/bots.php).
+# Live only when the repository variable DEPLOY_ENABLED is "true" (same switch as the site deploy).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/provision-bots.yml
+      - config/bots.php
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: print the planned changes, upload nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provision-bots
+  cancel-in-progress: false
+
+jobs:
+  lash:
+    name: Bot lash (.env + monitor URL)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      LIVE: ${{ vars.DEPLOY_ENABLED == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+    steps:
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      # Validates the secret and writes the two files. Refuses (fails the run) instead of uploading a broken .env:
+      # a bot with an empty token or a wrong BASE_URL would be live but deaf. Prints only key names, never values.
+      - name: Build and validate the files from the secret
+        id: build
+        env:
+          BOT_ENV: ${{ secrets.BOT_LASH_ENV }}
+        run: |
+          if [ -z "$BOT_ENV" ]; then
+            echo "::notice::secret BOT_LASH_ENV is not set - nothing to provision"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p .provision/lash .provision/urls
+          php -r '
+            $raw = (string) getenv("BOT_ENV");
+            $v = [];
+            foreach (preg_split("/\r?\n/", $raw) as $l) {
+                if (preg_match("/^\s*([A-Z][A-Z0-9_]*)\s*=(.*)$/", $l, $m)) { $v[$m[1]] = trim(trim($m[2]), "\"\x27"); }
+            }
+            $fail = [];
+            foreach (["APP_ENV", "BASE_URL", "BOT_TOKEN", "WEBHOOK_SECRET", "TICK_SECRET"] as $k) {
+                if (($v[$k] ?? "") === "") { $fail[] = "$k is empty"; }
+            }
+            if (($v["BOT_TOKEN"] ?? "") !== "" && !preg_match("/^\d{5,15}:[A-Za-z0-9_-]{30,}$/", $v["BOT_TOKEN"])) { $fail[] = "BOT_TOKEN does not look like a Bot API token"; }
+            if (!preg_match("#^https://pixelite\.cz/tg/([A-Za-z0-9_-]{16,64})/?$#", $v["BASE_URL"] ?? "", $bm)) { $fail[] = "BASE_URL must be https://pixelite.cz/tg/<16-64 chars A-Za-z0-9_->"; }
+            foreach (["DB_PATH", "LOG_DIR"] as $k) { if (isset($v[$k])) { $fail[] = "$k must not be set (the bot keeps its data in ./bots/lash/storage/)"; } }
+            if (isset($v["TELEGRAM_API_BASE"]) && $v["TELEGRAM_API_BASE"] !== "https://api.telegram.org") { $fail[] = "TELEGRAM_API_BASE must be https://api.telegram.org or absent"; }
+            if ($fail) { foreach ($fail as $f) { echo "::error::BOT_LASH_ENV: $f\n"; } exit(1); }
+            echo "::add-mask::" . $bm[1] . "\n";
+            file_put_contents(".provision/lash/.env", rtrim($raw) . "\n");
+            file_put_contents(".provision/urls/bot-urls.ini", "BOT_LASH_URL = \"" . rtrim($v["BASE_URL"], "/") . "\"\n");
+            echo "BOT_LASH_ENV ok: " . implode(", ", array_keys($v)) . "\n";
+          '
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Mode
+        if: steps.build.outputs.configured == 'true'
+        run: |
+          if [ "$LIVE" = "true" ]; then echo "::notice::LIVE provisioning"; else echo "::notice::DRY RUN - nothing is uploaded"; fi
+
+      # server-dir values are literals on purpose (no secret, no expression): ./bots/lash/ and ./storage/ only.
+      - name: FTP - bot .env (./bots/lash/.env)
+        if: steps.build.outputs.configured == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
+          port: ${{ vars.FTP_PORT || '21' }}
+          security: ${{ vars.FTP_SECURITY || 'strict' }}
+          timeout: 60000
+          local-dir: ./.provision/lash/
+          server-dir: ./bots/lash/
+          state-name: .ftp-deploy-sync-state-pixelite-bot-lash-env.json
+          dry-run: ${{ env.LIVE != 'true' }}
+          dangerous-clean-slate: false
+          log-level: minimal
+
+      - name: FTP - monitor URL (./storage/bot-urls.ini)
+        if: steps.build.outputs.configured == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftp' }}
+          port: ${{ vars.FTP_PORT || '21' }}
+          security: ${{ vars.FTP_SECURITY || 'strict' }}
+          timeout: 60000
+          local-dir: ./.provision/urls/
+          server-dir: ./storage/
+          state-name: .ftp-deploy-sync-state-pixelite-bot-urls.json
+          dry-run: ${{ env.LIVE != 'true' }}
+          dangerous-clean-slate: false
+          log-level: minimal
+
+      - name: Remove the files from the runner
+        if: always()
+        run: rm -rf .provision
