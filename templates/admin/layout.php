@@ -19,6 +19,7 @@
       <a href="/admin/projects"<?= str_starts_with($adminPath, '/admin/projects') ? ' aria-current="page"' : '' ?>>Projects</a>
       <a href="/admin/careers"<?= str_starts_with($adminPath, '/admin/careers') ? ' aria-current="page"' : '' ?>>Careers</a>
       <a href="/admin/templates"<?= str_starts_with($adminPath, '/admin/templates') ? ' aria-current="page"' : '' ?>>Design prompts</a>
+      <a href="/admin/bots"<?= str_starts_with($adminPath, '/admin/bots') ? ' aria-current="page"' : '' ?>>Bots</a>
     </nav>
     <form method="post" action="/admin/logout" class="admin__logout"><input type="hidden" name="_csrf" value="<?= e(\Pixelite\Csrf::token()) ?>"><?= ui_button('Sign out', 'sm ghost plain', ['type' => 'submit']) ?></form>
 <?php endif ?>

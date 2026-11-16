@@ -4,7 +4,7 @@ declare(strict_types=1);
 // Run: docker compose exec app php tests/run.php
 require __DIR__ . '/../src/bootstrap.php';
 
-use Pixelite\{Auth, Csrf, Database, Env, I18n, OrderOptions, OrderRepository, OrderService, OrderValidator, RateLimiter, Request, Session, TelegramNotifier};
+use Pixelite\{Auth, BotMonitor, Csrf, Database, Env, I18n, OrderOptions, OrderRepository, OrderService, OrderValidator, RateLimiter, Request, Session, TelegramNotifier};
 
 ob_start(); // sessions in CLI would otherwise complain about output
 $pass = 0; $fail = 0;
@@ -116,6 +116,26 @@ Env::set('TELEGRAM_BOT_TOKEN', '');
 Env::set('TELEGRAM_CHAT_ID', '');
 Env::set('APP_URL', 'https://pixelite.cz');
 proc_terminate($proc);
+
+echo "bot health monitor (real HTTP against a fake /health)\n";
+$bport = 8993;
+$bproc = proc_open([PHP_BINARY, '-S', "127.0.0.1:$bport", __DIR__ . '/fake_bot_health.php'], [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], $bpipes);
+usleep(600000);
+$mon = function (string $url): array { Env::set('BOT_TEST_URL', $url); return BotMonitor::check(['t' => ['name' => 'Test', 'repo' => 'x/y', 'env' => 'BOT_TEST_URL']])[0]; };
+$b = $mon('');
+check('bot monitor: no URL in .env => not_configured, no request', $b['state'] === 'not_configured' && $b['host'] === '' && str_contains($b['detail'], 'BOT_TEST_URL'));
+check('bot monitor: a non-http(s) URL is refused', $mon('file:///etc/passwd')['state'] === 'not_configured' && $mon('ftp://127.0.0.1/x')['state'] === 'not_configured');
+$b = $mon("http://127.0.0.1:$bport/secret-path/");
+check('bot monitor: healthy bot => up with version, deployed time and db; unknown fields dropped', $b['state'] === 'up' && $b['version'] === 'abcdef0123456789abcdef0123456789abcdef01' && $b['deployed_at'] === '2026-11-16T12:00:00Z' && $b['db'] === true && !str_contains(json_encode($b), 'NEVERSHOWN') && !str_contains(json_encode($b), 'secret-path'), json_encode($b));
+$b = $mon("http://127.0.0.1:$bport/degraded");
+check('bot monitor: ok:false / 503 => degraded, a non-hex version is dropped', $b['state'] === 'degraded' && $b['version'] === '' && $b['db'] === false, json_encode($b));
+check('bot monitor: HTML instead of JSON => down', $mon("http://127.0.0.1:$bport/html")['state'] === 'down');
+check('bot monitor: oversized body => down (capped)', $mon("http://127.0.0.1:$bport/big")['state'] === 'down');
+check('bot monitor: redirects are not followed', $mon("http://127.0.0.1:$bport/redirect")['state'] === 'down');
+$b = $mon('http://127.0.0.1:1/secret-path');
+check('bot monitor: unreachable => down, the error never contains the secret path', $b['state'] === 'down' && !str_contains($b['detail'], 'secret-path'), $b['detail']);
+Env::set('BOT_TEST_URL', '');
+proc_terminate($bproc);
 
 $valid['description'] = 'HTTP flow: we need a simple site for a cafe.';
 echo "http flow (CSRF, honeypot, rate limit, duplicates)\n";

@@ -299,6 +299,17 @@ $r = $H($rq('POST', '/admin/customers/' . $ca . '/status', ['status' => 'active'
 check('admin customers: changing status without CSRF is refused', $r->status === 403 && Customers::find($ca)['status'] === 'disabled');
 Customers::setStatus($ca, 'active');
 
+// admin <-> bots (read-only status page; the base URL with its secret path is never rendered)
+$cust($ca); $r = $H($rq('GET', '/admin/bots'));
+check('admin bots: a signed-in CUSTOMER cannot open it', $r->status === 302 && $loc($r) === '/admin/login');
+$admin(); Env::set('BOT_LASH_URL', '');
+$r = $H($rq('GET', '/admin/bots'));
+check('admin bots: lists the registered bot as not configured and names the .env key', $r->status === 200 && str_contains($r->body, 'Lash studio booking bot') && str_contains($r->body, 'not configured') && str_contains($r->body, 'BOT_LASH_URL') && str_contains($r->headers['Cache-Control'] ?? '', 'no-store'));
+Env::set('BOT_LASH_URL', 'http://127.0.0.1:1/tg/s3cr3t-path');
+$r = $H($rq('GET', '/admin/bots'));
+check('admin bots: an unreachable bot shows as down without leaking its secret path', $r->status === 200 && str_contains($r->body, '>down<') && str_contains($r->body, '127.0.0.1/…') && !str_contains($r->body, 's3cr3t-path'));
+Env::set('BOT_LASH_URL', '');
+
 /* ---------------------------------------------------------------- ZIP reader + storage */
 echo "project storage and uploads\n";
 $makeZip = function (array $entries): string {

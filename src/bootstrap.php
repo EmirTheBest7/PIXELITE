@@ -37,6 +37,7 @@ function buildRouter(): Router
     $careers = new \Pixelite\Controllers\AdminCareersController();
     $projects = new \Pixelite\Controllers\AdminProjectsController();
     $customers = new \Pixelite\Controllers\AdminCustomersController();
+    $bots = new \Pixelite\Controllers\AdminBotsController();
 
     $router->add('GET', '/{lang}', fn() => $page->home());
     $router->add('GET', '/{lang}/pricing', fn() => $page->pricing());
@@ -96,6 +97,7 @@ function buildRouter(): Router
     $router->add('POST', '/admin/projects/{id}/token', fn(Request $r, array $p) => $projects->regenerate($r, $p));
     $router->add('GET', '/admin/projects/{id}/delete', fn(Request $r, array $p) => $projects->confirmDelete($r, $p));
     $router->add('POST', '/admin/projects/{id}/delete', fn(Request $r, array $p) => $projects->delete($r, $p));
+    $router->add('GET', '/admin/bots', fn(Request $r) => $bots->index($r));
     $router->add('GET', '/admin/orders/{id}', fn(Request $r, array $p) => $admin->show($r, $p));
     $router->add('POST', '/admin/orders/{id}/retry', fn(Request $r, array $p) => $admin->retry($r, $p));
 

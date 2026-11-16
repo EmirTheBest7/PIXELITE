@@ -13,7 +13,7 @@
     <a class="header__logo" href="/admin"><?= logo_mark('header__img') ?> <span class="header__title">PIXELITE<span class="header__light">.cz</span> <span class="header__light">admin</span></span></a>
 <?php if (!empty($_SESSION['admin_at'])): ?>
     <nav class="admin__nav" aria-label="Admin">
-      <a href="/admin">Orders</a> <a href="/admin/customers">Customers</a> <a href="/admin/projects">Projects</a> <a href="/admin/careers">Careers</a> <a href="/admin/templates">Design prompts</a>
+      <a href="/admin">Orders</a> <a href="/admin/customers">Customers</a> <a href="/admin/projects">Projects</a> <a href="/admin/careers">Careers</a> <a href="/admin/templates">Design prompts</a> <a href="/admin/bots">Bots</a>
     </nav>
     <form method="post" action="/admin/logout" class="admin__logout"><input type="hidden" name="_csrf" value="<?= e(\Pixelite\Csrf::token()) ?>"><button class="btn btn--revert btn--auto" type="submit">Sign out</button></form>
 <?php endif ?>

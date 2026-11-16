@@ -119,7 +119,7 @@ Env::set('DESIGN_DEFAULT', 'new');
 echo "admin in the new design\n";
 $_SESSION = ['admin_at' => time(), 'admin_since' => time(), '_csrf' => 'adm-token'];
 $oid = (int) Database::pdo()->query("SELECT id FROM orders ORDER BY id DESC LIMIT 1")->fetchColumn();
-foreach (['/admin', "/admin/orders/$oid", '/admin/customers', '/admin/projects', '/admin/projects/new', '/admin/careers', '/admin/careers/new', '/admin/templates', '/admin/templates/lumora'] as $u) {
+foreach (['/admin', "/admin/orders/$oid", '/admin/customers', '/admin/projects', '/admin/projects/new', '/admin/careers', '/admin/careers/new', '/admin/templates', '/admin/templates/lumora', '/admin/bots'] as $u) {
     $r = $dg($u);
     check("admin $u: new design, navigation to every section, no legacy assets, no inline scripts", $r->status === 200 && str_contains($r->body, '/assets/site.css') && !str_contains($r->body, '/assets/style.css') && str_contains($r->body, 'href="/admin/careers"') && str_contains($r->body, 'href="/admin/projects"') && !preg_match('/<script(?![^>]*\bsrc=)[^>]*>|\sstyle="/', $r->body) && str_contains($r->body, 'noindex'));
 }
@@ -128,7 +128,7 @@ check('admin order page keeps the customer-link form and the Telegram retry in t
 $_SESSION = [];
 $r = $dg('/admin/login');
 check('admin login: new design, noindex, no-store', $r->status === 200 && str_contains($r->body, '/assets/site.css') && str_contains($r->body, 'noindex') && str_contains($r->headers['Cache-Control'] ?? '', 'no-store'));
-foreach (['/admin', '/admin/customers', '/admin/projects', '/admin/careers', '/admin/templates'] as $u) { $r = $dg($u); if ($r->status !== 302 || ($r->headers['Location'] ?? '') !== '/admin/login') { check("admin $u still redirects guests to the login", false); } }
+foreach (['/admin', '/admin/customers', '/admin/projects', '/admin/careers', '/admin/templates', '/admin/bots'] as $u) { $r = $dg($u); if ($r->status !== 302 || ($r->headers['Location'] ?? '') !== '/admin/login') { check("admin $u still redirects guests to the login", false); } }
 check('every admin section still redirects guests to the staff login', true);
 $r = $dg('/en/zzz-not-found');
 check('404 page: new design, noindex, localized', $r->status === 404 && str_contains($r->body, '/assets/site.css') && str_contains($r->body, 'noindex'));
