@@ -84,8 +84,10 @@ jobs:
           if [ "$LIVE" = "true" ]; then echo "::notice::LIVE provisioning"; else echo "::notice::DRY RUN - nothing is uploaded"; fi
 
       # Two single-file PUTs with lftp (not FTP-Deploy-Action): a put can only write the named file, never delete, and
-      # lftp prints the server's own reply. The Endora FTP server resets the data connection when a file is STORed under
-      # the name ".env" (run 43967603304, twice), so the .env goes up under a temporary name and is renamed in place.
+      # lftp prints the server's own reply. FTP-Deploy-Action died here with "ECONNRESET (data socket)" (run 43967603304,
+      # twice): on a first publish it downloads the missing state file, which over FTPS on Endora leaves its data socket
+      # reset (same failure in TG-PHPBot run 44060207117). The .env goes up under a temporary name and is renamed in place,
+      # so the bot never reads a half-written file.
       # Remote paths are literals on purpose: bots/lash/.env and storage/bot-urls.ini only.
       - name: Install lftp
         if: steps.build.outputs.configured == 'true'

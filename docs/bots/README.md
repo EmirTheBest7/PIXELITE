@@ -63,9 +63,13 @@ A bot's production `.env` must never be in a repository, so this repo provisions
   `./bots/lash/.env` and `./storage/bot-urls.ini` (`BOT_LASH_URL = "<BASE_URL>"`, read by `/admin/bots`) as two
   single-file `lftp` PUTs, so it can only replace those two files and never deletes anything. Nothing is echoed; the path
   segment is masked.
-- **The Endora FTP server resets the data connection when a file is stored under the name `.env`** (run 43967603304,
-  reproduced twice; other dotfiles such as `.htaccess` upload fine). The workflow therefore uploads `.env.upload-<random>`
-  and renames it to `.env` on the server. A bot's own deploy must exclude `.env*` anyway.
+- The `.env` goes up as `.env.upload-<random>` and is renamed in place, so the bot never reads a half-written file.
+- **First publish over FTPS fails with FTP-Deploy-Action** ("ECONNRESET (data socket)": Pixelite run 43967603304 twice,
+  TG-PHPBot run 44060207117). On a first publish the action downloads the not-yet-existing state file, and on Endora that
+  leaves its data socket reset; the next command dies. Later publishes (state file present) work. Fix used by TG-PHPBot's
+  `deploy.yml`: before the action runs, seed an empty state file (`{"version":"1.0.0","data":[]}`) with lftp **only if
+  none exists**; that is the same "server has nothing" state the action assumes, so it uploads everything and deletes
+  nothing. A new bot repo needs the same step.
 - Runs on a push that changes the workflow or `config/bots.php`, or by hand (Actions → Run workflow). **Changing the
   secret alone does nothing until it runs.** Live only when `DEPLOY_ENABLED=true`, same as the site deploy. Without the
   secret it skips with a notice.
@@ -96,4 +100,4 @@ The host has no cron. A bot that needs periodic work exposes a secret-protected 
 ## Hosted bots
 | Slug | Repository | Purpose | Status |
 |---|---|---|---|
-| `lash` | `EmirTheBest7/TG-PHPBot` (private) | lash studio booking bot | in development |
+| `lash` | `EmirTheBest7/TG-PHPBot` (private) | lash studio booking bot | deployed 2026-11-17 (8654855) |
