@@ -485,6 +485,14 @@ check('translation cache restored after the regression test', I18n::load('en')['
 
 check('legal_text fills tokens and falls back to placeholder', (function () use ($setCo) { $setCo(['COMPANY_NAME' => 'X']); I18n::set('en'); return legal_text('{company}/{ico}') === 'X/[to be completed]'; })());
 
+echo "telegram bots page\n";
+foreach (I18n::LOCALES as $lang) {
+    $h = $page("/$lang/telegram-bots");
+    check("telegram-bots ($lang): one h1, canonical, three price cards, five feature groups, CTA to /order?type=bot", substr_count($h, '<h1') === 1 && str_contains($h, 'rel="canonical" href="https://pixelite.cz/' . $lang . '/telegram-bots"') && substr_count($h, 'data-bot-price=') === 3 && substr_count($h, 'scope__card') === 8 && str_contains($h, 'href="/' . $lang . '/order?type=bot"'));
+    check("telegram-bots ($lang): both prices render (10 000 development, 4 750 hosting)", str_contains($h, "10\u{00A0}000") && str_contains($h, "4\u{00A0}750"));
+    check("telegram-bots ($lang): linked from nav, footer and the landing page; no missing-translation key leaks", substr_count($page("/$lang/"), 'href="/' . $lang . '/telegram-bots"') >= 3 && !preg_match('/\b(bots|home_bots)\.[a-z_]+\b/', strip_tags($h)));
+    check("order form ($lang): ?type=bot preselects the Telegram bot project type", ($sel ?? null) !== null && $sel(Pixelite\handle($mkq("/$lang/order", ['type' => 'bot']))->body, 'project_type') === 'bot');
+}
 echo "pricing + process pages\n";
 Env::set('PRICE_VAT_MODE', '');
 foreach (['en', 'cs'] as $lang) {
@@ -564,7 +572,7 @@ check('index.php is layout-agnostic (requires ../src/bootstrap.php relative to i
 check('.htaccess denies dotfiles and data extensions, no listing, rewrites to the front controller', (function () { $h = (string) file_get_contents(Pixelite\Paths::root('public/.htaccess')); return str_contains($h, 'Options -Indexes') && str_contains($h, 'Require all denied') && str_contains($h, 'Deny from all') && str_contains($h, 'RewriteRule ^ index.php [L]'); })());
 
 echo "seo regression\n";
-$seoPaths = ['', 'templates', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms', 'builder'];
+$seoPaths = ['', 'templates', 'pricing', 'telegram-bots', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms', 'builder'];
 $titles = []; $descs = [];
 foreach (I18n::LOCALES as $lang) {
     foreach ($seoPaths as $pg) {

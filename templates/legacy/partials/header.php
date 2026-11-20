@@ -5,6 +5,7 @@ $nav = [
     ['#services', 'nav.services'],
     ['templates', 'nav.templates'],
     ...(\Pixelite\Editor\Builder\Anon\AnonWorkspaces::offered() ? [['builder', 'nav.builder']] : []),   // public site builder (BUILDER_PUBLIC)
+    ['telegram-bots', 'nav.bots'],
     ['pricing', 'nav.pricing'],
     ['process', 'nav.process'],
     ['contact', 'nav.contact'],

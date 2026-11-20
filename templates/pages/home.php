@@ -75,6 +75,19 @@ $fan = \Pixelite\TemplateCatalog::search([])['items'] ?? []; $n = count($fan); $
   </div>
 </section>
 
+<section id="telegram-bots" class="section" aria-labelledby="bots-title">
+  <div class="wrap">
+    <div class="consult">
+      <div>
+        <div class="eyebrow"><span class="eyebrow__label"><?= e(t('home_bots.label')) ?></span></div>
+        <h2 class="h-lg" id="bots-title"><?= e(t('home_bots.title')) ?></h2>
+        <p class="lede"><?= e(t('home_bots.text')) ?></p>
+      </div>
+      <?= ui_link(url('telegram-bots'), (string) t('home_bots.cta'), 'accent') ?>
+    </div>
+  </div>
+</section>
+
 <section id="how" class="section section--soft" aria-labelledby="how-title">
   <div class="wrap">
     <div class="sec-head">

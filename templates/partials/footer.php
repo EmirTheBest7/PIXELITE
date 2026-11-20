@@ -23,6 +23,7 @@
       <nav class="footer__nav" aria-label="<?= e(t('a11y.nav_footer')) ?>">
         <a class="footer__link" href="<?= e(url('order')) ?>"><?= e(t('footer.order')) ?></a>
         <a class="footer__link" href="<?= e(url('templates')) ?>"><?= e(t('nav.templates')) ?></a>
+        <a class="footer__link" href="<?= e(url('telegram-bots')) ?>"><?= e(t('footer.bots')) ?></a>
         <a class="footer__link" href="<?= e(url('pricing')) ?>"><?= e(t('footer.pricing')) ?></a>
         <a class="footer__link" href="<?= e(url('process')) ?>"><?= e(t('footer.process')) ?></a>
         <a class="footer__link" href="<?= e(url('contact')) ?>"><?= e(t('footer.contact')) ?></a>

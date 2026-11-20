@@ -42,6 +42,7 @@ function buildRouter(): Router
     $router->add('GET', '/{lang}', fn() => $page->home());
     $router->add('GET', '/{lang}/pricing', fn() => $page->pricing());
     $router->add('GET', '/{lang}/process', fn() => $page->process());
+    $router->add('GET', '/{lang}/telegram-bots', fn() => $page->bots());
     $router->add('GET', '/{lang}/contact', fn(Request $r) => $page->contact($r));
     $router->add('GET', '/{lang}/privacy', fn() => $page->privacy());
     $router->add('GET', '/{lang}/cookies', fn(Request $r) => $page->cookies($r));

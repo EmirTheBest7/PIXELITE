@@ -60,6 +60,16 @@
   </div>
 </section>
 
+<section id="telegram-bots" class="sect sect--no-padding consult" aria-labelledby="bots-title">
+  <div class="container">
+    <div class="row row--center">
+      <h2 class="row__title" id="bots-title"><?= e(t('home_bots.title')) ?></h2>
+    </div>
+    <p class="consult__text"><?= e(t('home_bots.text')) ?></p>
+    <p class="consult__cta"><a class="btn btn--strong btn--auto" href="<?= e(url('telegram-bots')) ?>"><?= e(t('home_bots.cta')) ?></a></p>
+  </div>
+</section>
+
 <section id="how" class="sect sect--no-padding sect--padding-bottom" aria-labelledby="how-title">
   <div class="container">
     <div class="row row--center">

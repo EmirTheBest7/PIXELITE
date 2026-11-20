@@ -19,6 +19,10 @@ $_SESSION = [];
 $routes = ['', 'pricing', 'process', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms', 'order', 'templates', 'templates/lumora', 'templates/asterform', 'login', 'register', 'portfolio'];
 $noindex = ['login', 'register', 'portfolio'];
 Design::set('new');
+foreach (I18n::LOCALES as $lg) {
+    $b = $dg("/$lg/telegram-bots")->body;
+    check("new design telegram-bots ($lg): phone chats, five feature cards, three price cards with billing lines, no inline style, no placeholder for hosting", substr_count($b, 'class="bento__card ') === 5 && substr_count($b, 'class="chat__row') >= 20 && substr_count($b, 'data-bot-price=') === 3 && substr_count($b, 'class="bill"') === 2 && substr_count($b, 'class="bfact"') === 4 && !str_contains($b, ' style="') && !str_contains($b, 'to be completed by the owner'));
+}
 check('Design: new is the default, legacy the alternate', Design::default() === 'new' && Design::alternate() === 'legacy' && Design::prefix() === '' && Design::prefix('legacy') === '/legacy');
 foreach (I18n::LOCALES as $lg) {
     $bad = [];

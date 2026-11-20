@@ -20,6 +20,11 @@ final class PageController extends BaseController
         return $this->page('pricing', 'pricing');
     }
 
+    public function bots(): Response
+    {
+        return $this->page('bots', 'telegram-bots');
+    }
+
     public function process(): Response
     {
         return $this->page('process', 'process');

@@ -10,7 +10,7 @@ use Pixelite\Response;
 final class SeoController
 {
     /** Pages that belong in the sitemap. Portfolio and order/sent are intentionally excluded. */
-    private const INDEXABLE = ['', 'pricing', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms'];
+    private const INDEXABLE = ['', 'pricing', 'telegram-bots', 'process', 'order', 'contact', 'team', 'careers', 'privacy', 'cookies', 'terms'];
     /** Public site builder landing page (only while BUILDER_PUBLIC is on). */
     private const BUILDER = 'builder';
 
