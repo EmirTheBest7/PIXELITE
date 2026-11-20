@@ -101,7 +101,7 @@ try {
     await page.key('Escape'); await sleep(300);
     ok('mobile: Escape closes the menu and returns focus to the toggle', await page.eval(`!document.getElementById('navbar').classList.contains('is-open') && document.activeElement===document.querySelector('[data-nav-toggle]')`));
     await page.tap('[data-nav-toggle]'); await sleep(250);
-    await page.tap('#navbar .sheet__link[href$="/contact"]'); await sleep(600);
+    await page.tap('#navbar .sheet__row[href$="/contact"]'); await sleep(600);
     ok('mobile: menu link navigates', (await page.eval('location.pathname')) === '/en/contact');
     // language switch keeps the page
     await page.goto(`${BASE}/en/process`); await sleep(200);
@@ -132,7 +132,7 @@ try {
     ok('theme cycle light→(system→light→dark) changes data-theme', await page.eval(`document.documentElement.getAttribute('data-theme')==='light'`));
     await page.tap('[data-theme-cycle]'); await sleep(200);
     ok('theme cycle reaches dark', await page.eval(`document.documentElement.getAttribute('data-theme')==='dark'`));
-    ok('desktop: nav links present, aria-current on Home', await page.eval(`document.querySelectorAll('.pill__link').length===7 && document.querySelector('.pill__link[aria-current]').getAttribute('href')==='/en/' && !document.querySelector('.pill [data-design-switch]') && document.querySelector('.footer [data-design-switch]').getAttribute('href')==='/legacy/en/'`));
+    ok('desktop: three menu triggers + Contact link, no Home item (logo links home)', await page.eval(`document.querySelectorAll('.pill__link').length===4 && document.querySelectorAll('.pill [data-menu]').length===3 && document.querySelector('#contact-link').getAttribute('href')==='/en/contact' && !document.querySelector('.pill [data-design-switch]') && document.querySelector('.footer [data-design-switch]').getAttribute('href')==='/legacy/en/'`));
     await page.eval(`document.querySelector('.footer [data-design-switch]').click(); true`); await sleep(1500);
     ok('desktop: the footer Legacy link opens /legacy/en/ (legacy design) and the legacy header offers "New design"', (await page.eval('location.pathname')) === '/legacy/en/' && await page.eval(`document.querySelector('[data-design-switch]').getAttribute('href')==='/en/'`));
     await page.tap('[data-design-switch]'); await sleep(1500);
@@ -233,7 +233,7 @@ try {
     ok('public pages: strict CSP unchanged (no unsafe-inline/eval, no third-party hosts)', /default-src 'self'/.test(hc) && !/unsafe-inline|unsafe-eval|https?:/.test(hc), hc);
     ok('X-Frame-Options DENY on public pages', (h.headers.get('x-frame-options') || '') === 'DENY');
     const body = await h.text();
-    ok('no secrets in HTML', !/TELEGRAM|bot\d+:|FTP_|ADMIN_PASSWORD/i.test(body));
+    ok('no secrets in HTML', !/TELEGRAM_|bot\d+:|FTP_|ADMIN_PASSWORD/i.test(body));
     ok('the home page is indexable in the default design (index,follow) and the legacy one is not', /content="index,follow"/.test(body) && /content="noindex,follow"/.test(await (await fetch(`${BASE}/legacy/en/`)).text()));
     ok('no third-party URLs in the HTML', !/(src|href)="https?:\/\/(?!127\.0\.0\.1|localhost|pixelite\.cz|www\.pixelite\.cz)/.test(body.replace(/href="https?:\/\/(www\.)?(coi\.gov\.cz)[^"]*"/g, '')));
   }

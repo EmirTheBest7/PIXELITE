@@ -189,29 +189,29 @@
     sync();
   }
   /* ---- header mega menu (desktop): ONE shared container that morphs x/width/height between panels; content slides + blur-crossfades ---- */
-  var mnav = doc.querySelector('.pill'), dd = doc.getElementById('dd');
-  if (mnav && dd) {
+  var mnav = doc.querySelector('.pill'), mdd = doc.getElementById('dd');
+  if (mnav && mdd) {
     var order = [], trig = {}, pan = {}, current = null, closeTimer = 0, loaded = false, PAD = 9;
     [].forEach.call(mnav.querySelectorAll('[data-menu]'), function (t) { var id = t.getAttribute('data-menu'); order.push(id); trig[id] = t; pan[id] = doc.getElementById('p-' + id); });
     var isMouse = function (e) { return e.pointerType === 'mouse'; };
     var place = function (id) {
-      var tr = trig[id].getBoundingClientRect(), host = (dd.offsetParent || mnav).getBoundingClientRect(), w = pan[id].offsetWidth, h = pan[id].offsetHeight;
+      var tr = trig[id].getBoundingClientRect(), host = (mdd.offsetParent || mnav).getBoundingClientRect(), w = pan[id].offsetWidth, h = pan[id].offsetHeight;
       var x = Math.max(host.left + 12, Math.min(tr.left - PAD, host.right - w - 12)) - host.left;
-      dd.style.setProperty('--x', x + 'px'); dd.style.setProperty('--w', w + 'px'); dd.style.setProperty('--h', h + 'px');
+      mdd.style.setProperty('--x', x + 'px'); mdd.style.setProperty('--w', w + 'px'); mdd.style.setProperty('--h', h + 'px');
     };
     var open = function (id) {
       clearTimeout(closeTimer);
       if (current === id) { return; }
-      if (!loaded) { loaded = true; [].forEach.call(dd.querySelectorAll('img[data-src]'), function (im) { im.src = im.getAttribute('data-src'); }); }
+      if (!loaded) { loaded = true; [].forEach.call(mdd.querySelectorAll('img[data-src]'), function (im) { im.src = im.getAttribute('data-src'); }); }
       var panels = order.map(function (k) { return pan[k]; });
       if (current === null) {
-        dd.classList.add('instant', 'snap');
+        mdd.classList.add('instant', 'snap');
         panels.forEach(function (p) { p.classList.add('snap'); p.removeAttribute('data-state'); });
         place(id);
-        void dd.offsetWidth;
-        dd.classList.remove('snap'); panels.forEach(function (p) { p.classList.remove('snap'); });
-        dd.classList.add('open');
-        requestAnimationFrame(function () { dd.classList.remove('instant'); });
+        void mdd.offsetWidth;
+        mdd.classList.remove('snap'); panels.forEach(function (p) { p.classList.remove('snap'); });
+        mdd.classList.add('open');
+        requestAnimationFrame(function () { mdd.classList.remove('instant'); });
       } else {
         var dir = order.indexOf(id) > order.indexOf(current) ? 1 : -1;
         pan[current].setAttribute('data-state', dir > 0 ? 'exit-left' : 'exit-right');
@@ -225,7 +225,7 @@
       current = id;
     };
     var close = function () {
-      dd.classList.remove('open');
+      mdd.classList.remove('open');
       if (current) { pan[current].removeAttribute('data-state'); }
       order.forEach(function (k) { trig[k].setAttribute('aria-expanded', 'false'); });
       current = null;
@@ -249,7 +249,7 @@
     doc.addEventListener('keydown', function (e) { if (e.key === 'Escape' && current) { var t = trig[current]; close(); t.focus(); } });
     doc.addEventListener('pointerdown', function (e) { if (current && !mnav.contains(e.target)) { close(); } });
     window.addEventListener('resize', function () { if (current) { place(current); } });
-    var items = [].slice.call(dd.querySelectorAll('.dd__item')), arts = [].slice.call(dd.querySelectorAll('.dd__media .dd__art'));
+    var items = [].slice.call(mdd.querySelectorAll('.dd__item')), arts = [].slice.call(mdd.querySelectorAll('.dd__media .dd__art'));
     var activate = function (i) { items.forEach(function (el, k) { el.classList.toggle('is-active', k === i); }); arts.forEach(function (el, k) { el.classList.toggle('is-active', k === i); }); };
     items.forEach(function (el, i) { el.addEventListener('pointerenter', function () { activate(i); }); el.addEventListener('focus', function () { activate(i); }); });
   }
