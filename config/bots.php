@@ -12,4 +12,9 @@ return [
         'repo' => 'EmirTheBest7/TG-PHPBot',
         'env' => 'BOT_LASH_URL',
     ],
+    'stay' => [
+        'name' => 'Domovo housing bot',
+        'repo' => 'EmirTheBest7/TG-StayBot',
+        'env' => 'BOT_STAY_URL',
+    ],
 ];

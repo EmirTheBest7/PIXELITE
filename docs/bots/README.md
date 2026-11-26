@@ -101,3 +101,6 @@ The host has no cron. A bot that needs periodic work exposes a secret-protected 
 | Slug | Repository | Purpose | Status |
 |---|---|---|---|
 | `lash` | `EmirTheBest7/TG-PHPBot` (private) | lash studio booking bot | deployed 2026-11-17 (8654855) |
+| `stay` (Domovo) | `EmirTheBest7/TG-StayBot` (private) | Telegram housing marketplace for the Czech Republic (Mini App: `EmirTheBest7/stay-miniapp`) | deployed 2026-11-26 (a7329ce) |
+
+The `stay` bot lives in `./bots/stay/` and `./public_html/tg/<random>/`, with its own FTP state files (`.ftp-deploy-sync-state-bot-stay-app.json`, `.ftp-deploy-sync-state-bot-stay-web.json`) and `/health` returning `"bot":"stay"`. Its photo folder `./public_html/tg/<random>/m/` is written by the bot at runtime: no deploy may delete or overwrite it. It is deployed with its own scripts (`scripts/deploy-local.sh` or its workflow), never through this repo.
